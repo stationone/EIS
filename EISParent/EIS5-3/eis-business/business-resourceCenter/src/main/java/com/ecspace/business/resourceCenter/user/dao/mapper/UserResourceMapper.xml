@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.user.dao.UserResourceDao">
+
+    <select id="list" parameterType="Map" resultType="com.ecspace.business.resourceCenter.user.service.entity.Resource">
+        select * from pdm_res
+        <where>
+            <if test="tNO != null and tNO != ''">
+                TNO = #{tNO}
+            </if>
+            <if test="resId != null and resId != ''">
+                RESID = #{resId}
+            </if>
+            <if test="resName != null and resName != ''">
+                RESNAME = #{resName}
+            </if>
+            <if test="svnURL != null and svnURL != ''">
+                SVNURL = #{svnURL}
+            </if>
+            <if test="empNO != null and empNO != ''">
+                RESTYPE = #{empNO}
+            </if>
+            <if test="inputUser != null and inputUser != ''">
+                INPUTUSER = #{inputUser}
+            </if>
+            <if test="inputDate != null">
+                INPUTDATE = #{inputDate}
+            </if>
+            <if test="editUser != null and editUser != ''">
+                EDITUSER = #{editUser}
+            </if>
+            <if test="editDate != null">
+                EDITDATE = #{editDate}
+            </if>
+            <if test="resVersion != null and resVersion != ''">
+                RESVERSION = #{resVersion}
+            </if>
+            <if test="svnVersion != null and svnVersion != ''">
+                SVNVERSION = #{svnVersion}
+            </if>
+            <if test="remark != null and remark != ''">
+                REMARK = #{remark}
+            </if>
+            <if test="productcode != null and productcode != ''">
+                PRODUCTCODE = #{productcode}
+            </if>
+            <if test="status != null and status != ''">
+                STATUS = #{status}
+            </if>
+            <if test="extends != null and extends != ''">
+                EXTENDS = #{extends}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="listByCatalogResLink" parameterType="Map" resultType="com.ecspace.business.resourceCenter.user.service.entity.Resource">
+        SELECT pr.* FROM pdm_catareslink pcrl, pdm_res pr
+        <where>
+            pcrl.RESID = pr.RESID
+            <if test="catalogNO != null and catalogNO != ''">
+                and   pcrl.CATALOGNO = #{catalogNO}
+            </if>
+            <if test="resId != null and resId != ''">
+                and   pr.RESID = #{resId}
+            </if>
+            <if test="resName != null and resName != ''">
+                and   pr.RESNAME = #{resName}
+            </if>
+            <if test="resType != null and resType != ''">
+                and   pr.RESTYPE = #{resType}
+            </if>
+            <if test="inputUser != null and inputUser != ''">
+                and   pr.INPUTUSER = #{inputUser}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="listByCatalogResLinkTotal" parameterType="Map" resultType="long">
+        SELECT count(*) FROM pdm_catareslink pcrl, pdm_res pr
+        <where>
+            pcrl.RESID = pr.RESID
+            <if test="catalogNO != null and catalogNO != ''">
+                and   pcrl.CATALOGNO = #{catalogNO}
+            </if>
+            <if test="resId != null and resId != ''">
+                and   pr.RESID = #{resId}
+            </if>
+            <if test="resName != null and resName != ''">
+                and   pr.RESNAME = #{resName}
+            </if>
+            <if test="resType != null and resType != ''">
+                and   pr.RESTYPE = #{resType}
+            </if>
+            <if test="inputUser != null and inputUser != ''">
+                and   pr.INPUTUSER = #{inputUser}
+            </if>
+        </where>
+    </select>
+
+    <select id="listMaxId"  resultType="String">
+        SELECT MAX(RESID) FROM PDM_RES
+        <where>
+            <if test="_parameter != null and _parameter != ''">
+                RESID like #{_parameter}
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="createBatch">
+        insert into PDM_RES
+        (
+        TNO,
+        RESID,
+        RESNAME,
+        SVNURL,
+        RESTYPE,
+        INPUTUSER,
+        INPUTDATE,
+        SVNVERSION,
+        STATUS,
+        EXTENDS
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.tNO},
+            #{item.resId},
+            #{item.resName},
+            #{item.svnURL},
+            #{item.resType},
+            #{item.inputUser},
+            #{item.inputDate},
+            #{item.svnVersion},
+            #{item.status},
+            #{item.extend})
+        </foreach>
+    </insert>
+
+    <update id="updateBatch" parameterType="list">
+        update PDM_RES
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="editDate =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.editDate !=null">
+                        when tNO=#{i.tNO} then #{i.editDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="editUser =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.editUser !=null">
+                        when tNO=#{i.tNO} then #{i.editUser}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="extends =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.extend !=null">
+                        when tNO=#{i.tNO} then #{i.extend}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="svnVersion =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.svnVersion !=null">
+                        when tNO=#{i.tNO} then #{i.svnVersion}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="remark =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.remark !=null">
+                        when tNO=#{i.tNO} then #{i.remark}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="status =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.status !=null">
+                        when tNO=#{i.tNO} then #{i.status}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" separator="or" item="i" index="index" >
+                TNO =#{i.tNO}
+            </foreach>
+        </where>
+    </update>
+
+
+</mapper>

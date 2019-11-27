@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.es.dao.BaseFieldDao">
+    <select id="findAll" resultType="BaseField">
+        select * from base_field
+    </select>
+
+    <insert id="save" parameterType="BaseField">
+        insert into
+        base_field
+        (name, type, valuescope, description)
+        values
+        (#{name}, #{type}, #{valueScope}, #{description});
+    </insert>
+
+    <delete id="deleteField">
+        delete from base_field where id = #{id}
+    </delete>
+
+    <update id="updateField" parameterType="baseField">
+        update base_field set name = #{name}, type = #{type}, valuescope = #{valueScope}, description = #{description} where id = #{id}
+    </update>
+
+
+</mapper>

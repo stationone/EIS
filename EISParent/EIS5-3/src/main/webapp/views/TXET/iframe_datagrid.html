@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+
+    <script>
+        // console.log(getUrlParameter());
+
+        /**
+         * 获取地址参数
+         * 返回json
+         * {userName: "一般员工", type: "1"}
+         * 级别 type
+         * 管理员 s
+         * xxx模块管理员 m
+         * 一般员工 1
+         */
+        function getUrlParameter(){
+            // console.log(Location.);
+            var url = decodeURI(location.search);
+            console.log(url);
+            //?userName=一般员工&type=1
+            var data = "{";
+            if(url != ""){
+                url = url.split("?");
+                if(url.length != 0){
+                    for(var i = 0;i<url.length;i++){
+                        if(url[i] != ""){
+                            url = url[i].split("&");
+                            if(url.length != 0){
+                                for(var j = 0 ;j<url.length ;j++){
+                                    //userName=一般员工
+                                    var urljson = url[j].split("=");
+                                    data += "\""+urljson[0]+"\":\""+urljson[1]+"\",";
+                                }
+
+                            }
+                            break;
+                        }
+                    };
+
+                }
+            }
+            data = data.substring(0,data.length-1)+"}";
+            var datajson = eval('('+data+')');
+            return datajson;
+
+        }
+
+        var fields2 = [  {id:"a1",name:"编号"}
+            ,{id:"a2",name:"资源名称"}
+            ,{id:"a3",name:"资源类型"}
+            ,{id:"a4",name:"上传者"}
+        ];
+
+
+
+    </script>
+</head>
+<body>
+    <table id="px_1" class="easyui-datagrid" data-options="fitColumns:true,fit:true">
+    </table>
+</body>
+</html>

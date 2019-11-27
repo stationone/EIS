@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.administrator.dao.ResourceCatalogDao">
+
+    <resultMap type="com.ecspace.business.resourceCenter.administrator.entity.ResourceCatalog" id="ResCatalogResult">
+        <result property="catalogNO" column="catalogNO"/>
+        <result property="catalogName" column="catalogName"/>
+        <result property="parentNO" column="parentNO"/>
+        <result property="catalogPath" column="catalogPath"/>
+        <result property="svnURL" column="catalogURL"/>
+        <result property="prototcol" column="prototcol"/>
+        <result property="inputUser" column="inputUser"/>
+        <result property="inputDate" column="inputDate"/>
+        <result property="editUser" column="editUser"/>
+        <result property="editDate" column="editDate"/>
+        <result property="rw" column="rw"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <select id="list" parameterType="map" resultMap="ResCatalogResult">
+        select * from PDM_RESCATALOG
+        <where>
+            <if test="catalogName != null and catalogName != ''">
+                and CATALOGNAME = #{catalogName}
+            </if>
+            <if test="parentNO != null and parentNO != ''">
+                and PARENTNO = #{parentNO}
+            </if>
+            <if test="catalogNO != null and catalogNO != ''">
+                and CATALOGNO = #{catalogNO}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="listTotal" parameterType="map" resultType="long">
+        select count(*) from PDM_RESCATALOG
+        <where>
+            <if test="catalogName != null and catalogName != ''">
+                and CATALOGNAME = #{catalogName}
+            </if>
+            <if test="parentNO != null and parentNO != ''">
+                and PARENTNO = #{parentNO}
+            </if>
+            <if test="catalogNO != null and catalogNO != ''">
+                and CATALOGNO = #{catalogNO}
+            </if>
+        </where>
+    </select>
+
+    <insert id="create" parameterType="com.ecspace.business.resourceCenter.administrator.entity.ResourceCatalog">
+        insert into PDM_RESCATALOG
+        values(#{catalogNO}, #{catalogName}, #{parentNO}, #{catalogPath}, #{svnURL}, 'HTTP_MUTIL', #{inputUser}, #{inputDate}, null, null,'1');
+    </insert>
+
+    <select id="listMaxNO" parameterType="String" resultType="String">
+        select max(CATALOGNO) from PDM_RESCATALOG
+        <where>
+            <if test="_parameter != null and _parameter != ''">
+                and PARENTNO = #{_parameter}
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteBatchByCatalogNO" parameterType="Map">
+        delete from PDM_RESCATALOG
+        where
+        SUBSTR(CATALOGNO,${start},${length})= #{catalogNO}
+    </delete>
+
+
+</mapper>

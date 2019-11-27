@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <typeAliases>
+        <!--<package name="com.songci.mytest_one.model" />-->
+        <package name="com.ecspace.business.accountCenter.administrator.service.entity"/>
+        <package name="com.ecspace.business.es.pojo"/>
+        <!--<package name="com.ecspace.business.knowledgeCenter.administrator.pojo"/>-->
+        <!--<package name="com.ecspace.business.employeeCenter.user.mapper"/>-->
+        <!--<package name="com.ecspace.business.knowledgeCenter.user.mapper"/>-->
+        <!--<package name="com.ecspace.business.com.ecspace.business.accountCenter.administrator.dao.mapper"/>-->
+        <!--<package name="com.ecspace.business.com.ecspace.business.accountCenter.administrator.service.entity"/>-->
+        <!--<package name="com.ecspace.business.com.ecspace.business.accountCenter.administrator.dao.mapper"/>-->
+    </typeAliases>
+
+</configuration>

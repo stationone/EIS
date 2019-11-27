@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:elasticsearch="http://www.springframework.org/schema/data/elasticsearch"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/data/elasticsearch
+           http://www.springframework.org/schema/data/elasticsearch/spring-elasticsearch-1.0.xsd
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- jdbc配置 -->
+    <context:property-placeholder location="classpath:config.properties"/>
+
+    <!-- 自动将Service层注入-->
+    <!--<context:component-scan base-package="com.ecspace.business.employeeCenter.user.service" />-->
+    <!--<context:component-scan base-package="com.ecspace.business.knowledgeCenter.user.service" />-->
+    <context:component-scan base-package="com.ecspace.business.resourceCenter.administrator.service.impl"/>
+    <context:component-scan base-package="com.ecspace.business.resourceCenter.user.service.impl"/>
+    <context:component-scan base-package="com.ecspace.business.accountCenter.administrator.service.impl"/>
+    <context:component-scan base-package="com.ecspace.business.es.service.impl"/>
+    <context:component-scan base-package="com.ecspace.business.knowledgeCenter.administrator.service.impl" />
+
+    <!-- dbcp数据源 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
+        <!--这里如果写成${jdbc.driver}，就会出现加载jdbc驱动失败的问题，暂时不清楚什么原因-->
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+
+        <!-- 连接池最大使用连接数 -->
+        <property name="maxActive" value="20"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="1"/>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="60000"/>
+        <!-- 连接池最大空闲 -->
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20"/>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="3"/>
+        <!-- 自动清除无用连接 -->
+        <property name="removeAbandoned" value="true"/>
+        <!-- 清除无用连接的等待时间 -->
+        <property name="removeAbandonedTimeout" value="180"/>
+        <!-- 连接属性 -->
+        <property name="connectionProperties" value="clientEncoding=UTF-8"/>
+    </bean>
+
+    <!-- mybatis的配置文件 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:spring-mybatis.xml"/>
+        <!--        <property name="mapperLocations" value="classpath*:com/ecspace/business/com.ecspace.business.accountCenter/administrator/dao/mapper/*.xml"/>-->
+        <property name="mapperLocations">
+            <array>
+                <value>classpath*:com/ecspace/business/resourceCenter/administrator/dao/mapper/*Mapper.xml</value>
+                <value>classpath*:com/ecspace/business/resourceCenter/user/dao/mapper/*Mapper.xml</value>
+                <value>classpath*:com/ecspace/business/accountCenter/administrator/dao/mapper/*Mapper.xml</value>
+                <value>classpath*:com/ecspace/business/es/dao/mapper/*Mapper.xml</value>
+                <!--<value>classpath*:com/ecspace/business/knowledgeCenter/administrator/dao/mapper/*Mapper.xml</value>-->
+            </array>
+        </property>
+    </bean>
+
+    <!-- spring与mybatis整合配置，扫描所有dao 和所有mapper文件 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage"
+                  value="com.ecspace.business.es.dao;com.ecspace.business.accountCenter.administrator.dao;com.ecspace.business.resourceCenter.administrator.dao;com.ecspace.business.resourceCenter.user.dao"/>
+        <!--        <property name="basePackage" value="com.ecspace.business.employeeCenter.user.dao;com.ecspace.business.knowledgeCenter.user.dao"/>-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!-- 写操作 -->
+            <tx:method name="insert*" propagation="REQUIRED" isolation="DEFAULT"/>
+            <tx:method name="update*" propagation="REQUIRED" isolation="DEFAULT"/>
+            <tx:method name="delete*" propagation="REQUIRED" isolation="DEFAULT"/>
+            <tx:method name="batch*" propagation="REQUIRED" isolation="DEFAULT"/>
+
+            <!-- 读操作 -->
+            <tx:method name="load*" propagation="REQUIRED" isolation="DEFAULT" read-only="true"/>
+            <tx:method name="get*" propagation="REQUIRED" isolation="DEFAULT" read-only="true"/>
+            <tx:method name="find*" propagation="REQUIRED" isolation="DEFAULT" read-only="true"/>
+
+            <tx:method name="*" propagation="REQUIRED" isolation="DEFAULT"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--<aop:config>-->
+    <!--<aop:pointcut id="pc" expression="execution(public * com.songci.mytest_one.service.*.*(..))"/>-->
+    <!--&lt;!&ndash;把事务控制在Service层&ndash;&gt;-->
+    <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="pc"/>-->
+    <!--</aop:config>-->
+
+    <!-- 配置elasticSearch的连接 -->
+    <elasticsearch:transport-client id="client" cluster-nodes="127.0.0.1:9300" cluster-name="elasticsearch"/>
+    <!-- 扫描Dao包，自动创建实例 -->
+    <elasticsearch:repositories base-package="com.ecspace.business.knowledgeCenter.administrator.dao"/>
+    <!-- 扫描Service包，创建Service的实体 -->
+    <!--<context:component-scan base-package="com.ecspace.service"/>-->
+    <!-- ElasticSearch模版对象 -->
+    <bean id="elasticsearchTemplate" class="org.springframework.data.elasticsearch.core.ElasticsearchTemplate">
+        <constructor-arg name="client" ref="client"></constructor-arg>
+    </bean>
+    
+    <!-- 根目录文件夹 -->
+    <bean id="root" class="java.io.File">
+        <constructor-arg name="pathname" value="E:/knowledgeCenter"/>
+    </bean>
+</beans>

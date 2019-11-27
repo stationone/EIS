@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.administrator.dao.CatalogUserCheckOutLinkDao">
+
+    <select id="list" parameterType="map" resultType="com.ecspace.business.resourceCenter.administrator.entity.CatalogUserCheckOutLink">
+        SELECT * FROM pdm_catausercheckoutlink
+        <where>
+            <if test="userTNO != null and userTNO != ''">
+                and USERTNO = #{userTNO}
+            </if>
+            <if test="parentNO != null and parentNO != ''">
+                and PARENTNO = #{parentNO}
+            </if>
+            <if test="tNO != null and tNO != ''">
+                and TNO = #{tNO}
+            </if>
+            <if test="userCheckoutName != null and  userCheckoutName !=''">
+                and userCheckoutName =#{userCheckoutName}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <delete id="deleteBatchByUserTNO">
+        delete from pdm_catausercheckoutlink
+        where
+        <foreach collection="list" item="item" open="("	 separator="or" close=")">
+            USERTNO = #{item.userTNO}
+        </foreach>
+    </delete>
+
+    <update id="update" parameterType="com.ecspace.business.resourceCenter.administrator.entity.CatalogUserCheckOutLink">
+        update PDM_CATAUSERCHECKOUTLINK pcu
+        <set>
+            <if test="explain != null and explain != ''">
+                pcu.EXPLAIN = #{explain},
+            </if>
+        </set>
+        <where>
+            <if test="userTNO != null and userTNO !=''">
+                pcu.USERTNO = #{userTNO}
+            </if>
+            <if test="catalogNO != null and catalogNO !=''">
+                and pcu.CATALOGNO = #{catalogNO}
+            </if>
+        </where>
+    </update>
+
+
+</mapper>

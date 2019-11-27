@@ -1,0 +1,135 @@
+package com.ecspace.business.knowledgeCenter.administrator.service;
+
+import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
+import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
+import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+
+//
+//
+//
+//import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
+//import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
+//
+//import java.io.File;
+//
+public interface FileService {
+
+    /**
+     * 保存上传的文件
+     * @param file
+     * @param menuId
+     * @param keyword
+     * @return
+     */
+    GlobalResult saveFile(MultipartFile file, String menuId, String keyword) throws Exception;
+
+    /**
+     * 静默离散文件
+     * @param fileInfo
+     * @return
+     */
+    GlobalResult fileAnalyzer(FileInfo fileInfo);
+
+    /**
+     * 查询文件列表
+     *
+     * @param menuId
+     * @param page
+     * @param rows
+     * @return
+     */
+    PageData getFileList(String menuId, Integer page, Integer rows);
+
+    /**
+     * 查询文件列表
+     * @param menuId
+     * @param json
+     * @param page
+     * @param rows
+     * @return
+     */
+    PageData getFileList(String menuId, String json, Integer page, Integer rows);
+//
+//
+//    /**
+//     * 保存文件到数据库
+//     * @param name
+//     * @param desFile
+//     * @return
+//     */
+//    int insertFile(String name, String desFile);
+//
+//    /**
+//     * 文件列表
+//     * @param page
+//     * @param rows
+//     * @return
+//     */
+//    PageData getFileList(Integer page, Integer rows);
+//
+//    /**
+//     * 删除文件信息
+//     * @param fileId
+//     * @return
+//     */
+//    GlobalResult removeFile(Integer fileId);
+//
+//    /**
+//     * 查找文件
+//     * @param fileId
+//     * @return
+//     */
+//    GlobalResult getFile(Integer fileId);
+//
+//    /**
+//     * 查找文件
+//     * @param fileId
+//     * @return
+//     */
+//    File getFileById(Integer fileId);
+//
+//    /**
+//     * 查询文件详情
+//     * @param fileId
+//     * @return
+//     */
+//    File getFileAndRoleById(Integer fileId);
+//
+//    /**
+//     * 查询文件可以添加的角色
+//     * @param fileId
+//     * @return
+//     */
+//    PageData getFileOtherRole(Integer fileId);
+//
+//    /**
+//     * 移除文件角色
+//     * @param fileId
+//     * @param uuid
+//     * @return
+//     */
+//    GlobalResult removeFileRole(Integer fileId, Integer uuid);
+//
+//    /**
+//     * 文件角色关联
+//     * @param fileId
+//     * @param uuid
+//     * @return
+//     */
+//    GlobalResult addFileRole(Integer fileId, Integer uuid);
+//
+////    /**
+////     * 过去登录人的文件权限
+////     * @param userInfo
+////     * @return
+////     */
+////    PageData getUserFile(UserInfo userInfo);
+////
+////    /**
+////     * @return
+////     */
+////    GlobalResult getRole(UserInfo userInfo);
+}

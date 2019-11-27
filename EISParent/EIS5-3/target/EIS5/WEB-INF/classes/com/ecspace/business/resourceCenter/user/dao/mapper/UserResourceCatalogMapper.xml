@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.user.dao.UserResourceCatalogDao">
+    <resultMap type="com.ecspace.business.resourceCenter.user.service.entity.ResourceCatalog" id="ResCatalogResult">
+        <result property="catalogNO" column="catalogNO"/>
+        <result property="catalogName" column="catalogName"/>
+        <result property="parentNO" column="parentNO"/>
+        <result property="catalogPath" column="catalogPath"/>
+        <result property="svnURL" column="catalogURL"/>
+        <result property="prototcol" column="prototcol"/>
+        <result property="inputUser" column="inputUser"/>
+        <result property="inputDate" column="inputDate"/>
+        <result property="editUser" column="editUser"/>
+        <result property="editDate" column="editDate"/>
+        <result property="rw" column="rw"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+
+    <select id="list" parameterType="map" resultMap="ResCatalogResult">
+        select * from PDM_RESCATALOG
+        <where>
+            <if test="catalogName != null and catalogName != ''">
+                and CATALOGNAME = #{catalogName}
+            </if>
+            <if test="parentNO != null and parentNO != ''">
+                and PARENTNO = #{parentNO}
+            </if>
+            <if test="catalogNO != null and catalogNO != ''">
+                and CATALOGNO = #{catalogNO}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <resultMap type="com.ecspace.business.resourceCenter.user.service.entity.ResourceCatalog" id="UserResCatalogResult">
+        <result property="catalogNO" column="catalogNO"/>
+        <result property="catalogName" column="catalogName"/>
+        <result property="parentNO" column="tNO"/>
+        <result property="catalogPath" column="catalogPath"/>
+        <result property="svnURL" column="catalogURL"/>
+        <result property="prototcol" column="explain"/>
+        <result property="inputUser" column="inputUser"/>
+        <result property="inputDate" column="inputDate"/>
+        <result property="editUser" column="editUser"/>
+        <result property="editDate" column="editDate"/>
+        <result property="rw" column="rw"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <select id="listUserCheckOutByUserTNO" parameterType="Map" resultMap="UserResCatalogResult">
+        select pcucol.tNO,pcucol.CATALOGNO,pcucol.userCheckoutName catalogName,prcl.CATALOGURL,	pcul.RW,prcl.CATALOGPATH, prcl.STATUS,pcucol.explain
+        from
+        pdm_catausercheckoutlink pcucol LEFT JOIN pdm_catauserlink pcul
+        on pcucol.catalogNO = pcul.catalogNO
+        <if test="userTNO != null and userTNO != ''">
+            and pcul.USERID = #{userTNO}
+        </if>
+        LEFT JOIN pdm_rescatalog prcl
+        ON pcucol.catalogNO = prcl.catalogNO
+        <where>
+            <if test="userTNO != null and userTNO != ''">
+                pcucol.USERTNO = #{userTNO}
+            </if>
+            <if test="tNO != null and tNO != ''">
+                AND pcucol.tNO = ${tNO}
+            </if>
+        </where>
+    </select>
+
+    <select id="listUserCatalogJurisdictionByUserTNOorParentNO" parameterType="Map" resultMap="ResCatalogResult">
+        SELECT pcul.RW, prcl.* FROM pdm_catauserlink pcul, pdm_rescatalog prcl
+        <where>
+            prcl.CATALOGNO = pcul.CATALOGNO
+            <if test="userTNO != null and userTNO != ''">
+                AND pcul.USERID = ${userTNO}
+            </if>
+            <if test="parentNO != null and parentNO != ''">
+                AND prcl.PARENTNO = ${parentNO}
+            </if>
+            <if test="catalogNO != null and catalogNO != ''">
+                AND prcl.CATALOGNO = ${catalogNO}
+            </if>
+        </where>
+    </select>
+
+    <insert id="create" parameterType="com.ecspace.business.resourceCenter.user.service.entity.ResourceCatalog">
+        insert into PDM_RESCATALOG
+        values(#{catalogNO}, #{catalogName}, #{parentNO}, #{catalogPath}, #{svnURL}, 'HTTP_MUTIL', #{inputUser}, #{inputDate}, null, null,'1');
+    </insert>
+
+    <select id="listMaxNO" parameterType="String" resultType="String">
+        select max(CATALOGNO) from PDM_RESCATALOG
+        <where>
+            <if test="_parameter != null and _parameter != ''">
+                and PARENTNO = #{_parameter}
+            </if>
+        </where>
+    </select>
+
+    <update id="update" parameterType="com.ecspace.business.resourceCenter.user.service.entity.ResourceCatalog">
+        update PDM_RESCATALOG
+        <set>
+            <if test="catalogName != null">
+                CATALOGNAME = #{catalogName},
+            </if>
+            <if test="editUser != null">
+                EDITUSER = #{editUser},
+            </if>
+            <if test="editDate != null">
+                EDITDATE = #{editDate},
+            </if>
+            <if test="status != null and status != ''">
+                STATUS = #{status},
+            </if>
+        </set>
+        <where>
+            <if test="catalogNO != null and catalogNO !=''">
+                CATALOGNO = #{catalogNO}
+            </if>
+        </where>
+    </update>
+
+</mapper>

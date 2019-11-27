@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.administrator.dao.ResourceCatalogUserDao">
+
+    <select id="list" parameterType="map" resultType="com.ecspace.business.resourceCenter.administrator.entity.ResourceCatalogUser">
+        SELECT prcu.*, pu.userName userName FROM pdm_resCataUser prcu , pdm_users pu
+        <where>
+            prcu.userTNO = pu.tNO
+            <if test="tNO != null and tNO != ''">
+                and prcu.TNO = #{tNO}
+            </if>
+            <if test="userTNO != null and userTNO != ''">
+                and prcu.USERTNO = #{userTNO}
+            </if>
+            <if test="resCataTNO != null and resCataTNO != ''">
+                and prcu.RESCATATNO = #{resCataTNO}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="listTotal" parameterType="map" resultType="long">
+        SELECT count(*) FROM pdm_resCataUser prcu , pdm_users pu
+        <where>
+            prcu.userTNO = pu.tNO
+            <if test="tNO != null and tNO != ''">
+                and prcu.TNO = #{tNO}
+            </if>
+            <if test="userTNO != null and userTNO != ''">
+                and prcu.USERTNO = #{userTNO}
+            </if>
+            <if test="resCataTNO != null and resCataTNO != ''">
+                and prcu.RESCATATNO = #{resCataTNO}
+            </if>
+        </where>
+    </select>
+
+    <select id="listNotResourceUser" resultType="com.ecspace.business.resourceCenter.administrator.entity.ResourceCatalogUser">
+        SELECT pu.TNO userTNO,pu.userName userName FROM  pdm_users pu LEFT JOIN pdm_rescatauser prcu ON prcu.userTNO = pu.TNO
+        where
+        pu.DELETEMARK != '0'
+        AND
+        pu.status != 's'
+        AND
+        prcu.userTNO is null
+    </select>
+
+    <delete id="deleteBatch">
+        delete from PDM_RESCATAUSER
+        where
+        <foreach collection="list" item="item" open="("	 separator="or" close=")">
+            <if test="item.tNO != null and item.tNO != ''">
+                TNO = #{item.tNO}
+            </if>
+        </foreach>
+    </delete>
+
+    <insert id="saveBatch">
+        insert into PDM_RESCATAUSER
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.tNO},
+            #{item.userTNO},
+            null,
+            #{item.inputUser},
+            #{item.inputDate},
+            null,
+            null,
+            '1'
+            )
+        </foreach>
+    </insert>
+
+</mapper>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.administrator.dao.CatalogUserLinkDao">
+
+    <select id="list" parameterType="map" resultType="com.ecspace.business.resourceCenter.administrator.entity.CatalogUserLink">
+        SELECT * FROM pdm_catauserlink
+        <where>
+            <if test="catalogNO != null and catalogNO != ''">
+                and CATALOGNO = #{catalogNO}
+            </if>
+            <if test="rw != null and rw != ''">
+                and RW = #{rw}
+            </if>
+            <if test="userId != null and userId != ''">
+                and USERID = #{userId}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="listTotal" parameterType="map" resultType="long">
+        SELECT count(*) FROM pdm_catauserlink
+        <where>
+            <if test="catalogNO != null and catalogNO != ''">
+                and CATALOGNO = #{catalogNO}
+            </if>
+            <if test="rw != null and rw != ''">
+                and RW = #{rw}
+            </if>
+            <if test="userId != null and userId != ''">
+                and USERID = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <select id="listOwnJurisdictionUserByCatalogNO" parameterType="Map" resultType="com.ecspace.business.resourceCenter.administrator.entity.CatalogUserLink">
+        SELECT pu.userName userName, pcu.*
+        FROM pdm_catauserlink pcu
+        LEFT JOIN pdm_users pu on pcu.userId = pu.tNO
+        <where>
+            <if test="catalogNO != null and catalogNO != ''">
+                pcu.CATALOGNO = #{catalogNO}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="listTotalOwnJurisdictionUserByCatalogNO" parameterType="Map" resultType="Long">
+        SELECT count(*)
+        FROM pdm_catauserlink pcu
+        LEFT JOIN pdm_users pu on pcu.userId = pu.tNO
+        <where>
+            <if test="catalogNO != null and catalogNO != ''">
+                pcu.CATALOGNO = #{catalogNO}
+            </if>
+        </where>
+    </select>
+
+    <select id="listNotOwnJurisdictionUserByCatalogNO" parameterType="map" resultType="com.ecspace.business.resourceCenter.administrator.entity.CatalogUserLink">
+        SELECT pu.userName, rcu.userTNO userId
+        from
+        pdm_rescatauser rcu
+        LEFT JOIN
+        pdm_users pu
+        on
+        rcu.userTNO = pu.tNO
+        LEFT JOIN
+        pdm_catauserlink pcul
+        on
+        rcu.userTNO = pcul.USERID
+        and
+        pcul.CATALOGNO = #{catalogNO}
+        where pcul.USERID is null
+    </select>
+
+    <insert id="createBatch" parameterType="long">
+        insert into PDM_CATAUSERLINK
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.tNO},
+            #{item.catalogNO},
+            #{item.userId},
+            #{item.rw},
+            #{item.inputUser},
+            #{item.inputDate},
+            null,
+            null
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteBatchByUserTNO">
+        delete from PDM_CATAUSERLINK
+        where
+        <foreach collection="list" item="item" open="("	 separator="or" close=")">
+            USERID = #{item.userId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteBatchByUserIdAndCatalogNO">
+        delete from PDM_CATAUSERLINK
+        where
+        <foreach collection="list" item="item" open="("	 separator="or" close=")">
+            substr(CATALOGNO,${item.start},${item.length})=#{item.catalogNO}
+            and
+            userid=#{item.userTNO}
+        </foreach>
+    </delete>
+
+    <delete id="deleteBatchByUserIdAndCatalogNOAll">
+        delete from PDM_CATAUSERLINK
+        where
+        <foreach collection="list" item="item" open="("	 separator="or" close=")">
+            substr(CATALOGNO,${item.start},${item.length})=#{item.catalogNO}
+            and
+            userid=#{item.userTNO}
+        </foreach>
+    </delete>
+
+    <delete id="deleteBatchByCatalogNO" parameterType="Map">
+        delete from PDM_CATAUSERLINK
+        where
+        SUBSTR(CATALOGNO,#{start},#{length})= ${catalogNO}
+    </delete>
+
+
+    <resultMap type="com.ecspace.business.resourceCenter.administrator.entity.CatalogUserLink" id="CataUserLinkResult">
+        <result property="tNO" column="tNO"/>
+        <result property="catalogNO" column="catalogNO"/>
+        <result property="userId" column="userId"/>
+        <result property="rw" column="rw"/>
+        <result property="inputUser" column="inputUser"/>
+        <result property="inputDate" column="inputDate"/>
+        <result property="editUser" column="editUser"/>
+        <result property="editDate" column="editDate"/>
+    </resultMap>
+
+    <select id="listByUserTNOorCatalogNO"  parameterType="Map" resultMap="CataUserLinkResult">
+		SELECT * FROM pdm_catauserlink pcu
+		where
+			substr(pcu.CATALOGNO,${start},${length})=#{catalogNO}
+		and
+			pcu.USERID =#{userTNO}
+
+	</select>
+
+    <update id="updateBatch" parameterType="list">
+        update PDM_CATAUSERLINK
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="RW =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.rw !=null">
+                        when tNO=#{i.tNO} then #{i.rw}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="EDITUSER =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.editUser !=null">
+                        when tNO=#{i.tNO} then #{i.editUser}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="EDITDATE =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.editDate !=null">
+                        when tNO=#{i.tNO} then #{i.editDate}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" separator="or" item="i" index="index" >
+                TNO =#{i.tNO}
+            </foreach>
+        </where>
+
+    </update>
+
+
+</mapper>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.user.dao.ResourceUploadDao">
+
+	<resultMap type="com.ecspace.business.resourceCenter.user.service.entity.ResUpload" id="ResUploadResult">
+		<result property="tNO" column="tNO"/>
+		<result property="userId" column="userId"/>
+		<result property="resName" column="resName"/>
+		<result property="fileWorkCopyPath" column="fileWorkCopyPath"/>
+		<result property="status" column="status"/>
+	</resultMap>
+
+	
+	<select id="list" parameterType="Map" resultMap="ResUploadResult">
+		select * from PDM_RESUPLOAD
+		<where> 
+			<if test="tNO != null and tNO != ''">
+				and TNO = #{tNO}
+			</if>
+			<if test="userId != null and userId != ''">
+				and USERID = #{userId}
+			</if>
+			<if test="resName != null and resName != ''">
+				and RESNAME = #{resName}
+			</if>
+			<if test="fileWorkCopyPath != null and fileWorkCopyPath != ''">
+				and FILEWORKCOPYPATH = #{fileWorkCopyPath}
+			</if>
+			<if test="status != null and status != ''">
+				and STATUS = #{status}
+			</if>
+		</where>
+	</select>
+
+	
+	<!-- sql片段对应字段名,id属性值任意 -->
+    <sql id="key">
+        <trim suffixOverrides = ",">
+        	<if test="tNO != null and tNO != ''">
+				TNO,
+			</if>
+            <if test="userId != null and userId != ''">
+				USERID,
+			</if>
+			<if test="resName != null and resName != ''">
+				RESNAME,
+			</if>
+			<if test="fileWorkCopyPath != null and fileWorkCopyPath != ''">
+				FILEWORKCOPYPATH,
+			</if>
+			<if test="status != null and status != ''">
+				STATUS,
+			</if>
+            <if test="catalogNO != null and catalogNO != ''">
+                CATALOGNO,
+            </if>
+			<if test="catalogName != null and catalogName != ''">
+				CATALOGNAME,
+			</if>
+			<if test="fileSize != null and fileSize != ''">
+				FILESIZE,
+			</if>
+        </trim>
+    </sql>
+
+    <!-- sql片段对应?,id属性值任意 -->
+    <sql id="value">
+        <trim suffixOverrides = ",">
+        	<if test="tNO != null and tNO != ''">
+				#{tNO},
+			</if>
+            <if test="userId != null and userId != ''">
+				#{userId},
+			</if>
+			<if test="resName != null and resName != ''">
+				#{resName},
+			</if>
+			<if test="fileWorkCopyPath != null and fileWorkCopyPath != ''">
+				#{fileWorkCopyPath},
+			</if>
+			<if test="status != null and status != ''">
+				#{status},
+			</if>
+            <if test="catalogNO != null and catalogNO != ''">
+                #{catalogNO},
+            </if>
+			<if test="catalogName != null and catalogName != ''">
+				#{catalogName},
+			</if>
+			<if test="fileSize != null and fileSize != ''">
+				#{fileSize},
+			</if>
+        </trim>
+    </sql>
+
+    <insert id="add" parameterType="com.ecspace.business.resourceCenter.user.service.entity.Resource">
+        insert into PDM_RESUPLOAD(<include refid="key"/>) values(<include refid="value"/>)
+    </insert>
+
+
+	<delete id="delete" parameterType="Map">
+		DELETE FROM PDM_RESUPLOAD
+		<where>
+			<if test="tNO != null and tNO != ''">
+				TNO = #{tNO}
+			</if>
+			<if test="userId != null and userId != ''">
+				and userId = #{userId}
+			</if>
+		</where>
+	</delete>
+
+	<delete id="deleteAll">
+		delete from PDM_RESUPLOAD where TNO in (
+		<foreach collection="list" item="resUpload" separator=",">
+			#{resUpload.tNO}
+		</foreach>
+		)
+	</delete>
+
+	<update id="updateByUserId" parameterType="String">
+		UPDATE PDM_RESUPLOAD SET STATUS = '3' WHERE USERID = #{userId}
+	</update>
+
+</mapper>

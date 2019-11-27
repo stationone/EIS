@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.accountCenter.administrator.dao.UsersDao">
+
+    <select id="list" parameterType="Map" resultType="com.ecspace.business.accountCenter.administrator.entity.Users">
+        select * from PDM_USERS
+        <where>
+            <if test="tNO != null and tNO != ''">
+                TNO = #{tNO}
+            </if>
+            <if test="userId != null and userId != ''">
+                and USERID = #{userId}
+            </if>
+            <if test="userName != null and userName != ''">
+                and USERNAME = #{userName}
+            </if>
+            <if test="userPassword != null and userPassword != ''">
+                and USERPASSWORD = #{userPassword}
+            </if>
+            <if test="empNO != null and empNO != ''">
+                and EMPNO = #{empNO}
+            </if>
+            <if test="companyName != null and companyName != ''">
+                and COMPANYNAME = #{companyName}
+            </if>
+            <if test="userType != null and userType != ''">
+                and USERTYPE = #{userType}
+            </if>
+            <if test="inputUser != null and inputUser != ''">
+                and INPUTUSER = #{inputUser}
+            </if>
+            <if test="inputDate != null">
+                and INPUTDATE = #{inputDate}
+            </if>
+            <if test="editUser != null and editUser != ''">
+                and EDITUSER = #{editUser}
+            </if>
+            <if test="editDate != null">
+                and  EDITDATE = #{editDate}
+            </if>
+            <if test="status != null and status != ''">
+                and STATUS = #{status}
+            </if>
+            <if test="description != null and description != ''">
+                and DESCRIPTION = #{description}
+            </if>
+            <if test="deleteMark != null and deleteMark != ''">
+                and DELETEMARK = #{deleteMark}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="listTotal" parameterType="Map" resultType="Long">
+        select count(*) from PDM_USERS
+        <where>
+            <if test="tNO != null and tNO != ''">
+                TNO = #{tNO}
+            </if>
+            <if test="userId != null and userId != ''">
+                and USERID = #{userId}
+            </if>
+            <if test="userName != null and userName != ''">
+                and USERNAME = #{userName}
+            </if>
+            <if test="userPassword != null and userPassword != ''">
+                and USERPASSWORD = #{userPassword}
+            </if>
+            <if test="empNO != null and empNO != ''">
+                and EMPNO = #{empNO}
+            </if>
+            <if test="companyName != null and companyName != ''">
+                and COMPANYNAME = #{companyName}
+            </if>
+            <if test="userType != null and userType != ''">
+                and USERTYPE = #{userType}
+            </if>
+            <if test="inputUser != null and inputUser != ''">
+                and INPUTUSER = #{inputUser}
+            </if>
+            <if test="inputDate != null">
+                and INPUTDATE = #{inputDate}
+            </if>
+            <if test="editUser != null and editUser != ''">
+                and EDITUSER = #{editUser}
+            </if>
+            <if test="editDate != null">
+                and  EDITDATE = #{editDate}
+            </if>
+            <if test="status != null and status != ''">
+                and STATUS = #{status}
+            </if>
+            <if test="description != null and description != ''">
+                and DESCRIPTION = #{description}
+            </if>
+            <if test="deleteMark != null and deleteMark != ''">
+                and DELETEMARK = #{deleteMark}
+            </if>
+        </where>
+    </select>
+
+    <insert id="createBatch" parameterType="List">
+        insert into pdm_users
+        (
+             tNO
+            ,userId
+            ,userName
+            ,userPassword
+            ,empNO
+            ,companyName
+            ,userType
+            ,inputUser
+            ,inputDate
+            ,editUser
+            ,editDate
+            ,status
+            ,description
+            ,deleteMark
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.tNO},
+            #{item.userId},
+            #{item.userName},
+            #{item.userPassword},
+            #{item.empNO},
+            #{item.companyName},
+            #{item.userType},
+            #{item.inputUser},
+            #{item.inputDate},
+            #{item.editUser},
+            #{item.editDate},
+            #{item.status},
+            #{item.description},
+            #{item.deleteMark}
+        )
+        </foreach>
+    </insert>
+
+    <update id="updateBatch" parameterType="list">
+        update pdm_users
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="editDate =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.editDate !=null">
+                        when tNO=#{i.tNO} then #{i.editDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="editUser =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.editUser !=null and i.editUser != ''">
+                        when tNO=#{i.tNO} then #{i.editUser}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="userName =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.userName !=null and i.userName != ''">
+                        when tNO=#{i.tNO} then #{i.userName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="userPassword =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.userPassword !=null and i.userPassword != ''">
+                        when tNO=#{i.tNO} then #{i.userPassword}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="userType =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.userType !=null and i.userType != ''">
+                        when tNO=#{i.tNO} then #{i.userType}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="status =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.status !=null and i.status != ''">
+                        when tNO=#{i.tNO} then #{i.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="description =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.description !=null">
+                        when tNO=#{i.tNO} then #{i.description}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="deleteMark =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.deleteMark !=null and i.deleteMark != ''">
+                        when tNO=#{i.tNO} then #{i.deleteMark}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        <where>
+            <foreach collection="list" separator="or" item="i" index="index" >
+                TNO =#{i.tNO}
+            </foreach>
+        </where>
+    </update>
+
+</mapper>

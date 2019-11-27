@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.user.dao.UserCatalogUserCheckOutLinkDao">
+
+    <select id="list"  parameterType="Map" resultType="com.ecspace.business.resourceCenter.user.service.entity.CatalogUserCheckOutLink">
+        SELECT * FROM pdm_catausercheckoutlink
+        <where>
+            <if test="userTNO != null and userTNO != ''">
+                and USERTNO = #{userTNO}
+            </if>
+            <if test="parentNO != null and parentNO != ''">
+                and PARENTNO = #{parentNO}
+            </if>
+            <if test="tNO != null and tNO != ''">
+                and TNO = #{tNO}
+            </if>
+            <if test="userCheckoutName != null and  userCheckoutName !=''">
+                and userCheckoutName =#{userCheckoutName}
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteBatch">
+        delete from pdm_catausercheckoutlink
+        where
+        <foreach collection="list" item="item" open="("	 separator="or" close=")">
+            tNO = #{item.tNO}
+        </foreach>
+    </delete>
+
+    <insert id="create">
+        insert into pdm_catausercheckoutlink
+        VALUES
+        (
+        #{tNO},
+        #{catalogNO},
+        #{catalogName},
+        #{userTNO},
+        #{userCheckoutName},
+        #{parentNO},
+        #{inputUser},
+        #{inputDate},
+        null,
+        null,
+        #{status},
+        #{explain}
+        )
+    </insert>
+
+
+</mapper>

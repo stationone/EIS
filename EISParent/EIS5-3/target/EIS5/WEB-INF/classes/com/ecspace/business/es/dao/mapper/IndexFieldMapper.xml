@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.es.dao.IndexFieldDao">
+
+    <insert id="save" parameterType="string">
+      insert into indexFiled (indexName,filedName,isIndex)
+        values (
+        #{indexName},
+        #{filedName},
+        #{isIndex}
+        )
+    </insert>
+
+    <select id="getFieldByIndex" parameterType="string" resultType="indexField">
+        select * from indexField where indexName = #{indexName}
+    </select>
+
+    <select id="get" parameterType="string" resultType="indexField">
+        select * from indexField where indexName = #{indexName} and fieldName = #{fieldName}
+    </select>
+
+    <delete id="deleteIndexField" parameterType="string">
+        delete from indexField where indexName = #{indexName}
+    </delete>
+
+
+
+</mapper>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.user.dao.UserCatalogResourceLinkDao">
+
+    <insert id="create" parameterType="com.ecspace.business.resourceCenter.user.service.entity.Resource">
+		insert into PDM_CATARESLINK values(#{tNO}, #{catalogNO}, #{resId},
+		 #{inputUser}, #{inputDate}, null, null);
+	</insert>
+
+
+    <insert id="createBatch">
+        insert into PDM_CATARESLINK
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.tNO},#{item.catalogNO},#{item.resId},#{item.inputUser},#{item.inputDate},null,null)
+        </foreach>
+    </insert>
+</mapper>

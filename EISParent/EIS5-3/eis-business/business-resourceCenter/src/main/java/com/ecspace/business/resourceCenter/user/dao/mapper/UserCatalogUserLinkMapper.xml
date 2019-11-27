@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.user.dao.UserCatalogUserLinkDao">
+
+    <select id="list" parameterType="map" resultType="com.ecspace.business.resourceCenter.user.service.entity.CatalogUserLink">
+        SELECT * FROM pdm_catauserlink
+        <where>
+            <if test="catalogNO != null and catalogNO != ''">
+                and CATALOGNO = #{catalogNO}
+            </if>
+            <if test="rw != null and rw != ''">
+                and RW = #{rw}
+            </if>
+            <if test="userId != null and userId != ''">
+                and USERID = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <select id="listOwnJurisdictionUserByCatalogNO" parameterType="Map" resultType="com.ecspace.business.resourceCenter.user.service.entity.CatalogUserLink">
+        SELECT pu.userName userName, pcu.*
+        FROM pdm_catauserlink pcu
+        LEFT JOIN pdm_users pu on pcu.userId = pu.tNO
+        <where>
+            <if test="catalogNO != null and catalogNO != ''">
+                pcu.CATALOGNO = #{catalogNO}
+            </if>
+        </where>
+        <if test="startTemp != null and pageSize != null">
+            limit #{startTemp}, #{pageSize}
+        </if>
+    </select>
+
+    <insert id="createBatch" parameterType="long">
+        insert into PDM_CATAUSERLINK
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.tNO},
+            #{item.catalogNO},
+            #{item.userId},
+            #{item.rw},
+            #{item.inputUser},
+            #{item.inputDate},
+            null,
+            null
+            )
+        </foreach>
+    </insert>
+
+</mapper>

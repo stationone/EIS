@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecspace.business.resourceCenter.administrator.dao.CatalogResourceLinkDao">
+
+    <select id="listBatchByCatalogNO" parameterType="Map" resultType="com.ecspace.business.resourceCenter.administrator.entity.CatalogResourceLink">
+        SELECT * FROM PDM_CATARESLINK
+        WHERE
+        substr(catalogNO,#{start},#{length}) = ${catalogNO}
+    </select>
+
+    <delete id="deleteBatch">
+        DELETE from PDM_CATARESLINK
+        WHERE
+        <foreach collection="list" item="item" open="("	 separator="or" close=")">
+            RESID = #{item.resId}
+        </foreach>
+    </delete>
+
+
+    <delete id="deleteBatchByCatalogNO" parameterType="Map">
+        delete from PDM_CATARESLINK
+        where
+        SUBSTR(CATALOGNO,#{start},#{length})= ${catalogNO}
+    </delete>
+
+
+</mapper>
