@@ -141,8 +141,9 @@ public class Office2Html  {
 //                "C:\\Users\\Administrator\\Desktop\\test\\Excel\\日志及周报模板.html");
 //        boolean flag = excel2Html("C:\\Users\\Administrator\\Desktop\\file\\excel/测试excel.xlsx",
 //                "E:/htmlFile");
-        boolean flag = ppt2Html("C:\\Users\\Administrator\\Desktop\\file\\ppt\\100206.pptx", "C:\\Users\\Administrator\\Desktop\\file\\ppt\\a.html");
-        if(flag){
+//        boolean flag = ppt2Html("C:\\Users\\Administrator\\Desktop\\file\\ppt\\100206.pptx", "C:\\Users\\Administrator\\Desktop\\file\\ppt\\a.html");
+        boolean b = word2Html("C:\\Users\\Administrator\\Desktop\\file\\word\\ES说明V4.docx", "C:\\Users\\Administrator\\Desktop\\file\\word\\ES说明V4.html");
+        if(b){
             System.out.println("EXCEL文件转换成HTML成功！");  
         }else{  
             System.out.println("EXCEL文件转换成HTML失败！");  

@@ -72,7 +72,9 @@ public class FileServiceImpl implements FileService {
         String path = menuUrl + "/" + filename;
         //将文件存至其路径
         File fileObj = new File(path);
-        FileUtils.copyInputStreamToFile(file.getInputStream(), fileObj);//复制文件至服务器本地
+        InputStream inputStream = file.getInputStream();
+        FileUtils.copyInputStreamToFile(inputStream, fileObj);//复制文件至服务器本地
+        inputStream.close();//释放资源
 
         //封装fileInfo对象
         FileInfo fileInfo = new FileInfo();
@@ -155,9 +157,10 @@ public class FileServiceImpl implements FileService {
         Pageable pageable = new PageRequest(page,rows);
         org.springframework.data.domain.Page<FileInfo> infoPage =  fileInfoDao.findByMenuId(menuId, pageable);
         List<FileInfo> fileInfoList = infoPage.getContent();
-        for (FileInfo fileInfo : fileInfoList) {
-            System.out.println(fileInfo.getFileNamePrefix());
-        }
+//        for (FileInfo fileInfo : fileInfoList) {
+////            System.out.println(fileInfo.getFileNamePrefix());
+////            System.out.println(fileInfo.getFileId());
+//        }
 
 
         return new PageData((int) infoPage.getNumberOfElements(),fileInfoList);
@@ -224,6 +227,7 @@ public class FileServiceImpl implements FileService {
             String splitPdfPath = "E:/knowledgeCenterPdfFile/" + fileInfo.getHashCode();
 
             if (!new java.io.File(splitPdfPath).exists()) {
+//                File file = new File(splitPdfPath);
                 new java.io.File(splitPdfPath).mkdir();
             }
 //            //自动创建出split文件夹

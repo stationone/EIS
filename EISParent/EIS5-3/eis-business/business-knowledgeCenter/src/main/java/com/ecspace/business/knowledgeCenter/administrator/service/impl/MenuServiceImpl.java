@@ -47,6 +47,7 @@ public class MenuServiceImpl implements MenuService {
 
     /**
      * 新增目录
+     *          改为不在本地同步更新文件夹, 只需添加虚拟目录
      *
      * @param menu
      * @return

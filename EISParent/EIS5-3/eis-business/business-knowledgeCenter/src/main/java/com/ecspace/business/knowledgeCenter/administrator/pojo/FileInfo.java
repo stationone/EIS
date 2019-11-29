@@ -107,11 +107,34 @@ public class FileInfo {
     private String pageIds;
 
     private String pdfFilePath;
+    /**
+     * 文件的web路径
+     */
+    private String webPath;
 
     /**
      * 下载次数, 初始0
      */
     private Integer downloadCount = 0;
+
+    private String fileId;
+
+    public String getFileId() {
+        this.fileId = id;
+        return fileId;
+    }
+
+    public void setFileId(String fileId) {
+        this.fileId = fileId;
+    }
+
+    public String getWebPath() {
+        return webPath;
+    }
+
+    public void setWebPath(String webPath) {
+        this.webPath = webPath;
+    }
 
     public Integer getDownloadCount() {
         return downloadCount;

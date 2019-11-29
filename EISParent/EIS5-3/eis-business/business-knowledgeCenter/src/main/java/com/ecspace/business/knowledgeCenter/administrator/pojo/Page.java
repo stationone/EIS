@@ -29,8 +29,16 @@ public class Page {
     private String directoryNodeIds; //目录id列表
     @Field(index = false,store = true, type = FieldType.Keyword)
     private String fileId;//page所属的file的Id
-    private String path;
+    private String path;//本地路径
+    private String webPath;//预览路径(离散后的web虚拟映射路径)
 
+    public String getWebPath() {
+        return webPath;
+    }
+
+    public void setWebPath(String webPath) {
+        this.webPath = webPath;
+    }
 
     public String getPath() {
         return path;

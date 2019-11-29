@@ -136,21 +136,21 @@
     <script>
 
         //知识中心
-        var knowledgeTitle = [{"moduleNO":"14","moduleName":"文档管理","moduleURL":"views/resource/knowledgeCenter.jsp","icon":"resourceMaintain-light.png","event":"","order":3}
-            ,{"moduleNO":"15","moduleName":"文档基础属性","moduleURL":"views/resource/admin.jsp","icon":"","event":"","order":1}
-            ,{"moduleNO":"16","moduleName":"类型定义","moduleURL":"views/resource/baseField.jsp","icon":"resourceMaintain-light.png","event":"","order":2}
+        var knowledgeTitle = [{"moduleNO":"14","moduleName":"文档管理","moduleURL":"views/resource/knowledgeCenter/knowledgeCenter.jsp","icon":"resourceMaintain-light.png","event":"","order":3}
+            ,{"moduleNO":"15","moduleName":"文档基础属性","moduleURL":"views/resource/knowledgeCenter/admin.jsp","icon":"","event":"","order":1}
+            ,{"moduleNO":"16","moduleName":"类型定义","moduleURL":"views/resource/knowledgeCenter/fileBaseType.jsp","icon":"resourceMaintain-light.png","event":"","order":2}
 
-            ,{"moduleNO":"17","moduleName":"全文检索","moduleURL":"views/resource/indexCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":4}
-            ,{"moduleNO":"18","moduleName":"我的收藏","moduleURL":"views/resource/documentCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":5}
+            ,{"moduleNO":"17","moduleName":"全文检索","moduleURL":"views/resource/knowledgeCenter/file_search.jsp","icon":"resourceMaintain-light.png","event":"","order":4}
+            ,{"moduleNO":"18","moduleName":"我的收藏","moduleURL":"views/resource/knowledgeCenter/documentCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":5}
         ];
 
         //搜索
-        var searchTitle = [{"moduleNO":"13","moduleName":"搜索","moduleURL":"views/resource/search.jsp","icon":"resourceMaintain-light.png","event":"","order":4}
+        var searchTitle = [{"moduleNO":"13","moduleName":"搜索","moduleURL":"views/resource/es/search.jsp","icon":"resourceMaintain-light.png","event":"","order":4}
             // ,{"moduleNO":"4","moduleName":"账户设置","moduleURL":"views/resource/admin.jsp","icon":"","event":"","order":6}
-            ,{"moduleNO":"12","moduleName":"基础字段库","moduleURL":"views/resource/baseField.jsp","icon":"resourceMaintain-light.png","event":"","order":1}
+            ,{"moduleNO":"12","moduleName":"基础字段库","moduleURL":"views/resource/es/baseField.jsp","icon":"resourceMaintain-light.png","event":"","order":1}
 
-            ,{"moduleNO":"10","moduleName":"索引库创建","moduleURL":"views/resource/indexCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":2}
-            ,{"moduleNO":"11","moduleName":"Document创建","moduleURL":"views/resource/documentCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":3}
+            ,{"moduleNO":"10","moduleName":"索引库创建","moduleURL":"views/resource/es/indexCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":2}
+            ,{"moduleNO":"11","moduleName":"Document创建","moduleURL":"views/resource/es/documentCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":3}
         ];
 
         //管理员级别

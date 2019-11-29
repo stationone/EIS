@@ -89,4 +89,13 @@ public class FileController {
         return fileService.getFileList(menuId, json, page, rows);
     }
 
+
+    @GetMapping(value = "fileDetail")
+    public FileInfo fileDetail(String fileId, String pageNo) throws Exception {
+
+       return null;
+    }
+
+
+
 }
