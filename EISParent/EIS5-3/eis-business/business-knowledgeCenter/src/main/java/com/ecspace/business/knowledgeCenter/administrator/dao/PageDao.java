@@ -1,8 +1,11 @@
 package com.ecspace.business.knowledgeCenter.administrator.dao;
 
 import com.ecspace.business.knowledgeCenter.administrator.pojo.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * @author zhangch
@@ -11,4 +14,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PageDao extends ElasticsearchRepository<Page, Long> {
+
+    List<Page> findByFileId(String fileId);
+    List<Page> findByFileIdOrderByPageNOAsc(String fileId);
+
 }

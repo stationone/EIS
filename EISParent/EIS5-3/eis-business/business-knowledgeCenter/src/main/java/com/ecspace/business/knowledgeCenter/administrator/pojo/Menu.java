@@ -24,6 +24,16 @@ public class Menu {
 
     private String state;
 
+    private String indexName;//目录所在的库
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
+    }
+
     public String getState() {
         return state;
     }

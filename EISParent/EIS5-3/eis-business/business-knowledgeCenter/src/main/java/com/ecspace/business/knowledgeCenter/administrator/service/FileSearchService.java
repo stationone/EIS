@@ -2,6 +2,8 @@ package com.ecspace.business.knowledgeCenter.administrator.service;
 
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 
+import java.io.IOException;
+
 /**
  * DSL接口
  * @author zhangch
@@ -26,6 +28,6 @@ public interface FileSearchService {
      * @param rows
      * @return
      */
-    PageData getFilePageList(String menuId, String search, Integer page, Integer rows);
+    PageData getFilePageList(String menuId, String search, Integer page, Integer rows) throws IOException;
 
 }

@@ -33,7 +33,6 @@ public class FileInfo {
      */
     @Id
     private String id;
-
     /**
      * 文件哈希扣得值
      */
@@ -54,7 +53,6 @@ public class FileInfo {
      * 文件名后缀
      */
     private String fileNameSuffix;
-
     /**
      * 文件名前缀
      */
@@ -72,12 +70,10 @@ public class FileInfo {
      * 文件大小
      */
     private Long fileSize;
-
     /**
      * 总页数
      */
     private Integer pageTotal;
-
     /**
      * 关键词
      */
@@ -85,32 +81,38 @@ public class FileInfo {
     private String keyword;
 
     private String content;//page内容(一小段)
-
     /**
-     * 文件所处文件夹id
+     * 文件所处目录id
      */
     private String menuId;
-
     /**
      * 上传人员
      */
     private String authorName;
-
     /**
      * 页面列表
      */
     private List<Page> pageList;
-
     /**
      * 页面id数组
      */
     private String pageIds;
 
     private String pdfFilePath;
+
     /**
-     * 文件的web路径
+     * 下载地址(源文件访问路径
      */
-    private String webPath;
+    private String downloadPath;
+    /**
+     * 文件离散后的的web路径
+     */
+    private String fileHtml;
+
+    /**
+     * 文件转换后的pdf虚拟地址
+     */
+    private String filePdf;
 
     /**
      * 下载次数, 初始0
@@ -119,21 +121,50 @@ public class FileInfo {
 
     private String fileId;
 
+    /**
+     * 文件所处的索引库
+     */
+    private String indexId;
+
+    public String getIndexId() {
+        return indexId;
+    }
+
+    public void setIndexId(String indexId) {
+        this.indexId = indexId;
+    }
+
     public String getFileId() {
         this.fileId = id;
         return fileId;
+    }
+
+    public String getDownloadPath() {
+        return downloadPath;
+    }
+
+    public void setDownloadPath(String downloadPath) {
+        this.downloadPath = downloadPath;
     }
 
     public void setFileId(String fileId) {
         this.fileId = fileId;
     }
 
-    public String getWebPath() {
-        return webPath;
+    public String getFileHtml() {
+        return fileHtml;
     }
 
-    public void setWebPath(String webPath) {
-        this.webPath = webPath;
+    public void setFileHtml(String fileHtml) {
+        this.fileHtml = fileHtml;
+    }
+
+    public String getFilePdf() {
+        return filePdf;
+    }
+
+    public void setFilePdf(String filePdf) {
+        this.filePdf = filePdf;
     }
 
     public Integer getDownloadCount() {

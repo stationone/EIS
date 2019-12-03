@@ -33,10 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 //
 //import java.util.*;
@@ -67,18 +64,42 @@ public class FileServiceImpl implements FileService {
         //文件名
         String filename = file.getOriginalFilename();
         //组装文件路径
-        Menu menu = menuDao.findById(menuId).orElse(new Menu());
-        String menuUrl = menu.getUrl();
-        String path = menuUrl + "/" + filename;
+//        Menu menu = menuDao.findById(menuId).orElse(new Menu());
+//        String menuUrl = menu.getUrl();
+//        String path = menuUrl + "/" + filename;
+        String path;
+        //文件分类存储
+        assert filename != null;
+        switch (filename.substring(filename.lastIndexOf(".") + 1)) {
+            case "doc":
+            case "docx":
+                //存储至服务器word中
+                path = "E:/knowledgeCenterFileManger/word/" + filename;
+                break;
+            case "xls":
+            case "xlsx":
+                //存储至服务器excel中
+                path = "E:/knowledgeCenterFileManger/excel/" + filename;
+                break;
+            case "ppt":
+            case "pptx":
+                //存储至服务器ppt中
+                path = "E:/knowledgeCenterFileManger/ppt/" + filename;
+                break;
+            default:
+                //存储至服务器other中
+                path = "E:/knowledgeCenterFileManger/other/" + filename;
+                break;
+        }
         //将文件存至其路径
         File fileObj = new File(path);
+
         InputStream inputStream = file.getInputStream();
         FileUtils.copyInputStreamToFile(inputStream, fileObj);//复制文件至服务器本地
         inputStream.close();//释放资源
 
         //封装fileInfo对象
         FileInfo fileInfo = new FileInfo();
-
         fileInfo.setHashCode(FileHashCode.generate(path));
         fileInfo.setId(TNOGenerator.generateId());
         fileInfo.setFileName(filename);
@@ -91,7 +112,7 @@ public class FileServiceImpl implements FileService {
         fileInfo.setKeyword(keyword);
         fileInfo.setMenuId(menuId);
 
-        return new GlobalResult(false, 2001, "干的漂亮", fileInfo);
+        return new GlobalResult(false, 2001, "干的漂亮, 稍后可以查看离散文件", fileInfo);
     }
 
 
@@ -133,7 +154,7 @@ public class FileServiceImpl implements FileService {
         if (i == pageList.size() && save != null) {
             return new GlobalResult(true, 2000, "自动离散完成");
         }
-        return new GlobalResult(false, 2001, "离散失败");
+        return new GlobalResult(false, 2001, "文件可能为只读文件, 不可离散");
     }
 
     /**
@@ -148,22 +169,16 @@ public class FileServiceImpl implements FileService {
     public PageData getFileList(String menuId, Integer page, Integer rows) {
         if (page == null) {
             page = 0;
-        }else {
-            page = page -1;
+        } else {
+            page = page - 1;
         }
         if (rows == null) {
             rows = 10;
         }
-        Pageable pageable = new PageRequest(page,rows);
-        org.springframework.data.domain.Page<FileInfo> infoPage =  fileInfoDao.findByMenuId(menuId, pageable);
+        Pageable pageable = new PageRequest(page, rows);
+        org.springframework.data.domain.Page<FileInfo> infoPage = fileInfoDao.findByMenuId(menuId, pageable);
         List<FileInfo> fileInfoList = infoPage.getContent();
-//        for (FileInfo fileInfo : fileInfoList) {
-////            System.out.println(fileInfo.getFileNamePrefix());
-////            System.out.println(fileInfo.getFileId());
-//        }
-
-
-        return new PageData((int) infoPage.getNumberOfElements(),fileInfoList);
+        return new PageData((int) infoPage.getNumberOfElements(), fileInfoList);
     }
 
 
@@ -179,6 +194,21 @@ public class FileServiceImpl implements FileService {
     @Override
     public PageData getFileList(String menuId, String json, Integer page, Integer rows) {
         return null;
+    }
+
+    /**
+     * 查看文件详情
+     *
+     * @param fileId
+     * @return
+     */
+    @Override
+    public FileInfo getFileDetail(String fileId) {
+        FileInfo fileInfo = fileInfoDao.findById(fileId).orElse(new FileInfo());
+        System.out.println(fileInfo);
+        List<Page> pageList = pageDao.findByFileIdOrderByPageNOAsc(fileId);
+        fileInfo.setPageList(pageList);
+        return fileInfo;
     }
 
     /**
@@ -212,9 +242,10 @@ public class FileServiceImpl implements FileService {
             //组装转换后的pdf文件路径
             //            String pdfFilePath = menuUrl + "/" + fileInfo.getFileNamePrefix() + ".pdf";//跟原始文件保存在一起
 
-            //离散前的PDF和离散后的PDF保存在另一个目录（PDFFile）的统一的目录下（目录名称就是文件的
-            //哈希）；
-            String pdfFileDirectory = "E:/knowledgeCenterPdfFile/" + fileInfo.getHashCode();
+            //离散前的PDF和离散后的PDF保存在另一个目录（PDFFile）的统一的目录下（目录名称就是文件的哈希）；
+//            String pdfFileDirectory = "E:/knowledgeCenterPdfFile/" + fileInfo.getHashCode();
+            //保存至webDoc中
+            String pdfFileDirectory = "E:/knowledgeCenterFileManger/webDoc/" + fileInfo.getHashCode();
             //创建出来
             if (!new File(pdfFileDirectory).exists()) {
                 new File(pdfFileDirectory).mkdir();
@@ -222,14 +253,17 @@ public class FileServiceImpl implements FileService {
             String pdfFilePath = pdfFileDirectory + "/" + fileInfo.getHashCode() + ".pdf";
             fileInfo.setPdfFilePath(pdfFilePath);
 
+            //web预览访问地址
+            fileInfo.setFilePdf("../knowledgeCenterFileManger/webDoc/" + fileInfo.getHashCode() + "/" + fileInfo.getHashCode() + ".pdf");
+
             //切割pdf, 每页转成一个pdf
 //            String splitPdfPath = menuUrl + "/split";//存储在当前目录下的split目录下
-            String splitPdfPath = "E:/knowledgeCenterPdfFile/" + fileInfo.getHashCode();
-
-            if (!new java.io.File(splitPdfPath).exists()) {
-//                File file = new File(splitPdfPath);
-                new java.io.File(splitPdfPath).mkdir();
-            }
+//            String splitPdfPath = "E:/knowledgeCenterPdfFile/" + fileInfo.getHashCode();
+//
+//            if (!new java.io.File(splitPdfPath).exists()) {
+////                File file = new File(splitPdfPath);
+//                new java.io.File(splitPdfPath).mkdir();
+//            }
 //            //自动创建出split文件夹
 //            if (!new java.io.File(splitPdfPath).exists()) {//分类文件夹不存在
 //                new java.io.File(splitPdfPath).mkdir();//创建文件夹
@@ -255,7 +289,7 @@ public class FileServiceImpl implements FileService {
                 //文件总页数设置
                 fileInfo.setPageTotal(pageCount);
                 //文件预览简介(正文第一页30个字)
-                String content = PDFReader.readPdfText(pdfFilePath, 1, 1).substring(250,500);
+                String content = PDFReader.readPdfText(pdfFilePath, 1, 1);
                 StringBuilder contentSB = new StringBuilder(content);
                 contentSB.append("......");
                 fileInfo.setContent(contentSB.toString());
@@ -271,12 +305,13 @@ public class FileServiceImpl implements FileService {
                     //内容, 用于被检索 , 直接检索, 存储分词
                     page.setContent(PDFReader.readPdfText(pdfFilePath, i + 1, i + 1));
                     //截取的PDF文件路径("E:\pdf\splitPdf\1.pdf")
-                    String splitPdfFilePath = splitPdfPath + "/" + fileInfo.getHashCode() + "_" + String.valueOf(i + 1) + ".pdf";
+                    String splitPdfFilePath = pdfFileDirectory + "/" + fileInfo.getHashCode() + "_" + String.valueOf(i + 1) + ".pdf";
                     //page地址
                     page.setPath(splitPdfFilePath);
                     //将PDF文件的页生成新的PDF文件
                     if (PDFReader.splitPdfFile(pdfFilePath, splitPdfFilePath, i + 1, i + 1)) {
                         page.setPdfPage(new java.io.File(splitPdfFilePath));     //转换成文件封装进对象
+                        page.setPageWebPath("../knowledgeCenterFileManger/webDoc/" + fileInfo.getHashCode() + "/" + fileInfo.getHashCode() + "_"+ String.valueOf(i+1) + ".pdf");
                     } //不存储
 //                    page.setKnowledge(fileInfo);//page所在的file//不存储
                     //page所在的文件id
@@ -374,200 +409,4 @@ public class FileServiceImpl implements FileService {
     }
 
 
-//
-//    @Autowired
-//    FileMapper fileMapper;
-//
-//    @Override
-//    public int insertFile(String name, String filePath) {
-//        File fileInfo = new File();
-//        fileInfo.setName(name);
-//        fileInfo.setFilePath(filePath);
-//
-//
-//        int i = fileMapper.insert(fileInfo);
-//        Integer fileId = fileInfo.getFileId();
-//        //所有文件上传完毕授予admin的角色
-//        int i1 = fileMapper.insertFileRole(fileId, 1);
-//        return i == i1 ? 1 : 0;
-//    }
-//
-//    /**
-//     * 件列表
-//     * @param page
-//     * @param rows
-//     * @return
-//     */
-//    @Override
-//    public PageData getFileList(Integer page, Integer rows) {
-//        PageHelper.startPage(page, rows);
-//        List<File> fileList = fileMapper.selectFileList();
-//        //封装pageData
-//        PageInfo<File> pageInfo = new PageInfo<>(fileList);
-//        PageData pageData = new PageData();
-//        pageData.setTotal((int) pageInfo.getTotal());
-//        pageData.setRows(pageInfo.getList());
-//        return pageData;
-//    }
-//
-//    @Override
-//    public GlobalResult removeFile(Integer fileId) {
-//        if (fileId == null) {
-//            return new GlobalResult(400, "文件不存在", null);
-//        }
-//
-//        try {
-//            //删除本次存储目录中的文件
-//            //根据id查到文件信息
-//            File fileInfo = fileMapper.selectFileById(fileId);
-//            String filePath = fileInfo.getFilePath();
-//            boolean b = DeleteFileUtil.deleteFile(filePath);
-//            System.out.println(b);
-//            //删除数据库中数据
-//            if (b) {
-//                int i = fileMapper.remove(fileId);
-//            }
-//
-//            return new GlobalResult(200, "删除成功", null);
-//
-//        } catch (Exception e) {
-//            return new GlobalResult(500, "删除失败", null);
-//        }
-//    }
-//
-//
-//
-//
-//
-//
-//
-//
-//    @Override
-//    public GlobalResult getFile(Integer fileId) {
-//        if (fileId == null) {
-//            return new GlobalResult(400, "文件不存在", null);
-//        }
-//
-//
-//        return null;
-//    }
-//
-//    /**
-//     * 查询文件
-//     * @param fileId
-//     * @return
-//     */
-//    @Override
-//    public File getFileById(Integer fileId) {
-//        if (fileId == null) {
-//            return null;
-//        }
-//
-//        File fileInfo = fileMapper.selectFileAndRoleById(fileId);
-//
-//        if (fileInfo == null) {
-//            return null;
-//        }
-//
-//        return fileInfo;
-//    }
-//
-//    /**
-//     * 查询文件详情, 包括与文件关联的角色
-//     * @param fileId
-//     * @return
-//     */
-//    @Override
-//    public File getFileAndRoleById(Integer fileId) {
-//        if (fileId == null) {
-//            return null;
-//        }
-//
-//        File fileInfo = fileMapper.selectFileAndRoleById(fileId);
-//
-//        if (fileInfo == null) {
-//            return null;
-//        }
-//
-//        return fileInfo;
-//    }
-//
-//    @Override
-//    public PageData getFileOtherRole(Integer fileId) {
-//
-//        List<Role> roleList = fileMapper.selectOtherRole(fileId);
-//        PageData pageData = new PageData();
-//        pageData.setRows(roleList);
-//        pageData.setTotal(roleList.size());
-//        return pageData;
-//
-//    }
-//
-//    @Override
-//    public GlobalResult removeFileRole(Integer fileId, Integer uuid) {
-//        try {
-//            int i=fileMapper.deleteFileRole(fileId, uuid);
-//        } catch (Exception e) {
-//            return new GlobalResult(400, "ERROR", null);
-//        }
-//        return new GlobalResult(200, "SUCCESS", null);
-//    }
-//
-//    @Override
-//    public GlobalResult addFileRole(Integer fileId, Integer uuid) {
-//        try {
-//            int i = fileMapper.insertFileRole(fileId, uuid);
-//            if (i != 1) {
-//                return new GlobalResult(400, "ERROR", null);
-//            }
-//        } catch (Exception e) {
-//            return new GlobalResult(400, "ERROR", null);
-//        }
-//
-//        return new GlobalResult(200, "SUCCESS", null);
-//    }
-//
-////    /**
-////     * 注入权限mapper
-////     */
-////    @Autowired
-////    private RoleMapper roleMapper;
-//
-////    @Override
-////    public PageData getUserFile(UserInfo userInfo) {
-////        PageData pageData = new PageData();
-////
-////        //遍历roleList, 获取fileList
-////        Map<Integer,File> fileList = new HashMap<Integer,File>();
-////        if (userInfo != null && userInfo.getRoleList().size() > 0) {
-////            for (Role role : userInfo.getRoleList()) {
-////                Role roleAndFile = roleMapper.selectRoleAndFile(role.getUuid());
-////                if (roleAndFile != null && roleAndFile.getFileList().size() > 0) {
-////                    for (File file : roleAndFile.getFileList()) {
-////                        //因为是对象, 所以每个file都不一样
-////                        fileList.put(file.getFileId(), file);
-////                    }
-////                }
-////
-////            }
-////        }
-////
-////        List<File> arrayList = new ArrayList<File>(fileList.values());
-////        arrayList.sort(Comparator.comparing(File::getFileId));
-////        pageData.setRows(arrayList);
-////        pageData.setTotal(arrayList.size());
-////        return pageData;
-////    }
-////
-////    @Override
-////    public GlobalResult getRole(UserInfo userInfo) {
-////        if (userInfo != null && userInfo.getRoleList().size() > 0) {
-////            for (Role role : userInfo.getRoleList()) {
-////                if (1 == (role.getUuid())) {
-////                    return new GlobalResult(1, "是管理员", null);
-////                }
-////            }
-////        }
-////        return new GlobalResult(0, "不是管理员", null);
-////    }
 }

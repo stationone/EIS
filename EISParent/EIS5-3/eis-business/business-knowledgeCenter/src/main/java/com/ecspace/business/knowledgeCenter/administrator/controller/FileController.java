@@ -74,7 +74,7 @@ public class FileController {
      * @return
      * @throws Exception
      */
-    @GetMapping(value = "fileList")
+    @RequestMapping(value = "fileList")
     public PageData fileList(String menuId, String json, Integer page, Integer rows) throws Exception {
 
         if (StringUtils.isBlank(menuId)) {
@@ -90,10 +90,16 @@ public class FileController {
     }
 
 
+    /**
+     * 查看文件详情
+     * @param fileId
+     * @return
+     * @throws Exception
+     */
     @GetMapping(value = "fileDetail")
-    public FileInfo fileDetail(String fileId, String pageNo) throws Exception {
+    public FileInfo fileDetail(String fileId) throws Exception {
 
-       return null;
+       return fileService.getFileDetail(fileId);
     }
 
 

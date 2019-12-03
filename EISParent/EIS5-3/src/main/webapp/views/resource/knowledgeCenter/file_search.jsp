@@ -130,7 +130,7 @@
             var data = result.rows;
 
             for (var i = 0; i < result.total; i++) {
-                var time = data[i].creationTime
+                var time = data[i].creationTime;
                 //格式化日期
                 var dateFormat = formatDate(time, 'yyyy-MM-dd HH:mm:ss');
                 //作者
@@ -142,13 +142,15 @@
                 //关键词
                 var keyword = data[i].keyword == null ? '' : data[i].keyword;
 
-                var pageNO = data[i].pageNO == null ? '' : data[i].pageNO;
+                var pageNO =  data[i].pageNO  == null ? '' :  data[i].pageNO ;
+
+                var fileId = '\'' + data[i].fileId + '\'';
                 //文档路径
                 var pdfFilePath = data[i].pdfFilePath == null ? 'javaScript:void(0)' : data[i].pdfFilePath;
                 $('#dataList').append(' <li value="' + i + '">\n' +
                     '            <dt>\n' +
                     '                <p class="fl">\n' +
-                    '                    <a href="../knowledgeCenterFileManger/htmlFile.htm"\n' +
+                    '                    <a onclick="file_show(' + fileId + ', ' + pageNO + ')" href="javaScript:void(0)"\n' +
                     '                       title="' + filename + '" style="font-size: 15px">\n' +
                     '                        ' + filename + '\n' +
                     '                    </a>\n' +
@@ -169,6 +171,21 @@
                     '            </dt>\n' +
                     '        </li>');
             }
+
+        }
+
+        /**
+         * 文件预览
+         */
+        function file_show(fileId, pageNo) {
+            <%--//清除--%>
+            <%--$('#dataList').remove();--%>
+            <%--//创建--%>
+            <%--$('#dataParent').append('<ul id="dataList">\n' +--%>
+            <%--'        &lt;%&ndash;正文内容&ndash;%&gt;\n' +--%>
+            <%--'    </ul>');--%>
+            // $('#dataList').append('我就是文件, 你要预览的就是我');
+            window.location.href = "./views/resource/knowledgeCenter/file_show.jsp?fileId=" + fileId + "&pageNo=" + pageNo
 
         }
 
@@ -218,7 +235,7 @@
                 menuId: node.id
 
             });
-            console.log(node.id)
+            console.log(node.id);
             $('#file_dialog').dialog('open').dialog('center').dialog('setTitle', '文件上传');
         }
 
@@ -478,118 +495,23 @@
         <input id="search" class="div-toolbar-span" style="float: right;margin-top: 8px;width:200px;height:25px"/>
 
     </div>
+    <div style="width: 90%;">
+        <div id="dataParent">
+            <ul id="dataList">
+                <%--正文内容--%>
+                <iframe src="../knowledgeCenterFileManger/webDoc/ES说明V4.html" width="100%" height="90%"
+                        frameborder="0">
+                    您的浏览器不支持iframe，请升级
+                </iframe>
 
-    <%--<jsp:include page="/px-tool/px-datagrid.jsp">--%>
-    <%--<jsp:param value="<%=datagridId1%>" name="div-id"/>--%>
-    <%--</jsp:include>--%>
+                <%--<embed src="../knowledgeCenterFileManger/6b349fbac214ddff8c65aa76e33217bd/6b349fbac214ddff8c65aa76e33217bd.pdf"--%>
+                <%--width="90%" height="90%">--%>
+                <%--<embed src="../knowledgeCenterFileManger/6b349fbac214ddff8c65aa76e33217bd/6b349fbac214ddff8c65aa76e33217bd.pdf"--%>
+                <%--width="90%" height="90%">--%>
 
-    <%--数据列表 (当前目录里边的所有文档)--%>
-    <%--<div id="datalist" class="easyui-datalist" title="文件列表" style="width:100%; height:80%">--%>
-
-
-    <%--<li value="2">--%>
-    <%--<dt>--%>
-    <%--<p class="fl">--%>
-    <%--<a href="#"--%>
-    <%--title="2018年最新房本翻译件(不动产权证) 申请英国欧洲签..." style="font-size: 15px">--%>
-    <%--2018年最新房本翻译件(不动产权证) 申请英国欧洲签...标题--%>
-    <%--</a>--%>
-    <%--</p>--%>
-    <%--<p class="fr">关键词:--%>
-    <%--<span class="score">没有关键词</span>--%>
-    <%--</p>--%>
-    <%--</dt>--%>
-    <%--<dd class="clearfix">--%>
-    <%--<p style="font-size: 10px">2018年最新房本翻译件(不动产权证) 申请英国欧洲签证用 正文- Cover: <em>Page</em>1--%>
-    <%--ThePeople’sRepublicofChina--%>
-    <%--RealPropertyOwnershipCe...</p>--%>
-    <%--<div style="color: grey;font-size: 5px;">--%>
-    <%--2019-11-16--%>
-    <%--<i>|</i>共7页<i>|</i>0次下载<i>|</i>--%>
-    <%--0下载券<i>|</i>--%>
-    <%--作者：<a href="#">--%>
-    <%--暂时没有作者--%>
-    <%--</a>--%>
-    <%--</div>--%>
-    <%--</dd>--%>
-    <%--</li>--%>
-    <%--</div>--%>
-
-    <div id="dataParent">
-        <ul id="dataList">
-            <%--正文内容--%>
-        </ul>
+            </ul>
+        </div>
     </div>
-    <%--<script>--%>
-    <%--for (var i = 0; i < 9; i++) {--%>
-
-    <%--}--%>
-    <%--//直接添加--%>
-    <%--$('#dataList').append(' <li value="2">\n' +--%>
-    <%--'            <dt>\n' +--%>
-    <%--'                <p class="fl">\n' +--%>
-    <%--'                    <a href="#"\n' +--%>
-    <%--'                       title="2018年最新房本翻译件(不动产权证) 申请英国欧洲签..." style="font-size: 15px">\n' +--%>
-    <%--'                        2018年最新房本翻译件(不动产权证) 申请英国欧洲签...标题\n' +--%>
-    <%--'                    </a>\n' +--%>
-    <%--'                </p>\n' +--%>
-    <%--'                <p class="fr">关键词:\n' +--%>
-    <%--'                    <span class="score">没有关键词</span>\n' +--%>
-    <%--'                </p>\n' +--%>
-    <%--'            </dt>\n' +--%>
-    <%--'            <dd class="clearfix">\n' +--%>
-    <%--'                <p style="font-size: 10px">2018年最新房本翻译件(不动产权证) 申请英国欧洲签证用 正文- Cover: <em>Page</em>1\n' +--%>
-    <%--'                    ThePeople’sRepublicofChina\n' +--%>
-    <%--'                    RealPropertyOwnershipCe...</p>\n' +--%>
-    <%--'                <div style="color: grey;font-size: 5px;">\n' +--%>
-    <%--'                    2019-11-16\n' +--%>
-    <%--'                    <i>|</i>共7页<i>|</i>0次下载<i>|</i>\n' +--%>
-    <%--'                    0下载券<i>|</i>\n' +--%>
-    <%--'                    作者：<a href="#">\n' +--%>
-    <%--'                    暂时没有作者\n' +--%>
-    <%--'                </a>\n' +--%>
-    <%--'                </div>\n' +--%>
-    <%--'            </dd>\n' +--%>
-    <%--'        </li>');--%>
-
-    <%--</script>--%>
-
-    <%--<dl>--%>
-    <%--<dt class="logFirstClickTime mb6 clearfix">--%>
-    <%--<p class="fl">--%>
-    <%--<span title="doc" class="ic ic-doc"></span>--%>
-    <%--<a href="https://wenku.baidu.com/view/19525066ab00b52acfc789eb172ded630a1c986e.html?from=search"--%>
-    <%--data-flag="25" title="2018年最新房本翻译件(不动产权证) 申请英国欧洲签证用" target="_blank" data-docid="7011933507"--%>
-    <%--data-edocid="19525066ab00b52acfc789eb172ded630a1c986e" class="log-xsend tiaoquan act-xsend"--%>
-    <%--data-index="7"--%>
-    <%--data-logxsend="[1, 100055, {&quot;score_mode&quot;: &quot;4&quot;, &quot;price_data&quot;: &quot;25&quot;, &quot;doc_id&quot;: &quot;7011933507&quot;, &quot;index&quot;:&quot;8&quot;, &quot;page_number&quot;:&quot;&quot;, &quot;small_flow_flag&quot;: &quot;&quot;}]">--%>
-    <%--2018年最新房本翻译件(不动产权证) 申请英国欧洲签...--%>
-    <%--</a>--%>
-    <%--</p>--%>
-    <%--<p class="fr">--%>
-    <%--<span class="score">暂无评分</span>--%>
-    <%--</p>--%>
-    <%--</dt>--%>
-    <%--<dd class="clearfix">--%>
-    <%--<div class="summary-box fl">--%>
-    <%--<p class="summary lh21">2018年最新房本翻译件(不动产权证) 申请英国欧洲签证用 - Cover: <em>Page</em>1 ThePeople’sRepublicofChina--%>
-    <%--RealPropertyOwnershipCe...</p>--%>
-    <%--<div class="detail lh21">--%>
-    <%--<div class="detail-info">--%>
-    <%--2019-11-16--%>
-    <%--<i>|</i>共7页<i>|</i>0次下载<i>|</i>--%>
-    <%--0下载券<i>|</i>--%>
-    <%--贡献者：<a href="/u/ok欣欣向荣369?from=wenku" data-logsend="{'send':['view','user',{l:''}]}"--%>
-    <%--class="Author logSend" target="_blank">--%>
-    <%--ok欣欣向荣369--%>
-    <%--</a>--%>
-    <%--</div>--%>
-    <%--<div class="summary-recommend clearfix"></div>--%>
-    <%--</div>--%>
-    <%--</div>--%>
-    <%--</dd>--%>
-    <%--</dl>--%>
-</div>
 
 
 </div>

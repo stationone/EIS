@@ -48,6 +48,7 @@ public class MenuServiceImpl implements MenuService {
     /**
      * 新增目录
      *          改为不在本地同步更新文件夹, 只需添加虚拟目录
+     *              新增: 分为“库”→“目录”→“对象”三级结构；每一级结构都包括增删改查的功能；
      *
      * @param menu
      * @return

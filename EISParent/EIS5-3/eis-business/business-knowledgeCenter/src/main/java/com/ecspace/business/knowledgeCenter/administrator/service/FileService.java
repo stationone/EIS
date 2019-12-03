@@ -52,6 +52,13 @@ public interface FileService {
      * @return
      */
     PageData getFileList(String menuId, String json, Integer page, Integer rows);
+
+    /**
+     * 获取文件详情
+     * @param fileId
+     * @return
+     */
+    FileInfo getFileDetail(String fileId);
 //
 //
 //    /**
