@@ -31,41 +31,281 @@
         var treeId = "<%=treeId%>";
         var datagridId1 = "<%=datagridId1%>";
 
-        var datagrid_field = [];
-
-        $(function () {//入口函数
+        /**
+         * 入口函数
+         */
+        $(function () {
+            /**
+             * 获取库目录
+             */
+            loadTree();
             /**
              * 获取树目录
              */
+            getTree();
+
+            //初始化创建索引库窗口
+            $('#saveIndexDlg').dialog({
+                title: '创建索引库',//窗口标题
+                // width: w,//窗口宽度
+                // height: 100,//窗口高度
+                closed: true,//窗口是是否为关闭状态, true：表示关闭
+                modal: true//模式窗口
+            });
+
+
+        });
+
+        function getTree() {
+            var node = $('#tt').tree('getSelected');
+            if (node == null) {
+                return;
+            }
+            var indexName = node.text;
+
             $('#' + treeId).tree({
-                url: 'menu/listTree',
+                url: 'menu/listTree?indexName=' + indexName,
                 method: "get",
                 checkbox: false,
                 multiple: false,
                 onClick: function (node) {
                     //点击事件 获取dataList
                     loadDataList(node.id)
+
+                    //将目录名称显示在顶部
+                    document.getElementById("index").innerHTML = "";
+                    $('#index').append('<span>/' + node.text + '</span>')
                 }
             });
-        });
+        }
 
+        /**
+         * 绑定搜索按钮
+         */
+        function searchFile() {
+            //获取input中的值
+            var search = document.getElementById('search').value;
+            // $('#mygrid').datagrid('reload', {json: JSON.stringify({search:search})});
+            var searchJson = JSON.stringify({search: search});
+            console.log(searchJson);
+            $.ajax({
+                url: 'fileSearch/filePageList',
+                method: 'GET',
+                contentType: 'application/json',
+                data: 'search=' + search,
+                dataType: 'json',
+                success: function (result) {
+                    dataShow(result);
+                }
+            });
+        }
+
+        /**
+         * 获取数据
+         */
         function loadDataList(menuId) {
-            $('#datalist').datalist({
-                url: "file/fileList?menuId=" + menuId, //更改了请求路径
-                method: "GET",
+            /**
+             * 获取基础字段的数据, 展示数据网格
+             */
+            $('#mygrid').datagrid({
+                url: "file/fileList?menuId=" + menuId, // 文档表
+                type: "GET",
+                dataType: 'json',
                 contentType: "application/json",
-                lines: true,
-                valueField: 'fileNamePrefix',
-                textField: 'fileNamePrefix'
-                // pagination: true,
-                // title: '数据列表',
-                // pageNumber: 1,
-                // pageSize: 10,
-                // pageList: [10, 20, 30, 40, 50],
+
+                columns: [[
+                    {field: 'fileName', title: '名称', width: 180, align: 'center'},
+
+                    {field: 'fileNameSuffix', title: '类型', width: 180, align: 'center'},
+                    {field: 'keyword', title: '关键词', width: 180, align: 'center'},
+
+                    {field: 'pageTotal', title: '页面总数', width: 180, align: 'center'},
+                    {
+                        field: 'creationTime', title: '创建时间', width: 180, align: 'center',
+                        formatter: function (value) {
+                            var date = new Date(value);
+                            var y = date.getFullYear();
+                            var M = date.getMonth() + 1;
+                            var d = date.getDate();
+                            var H = date.getHours();
+                            var m = date.getMinutes();
+                            var s = date.getSeconds();
+                            return y + '-' + M + '-' + d + ' ' + H + ':' + m + ':' + s;
+                        }
+                    },
+                    {field: 'indexName', title: '所在库', width: 180, align: 'center'},
+                    {field: 'filePath', title: '文件路径', width: 180, align: 'center'},
+                    {
+                        field: 'fileSize', title: '文件大小', width: 180, align: 'center',
+                        formatter: function (value) {
+                            if (null == value || value == '') {
+                                return "0 Bytes";
+                            }
+                            var unitArr = new Array("Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB");
+                            var index = 0;
+                            var srcsize = parseFloat(value);
+                            index = Math.floor(Math.log(srcsize) / Math.log(1024));
+                            var size = srcsize / Math.pow(1024, index);
+                            size = size.toFixed(2);//保留的小数位数
+                            return size + unitArr[index];
+                        }
+                    },
+                    {field: 'authorName', title: '作者', width: 180, align: 'center'},
+                    {field: 'content', title: '摘要', width: 300, align: 'center'},
+                    {
+                        field: 'operate', title: '操作', align: 'center', width: $(this).width() * 0.1,
+                        formatter: function (value, row, index) {
+                            var str = '<a href="javaScript:void(0)" onclick="file_show(\'' + row.fileId + '\')" name="opera" class="easyui-linkbutton" ></a>';
+                            return str;
+                        }
+                    },
+                ]],
+                rownumbers: true,
+                title: '文档列表',
+                singleSelect: true,
+                collapsible: true,
+                nowrap: true,
+                striped: true,
+                loading: true,
+                emptyMsg: "没有获取到数据",
+                loadMsg: "正在努力加载数据,表格渲染中...",
+                pagination: true,
+                pageNumber: 1,
+                pageSize: 10,
+                onLoadSuccess: function (data) {
+                    // alert("加载完成");
+                    $("a[name='opera']").linkbutton({text: '预览', plain: true, iconCls: '/images/px-icon/yulan.png'});
+                },
+                onLoadError: function () {
+                    clearDataGrid();
+                }
             });
 
         }
 
+        function h() {
+            alert("失败")
+        }
+
+        /**
+         * 数据展示
+         */
+        function dataShow(result) {
+            if (result === null) {
+                return;
+            }
+            //清除
+            $('#dataList').remove();
+            //创建
+            $('#dataParent').append('<ul id="dataList">\n' +
+                '        <%--正文内容--%>\n' +
+                '    </ul>');
+            //遍历
+            var data = result.rows;
+
+            for (var i = 0; i < result.total; i++) {
+                var time = data[i].creationTime;
+                //格式化日期
+                var dateFormat = formatDate(time, 'yyyy-MM-dd HH:mm:ss');
+                //作者
+                var author = data[i].authorName == null ? '佚名' : data[i].authorName;
+                //正文
+                var content = data[i].content == null ? '' : data[i].content;
+                //文件名
+                var filename = data[i].fileName == null ? '' : data[i].fileName;
+                //关键词
+                var keyword = data[i].keyword == null ? '' : data[i].keyword;
+
+                var pageNO = data[i].pageNO == null ? '' : data[i].pageNO;
+
+                var fileId = '\'' + data[i].fileId + '\'';
+                //文档路径
+                var pdfFilePath = data[i].pdfFilePath == null ? 'javaScript:void(0)' : data[i].pdfFilePath;
+                $('#dataList').append(' <li value="' + i + '">\n' +
+                    '            <dt>\n' +
+                    '                <p class="fl">\n' +
+                    '                    <a onclick="file_show(' + fileId + ', ' + pageNO + ')" href="javaScript:void(0)"\n' +
+                    '                       title="' + filename + '" style="font-size: 15px">\n' +
+                    '                        ' + filename + '\n' +
+                    '                    </a>\n' +
+                    '                </p>\n' +
+                    '                <p style="color: grey;font-size: 5px;" class="fr">关键词:\n' +
+                    '                    <span class="score">' + keyword + '</span>\n' +
+                    '                </p>\n' +
+                    '            </dt>\n' +
+                    '            <dt class="fl">\n' +
+                    '                <p style="font-size: 10px">' + content + '</p>\n' +
+                    '                <div style="color: grey;font-size: 5px;">\n' +
+                    '                    ' + dateFormat + '\n' +
+                    '                    <i> &nbsp;&nbsp;&nbsp; </i>   ' + pageNO + '|' + data[i].pageTotal + '页<i>&nbsp;&nbsp;&nbsp;</i>' + data[i].downloadCount + '次下载<i>&nbsp;&nbsp;&nbsp; </i>\n' +
+                    '                    作者：<span href="#">\n' +
+                    '                    ' + author + '\n' +
+                    '                </span>\n' +
+                    '                </div>\n' +
+                    '            </dt>\n' +
+                    '        </li>');
+            }
+
+        }
+
+        /**
+         * 文件预览
+         */
+        function file_show(fileId, pageNo) {
+            <%--//清除--%>
+            <%--$('#dataList').remove();--%>
+            <%--//创建--%>
+            <%--$('#dataParent').append('<ul id="dataList">\n' +--%>
+            <%--'        &lt;%&ndash;正文内容&ndash;%&gt;\n' +--%>
+            <%--'    </ul>');--%>
+            // $('#dataList').append('我就是文件, 你要预览的就是我');
+            window.location.href = "./views/resource/knowledgeCenter/file_show.jsp?fileId=" + fileId + "&pageNo=" + pageNo
+
+        }
+
+        //时间戳转日期格式
+        function formatDate(time, format) {
+            var t = new Date(time);
+            var tf = function (i) {
+                return (i < 10 ? '0' : '') + i
+            };
+            return format.replace(/yyyy|MM|dd|HH|mm|ss/g, function (a) {
+                switch (a) {
+                    case 'yyyy':
+                        return tf(t.getFullYear());
+                        break;
+                    case 'MM':
+                        return tf(t.getMonth() + 1);
+                        break;
+                    case 'mm':
+                        return tf(t.getMinutes());
+                        break;
+                    case 'dd':
+                        return tf(t.getDate());
+                        break;
+                    case 'HH':
+                        return tf(t.getHours());
+                        break;
+                    case 'ss':
+                        return tf(t.getSeconds());
+                        break;
+                }
+            })
+        };
+
+        //格式化文件大小
+        function renderSize(value) {
+            if (null == value || value == '') {
+                return "0 Bytes";
+            }
+            var unitArr = new Array("Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB");
+            var index = 0;
+            var srcsize = parseFloat(value);
+            index = Math.floor(Math.log(srcsize) / Math.log(1024));
+            var size = srcsize / Math.pow(1024, index);
+            size = size.toFixed(2);//保留的小数位数
+            return size + unitArr[index];
+        }
 
         /**
          * 打开文件上传窗口
@@ -82,10 +322,20 @@
                 menuId: node.id
 
             });
-            console.log(node.id)
+            console.log(node.id);
             $('#file_dialog').dialog('open').dialog('center').dialog('setTitle', '文件上传');
         }
 
+
+        /*清除数据表格中的数据*/
+        function clearDataGrid() {
+            //获取当前页的记录数
+            var item = $("#mygrid").datagrid('getRows');
+            for (var i = item.length - 1; i >= 0; i--) {
+                var index = $("#mygrid").datagrid('getRowIndex', item[i]);
+                $("#mygrid").datagrid('deleteRow', index);
+            }
+        }
 
         /**
          * 新建目录
@@ -94,13 +344,20 @@
         function newFolder() {
             // $('#saveFolder-button').linkbutton('enable');
             var node = $('#' + treeId).tree('getSelected');
-            if (node == null) {
-                message_Show('请选择父级目录');
+            var node2 = $('#tt').tree('getSelected');
+
+            if (node2 == null) {
+                message_Show('请选择index库');
                 return;
+            }
+            if (node == null) {
+                node = {id: 'root'}
             }
             $('#folder_dialog_form').form('clear');
             $('#folder_dialog_form').form('load', {
-                pid: node.id
+                pid: node.id,
+                indexName: node2.text
+
             });
             $('#folder_dialog').dialog('open').dialog('center').dialog('setTitle', '新建文件夹');
         }
@@ -112,7 +369,8 @@
         function editFolder() {
             // $('#saveFolder-button').linkbutton('enable');
             var node = $('#' + treeId).tree('getSelected');
-            if (node == null) {
+            var node2 = $('#tt').tree('getSelected');
+            if (node2 == null) {
                 message_Show('请选择有效的目录');
                 return;
             }
@@ -122,6 +380,7 @@
                 message_Show('当前节点禁止编辑, 请重新选择');
                 return;
             }
+
             $('#folder_dialog_form').form('clear');
             $('#folder_dialog_form').form('load', {
                 id: node.id,
@@ -129,7 +388,8 @@
                 text: node.text,
                 url: node.url,
                 status: node.status,
-                state: node.state
+                state: node.state,
+                indexName: node2.text
             });
             $('#folder_dialog').dialog('open').dialog('center').dialog('setTitle', '编辑文件夹');
         }
@@ -258,6 +518,7 @@
 
                         //调用文件解析接口, 后台自动解析
                         fileSpread(result.data);
+                        isClick = true;
                     }
                 });
                 //定时器
@@ -271,154 +532,58 @@
         function file_dialog_close() {
             $('#file_dialog').dialog('close');
         }
-
-        /**
-         * 文件离散接口
-         *
-         * @param fileInfo
-         */
-        function fileSpread(fileInfo) {
-            console.log(fileInfo);
-
-            $.ajax({
-                url: 'file/fileAnalyzer',
-                type: 'POST',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(fileInfo),
-                // async: false,
-                contentType: "application/json",
-                success: function (result) {
-                    //成功后右下角窗口提醒
-                    message_Show(result.message)
-                },
-                error: function () {
-                    alert('文件离散失败')
-                }
-            })
-        }
-
     </script>
 </head>
 <body id="permissionSet_layout" class="easyui-layout">
-
 <div data-options="region:'west'" class="layout-west">
-    <div class="layout-title-div">
-        资源目录
-        <img src="images/px-icon/hide-left-black.png" onclick="layoutHide('permissionSet_layout','west')"
-             class="layout-title-img">
+    <div class="easyui-layout" style="width: 200px; height: 100%;">
+            <div class="layout-title-div">
+                资源目录
+                <img src="images/px-icon/hide-left-black.png" onclick="layoutHide('permissionSet_layout','west')"
+                     class="layout-title-img">
+            </div>
+            <div style="margin:5px 0;border-bottom:1px ">
+                <div id="toolbar1">
+                    <img src="images/px-icon/shuaxin.png" style="padding:0 10px"
+                         class="easyui-tooltip div-toolbar-img-first"
+                         onclick="$('#'+treeId).tree('reload')" title="刷新">
+                    <img src="images/px-icon/newFolder.png" style="padding:0 10px"
+                         class="easyui-tooltip div-toolbar-img-next"
+                         onclick="newFolder()" title="添加">
+                    <img src="images/px-icon/editFolder.png" style="padding:0 10px"
+                         class="easyui-tooltip div-toolbar-img-next"
+                         onclick="editFolder()" title="编辑">
+                    <img src="images/px-icon/deleteFolder.png" style="padding:0 10px"
+                         class="easyui-tooltip div-toolbar-img-next"
+                         onclick="deleteFolder()" title="删除">
+                </div>
+            </div>
+            <jsp:include page="/px-tool/px-tree.jsp">
+                <jsp:param value="<%=treeId%>" name="div-id"/>
+            </jsp:include>
     </div>
-    <div style="margin:5px 0;border-bottom:1px ">
-        <div id="toolbar1">
-            <img src="images/px-icon/shuaxin.png" style="padding:0 10px" class="easyui-tooltip div-toolbar-img-first"
-                 onclick="$('#'+treeId).tree('reload')" title="刷新">
-            <img src="images/px-icon/newFolder.png" style="padding:0 10px" class="easyui-tooltip div-toolbar-img-next"
-                 onclick="newFolder()" title="添加">
-            <img src="images/px-icon/editFolder.png" style="padding:0 10px" class="easyui-tooltip div-toolbar-img-next"
-                 onclick="editFolder()" title="编辑">
-            <img src="images/px-icon/deleteFolder.png" style="padding:0 10px"
-                 class="easyui-tooltip div-toolbar-img-next"
-                 onclick="deleteFolder()" title="删除">
-        </div>
-    </div>
-    <jsp:include page="/px-tool/px-tree.jsp">
-        <jsp:param value="<%=treeId%>" name="div-id"/>
-    </jsp:include>
-
 </div>
 <div data-options="region:'center'">
     <div id="permissionSet_dg_toolbar">
-        <div class="datagrid-title-div"><span>文件列表</span></div>
+        <div>
+            <span class="datagrid-title-div" id="indexName">
+            </span>
+            <span class="datagrid-title-div" id="index">
+            </span>
+            <span class="datagrid-title-div" id="menu">
+            </span>
+        </div>
         <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
              onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
         <img src="images/px-icon/newFolder.png" class="easyui-tooltip div-toolbar-img-next"
              onclick="upload_dialog_open()" title="上传文件">
         <img src="images/px-icon/deleteFolder.png" class="easyui-tooltip div-toolbar-img-next"
              onclick="deleteFile()" title="删除文件">
-
-        <%-- 搜索框 --%>
-        <a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"
-           style="float: right;margin-top: 8px;margin-right: 20px;width:80px">查询文档</a>
-        <input id="search" class="div-toolbar-span" style="float: right;margin-top: 8px;width:200px;height:25px"/>
-
     </div>
-
-    <%--<jsp:include page="/px-tool/px-datagrid.jsp">--%>
-    <%--<jsp:param value="<%=datagridId1%>" name="div-id"/>--%>
-    <%--</jsp:include>--%>
-
-    <%--数据列表 (当前目录里边的所有文档)--%>
-    <div id="datalist" class="easyui-datalist" title="文件列表" style="width:100%; height:80%">
-
-        <li value="2">
-            <dt>
-                <p class="fl">
-                    <a href="#"
-                       title="2018年最新房本翻译件(不动产权证) 申请英国欧洲签..." style="font-size: 15px">
-                        2018年最新房本翻译件(不动产权证) 申请英国欧洲签...标题
-                    </a>
-                </p>
-                <p class="fr">关键词:
-                    <span class="score">没有关键词</span>
-                </p>
-            </dt>
-            <dd class="clearfix">
-                <p style="font-size: 10px">2018年最新房本翻译件(不动产权证) 申请英国欧洲签证用 正文- Cover: <em>Page</em>1
-                    ThePeople’sRepublicofChina
-                    RealPropertyOwnershipCe...</p>
-                <div style="color: grey;font-size: 5px;">
-                    2019-11-16
-                    <i>|</i>共7页<i>|</i>0次下载<i>|</i>
-                    0下载券<i>|</i>
-                    作者：<a href="#">
-                    暂时没有作者
-                </a>
-                </div>
-            </dd>
-        </li>
-    </div>
-
-
-    <dl>
-        <dt class="logFirstClickTime mb6 clearfix">
-            <p class="fl">
-                <span title="doc" class="ic ic-doc"></span>
-                <a href="https://wenku.baidu.com/view/19525066ab00b52acfc789eb172ded630a1c986e.html?from=search"
-                   data-flag="25" title="2018年最新房本翻译件(不动产权证) 申请英国欧洲签证用" target="_blank" data-docid="7011933507"
-                   data-edocid="19525066ab00b52acfc789eb172ded630a1c986e" class="log-xsend tiaoquan act-xsend"
-                   data-index="7"
-                   data-logxsend="[1, 100055, {&quot;score_mode&quot;: &quot;4&quot;, &quot;price_data&quot;: &quot;25&quot;, &quot;doc_id&quot;: &quot;7011933507&quot;, &quot;index&quot;:&quot;8&quot;, &quot;page_number&quot;:&quot;&quot;, &quot;small_flow_flag&quot;: &quot;&quot;}]">
-                    2018年最新房本翻译件(不动产权证) 申请英国欧洲签...
-                </a>
-            </p>
-            <p class="fr">
-                <span class="score">暂无评分</span>
-            </p>
-        </dt>
-        <dd class="clearfix">
-            <div class="summary-box fl">
-                <p class="summary lh21">2018年最新房本翻译件(不动产权证) 申请英国欧洲签证用 - Cover: <em>Page</em>1 ThePeople’sRepublicofChina
-                    RealPropertyOwnershipCe...</p>
-                <div class="detail lh21">
-                    <div class="detail-info">
-                        2019-11-16
-                        <i>|</i>共7页<i>|</i>0次下载<i>|</i>
-                        0下载券<i>|</i>
-                        贡献者：<a href="/u/ok欣欣向荣369?from=wenku" data-logsend="{'send':['view','user',{l:''}]}"
-                               class="Author logSend" target="_blank">
-                        ok欣欣向荣369
-                    </a>
-                    </div>
-                    <div class="summary-recommend clearfix"></div>
-                </div>
-            </div>
-        </dd>
-    </dl>
-</div>
+    <table id="mygrid" style="height: 450px"></table>
 
 
 </div>
-
 <%-- 弹出对话框 --%>
 <%--目录表单--%>
 <div id="folder_dialog" class="easyui-dialog"
@@ -427,6 +592,7 @@
         <table cellspacing="10" class="pxzn-dialog-font" style="margin:20px 50px;">
             <input name="pid" type="hidden">
             <input name="id" type="hidden">
+            <input name="indexName" type="hidden">
             <tr>
                 <td><span class="pxzn-span-two">名称</span></td>
                 <td>
@@ -472,6 +638,21 @@
         <input type="button" onclick="file_dialog_close()" value="取消" style="margin-left:40px;"
                class="pxzn-button">
     </div>
+</div>
+
+<%-- 创建索引库 --%>
+<div id="saveIndexDlg">
+    <form id="saveIndex" method="post">
+        <%--<input name="uuid" type="hidden">--%>
+        <table>
+            <tr>
+                <td>索引名称</td>
+                <td><input name="indexName" class="easyui-validatebox"
+                           data-options="required:true,missingMessage:'索引名称不能为空!'" placeholder=""></td>
+            </tr>
+        </table>
+        <button id="btnSaveIndex" type="button">保存</button>
+    </form>
 </div>
 
 </body>

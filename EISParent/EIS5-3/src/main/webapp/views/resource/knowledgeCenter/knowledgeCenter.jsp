@@ -36,19 +36,48 @@
          */
         $(function () {
             /**
+             * 获取库目录
+             */
+            loadTree();
+            /**
              * 获取树目录
              */
+            getTree();
+
+            //初始化创建索引库窗口
+            $('#saveIndexDlg').dialog({
+                title: '创建索引库',//窗口标题
+                // width: w,//窗口宽度
+                // height: 100,//窗口高度
+                closed: true,//窗口是是否为关闭状态, true：表示关闭
+                modal: true//模式窗口
+            });
+
+
+        });
+
+        function getTree() {
+            var node = $('#tt').tree('getSelected');
+            if (node == null) {
+                return;
+            }
+            var indexName = node.text;
+
             $('#' + treeId).tree({
-                url: 'menu/listTree',
+                url: 'menu/listTree?indexName=' + indexName,
                 method: "get",
                 checkbox: false,
                 multiple: false,
                 onClick: function (node) {
                     //点击事件 获取dataList
                     loadDataList(node.id)
+
+                    //将目录名称显示在顶部
+                    document.getElementById("index").innerHTML = "";
+                    $('#index').append('<span>/' + node.text + '</span>')
                 }
             });
-        });
+        }
 
         /**
          * 绑定搜索按钮
@@ -84,34 +113,9 @@
                 dataType: 'json',
                 contentType: "application/json",
 
-                /*
-                "id": "1912021334119160534",
-                "hashCode": "25a8981c7cd501cd54055ad91db06a04",
-                "file": null,
-                "fileName": "ES说明V4.docx",
-                "filePath": "E:/knowledgeCenterFileManger/word/ES说明V4.docx",
-                "fileNameSuffix": "docx",
-                "fileNamePrefix": "ES说明V4",
-                "creationTime": 1575264896119,
-                "lastAccessTime": null,
-                "fileSize": 47975,
-                "pageTotal": 13,
-                "keyword": "ES说明开发说明",
-                "content": "1:关于 ES： \r\nElasticsearch 是 面 向 文 档 型 数 据 库 ， 一 条 json 数 据 就 是 一 个 文 档 ， 例 ：\r\n \r\nElasticsearch ⇒索引(Index) ⇒类型(type)⇒文档(Documents)⇒字段(Fields) \r\n因为在 ES 的后续版本中去掉了 Type，所以一个 Index 只能存储一个类型的对象，类比\r\nmysql中的一张表。一个 Document则类比为 mysql中的一行数据。 \r\n2: Mapping的说明： \r\n在 ES中， Mapping的作用就是约束，用来定义 index（这个是 Document？是\r\nindex，类比 mysql中的一张表）下的字段名， \r\n定义字段类型，比如数值型、浮点型、布尔型等 \r\n定义倒排索引相关的设置，比如是否索引、分词方式等 \r\n \r\n其中“analyzer”即为分词方式， “store”为是否存储默认 false，“type”为字段\r\n类型，text即文本，keyword即主键。 \r\n注： \r\n......",
-                "menuId": "1911291618059855632",
-                "authorName": null,
-                "pageList": null,
-                "pageIds": "1912021335687882073,1912021336853034301,1912021336447147905,1912021336338270572,1912021336979173966,1912021336737549641,1912021336977084038,1912021336424251953,1912021337123468930,1912021337534860778,1912021337373429448,1912021337211524568,1912021337080393874,",
-                "pdfFilePath": "E:/knowledgeCenterFileManger/webDoc/25a8981c7cd501cd54055ad91db06a04/25a8981c7cd501cd54055ad91db06a04.pdf",
-                "downloadPath": null,
-                "fileHtml": null,
-                "filePdf": "../knowledgeCenterFileManger/webDoc/25a8981c7cd501cd54055ad91db06a04/25a8981c7cd501cd54055ad91db06a04.pdf",
-                "downloadCount": 0,
-                "fileId": "1912021334119160534"
-            }
-                 */
                 columns: [[
                     {field: 'fileName', title: '名称', width: 180, align: 'center'},
+
                     {field: 'fileNameSuffix', title: '类型', width: 180, align: 'center'},
                     {field: 'keyword', title: '关键词', width: 180, align: 'center'},
 
@@ -129,6 +133,7 @@
                             return y + '-' + M + '-' + d + ' ' + H + ':' + m + ':' + s;
                         }
                     },
+                    {field: 'indexName', title: '所在库', width: 180, align: 'center'},
                     {field: 'filePath', title: '文件路径', width: 180, align: 'center'},
                     {
                         field: 'fileSize', title: '文件大小', width: 180, align: 'center',
@@ -339,13 +344,20 @@
         function newFolder() {
             // $('#saveFolder-button').linkbutton('enable');
             var node = $('#' + treeId).tree('getSelected');
-            if (node == null) {
-                message_Show('请选择父级目录');
+            var node2 = $('#tt').tree('getSelected');
+
+            if (node2 == null) {
+                message_Show('请选择index库');
                 return;
+            }
+            if (node == null) {
+                node = {id: 'root'}
             }
             $('#folder_dialog_form').form('clear');
             $('#folder_dialog_form').form('load', {
-                pid: node.id
+                pid: node.id,
+                indexName: node2.text
+
             });
             $('#folder_dialog').dialog('open').dialog('center').dialog('setTitle', '新建文件夹');
         }
@@ -357,7 +369,8 @@
         function editFolder() {
             // $('#saveFolder-button').linkbutton('enable');
             var node = $('#' + treeId).tree('getSelected');
-            if (node == null) {
+            var node2 = $('#tt').tree('getSelected');
+            if (node2 == null) {
                 message_Show('请选择有效的目录');
                 return;
             }
@@ -367,6 +380,7 @@
                 message_Show('当前节点禁止编辑, 请重新选择');
                 return;
             }
+
             $('#folder_dialog_form').form('clear');
             $('#folder_dialog_form').form('load', {
                 id: node.id,
@@ -374,7 +388,8 @@
                 text: node.text,
                 url: node.url,
                 status: node.status,
-                state: node.state
+                state: node.state,
+                indexName: node2.text
             });
             $('#folder_dialog').dialog('open').dialog('center').dialog('setTitle', '编辑文件夹');
         }
@@ -429,7 +444,7 @@
         /**
          * 提交目录表单
          */
-        var isClick = true;//手动延迟
+        var isClick = true;//用来防止多次点击发送请求
 
         function folder_dialog_ok() {
             if (isClick) {
@@ -452,17 +467,15 @@
                         // console.log(data);
                         folder_dialog_close();
                         $('#' + treeId).tree('reload');
+                        isClick = true;
                     },
                     error: function () {
                         $.messager.alert("系统提示", "异常，请重新的登录后尝试!");
                     }
                 });
-
-                //定时器
-                setTimeout(function () {
-                    isClick = true;
-                }, 1000);//一秒内不能重复点击
+                console.log("submit");
             }
+            console.log("1");
         }
 
 
@@ -550,61 +563,69 @@
          *  加载完成后, 选中第一条数据
          *  将索引库名称显示在顶部
          */
-        $('#tt').tree({
-            url: 'indexMenu/listIndexMenu',
-            method: 'get',
-            onClick: function (node) {
-                alert(node.text)
-                loadGrid(node.text);
-                //将索引名称显示在顶部
-                document.getElementById("indexName").innerHTML = "";
-                $('#indexName').append('<span>' + node.text + '</span>')
-            },
-            //加载完tree型菜单后, 选中第一条数据
-            onLoadSuccess: function (node, data) {
-                if (data.length > 0) {
-                    //找到第一个元素
-                    var n = $('#tt').tree('find', data[0].id);
-                    //调用选中事件
-                    $('#tt').tree('select', n.target);
-                    loadGrid(data[0].text)
-                    //将索引库名称显示在顶部
-                    document.getElementById("indexName").innerHTML = "";
-                    $('#indexName').append('<span>' + data[0].text + '</span>')
-                }
-            }
-        });
+        function loadTree() {
 
-        /**
-         * createIndex的表单提交
-         * 2019年10月15日
-         */
-        $('#btnSaveIndex').bind('click', function () {
-            //把表单数据转换成json对象
-            var data = JSON.stringify($('#saveIndex').serializeJSON());
-            $('#saveIndex').form('submit', {
-                url: 'indexMenu/create',
-                type: 'post',
-                onSubmit: function () {
-                    // do some checked
-                    //做表单字段验证，当所有字段都有效的时候返回true。该方法使用validatebox(验证框)插件。
-                    var isValid = $('#saveIndex').form('validate');
-                    if (isValid == false) {
-                        return;
-                    }
-                    // return false to prevent submit;
+            $('#tt').tree({
+                url: 'indexMenu/listIndexMenu',
+                method: 'get',
+                onClick: function (node) {
+                    // alert(node.text)
+
+                    //将索引名称显示在顶部
+                    document.getElementById("indexName").innerHTML = "";
+                    $('#indexName').append('<span>' + node.text + '</span>')
+
+                    //获取上树
+                    getTree();
                 },
-                success: function (data) {
-                    var data = eval('(' + data + ')');
-                    $.messager.alert("提示", data.message, 'info', function () {
-                        //成功的话，我们要关闭窗口
-                        $('#saveIndexDlg').dialog('close');
-                        //刷新表格数据
-                        $('#tt').tree('reload');
-                    });
+                //加载完tree型菜单后, 选中第一条数据
+                onLoadSuccess: function (node, data) {
+                    if (data.length > 0) {
+                        //找到第一个元素
+                        var n = $('#tt').tree('find', data[0].id);
+                        //调用选中事件
+                        $('#tt').tree('select', n.target);
+
+                        //将索引库名称显示在顶部
+                        document.getElementById("indexName").innerHTML = "";
+                        $('#indexName').append('<span>' + data[0].text + '</span>')
+                    }
                 }
             });
-        });
+
+            /**
+             * 提交按钮绑定
+             * 2019年10月15日
+             */
+            $('#btnSaveIndex').bind('click', function () {
+                //把表单数据转换成json对象
+                // var data = JSON.stringify($('#saveIndex').serializeJSON());
+                $('#saveIndex').form('submit', {
+                    url: 'indexMenu/create',
+                    type: 'post',
+                    onSubmit: function () {
+                        // do some checked
+                        //做表单字段验证，当所有字段都有效的时候返回true。该方法使用validatebox(验证框)插件。
+                        var isValid = $('#saveIndex').form('validate');
+                        if (isValid == false) {
+                            return;
+                        }
+                        // return false to prevent submit;
+                    },
+                    success: function (data) {
+                        var data = eval('(' + data + ')');
+                        $.messager.alert("提示", data.message, 'info', function () {
+                            //成功的话，我们要关闭窗口
+                            $('#saveIndexDlg').dialog('close');
+                            //刷新表格数据
+                            $('#tt').tree('reload');
+                        });
+                    }
+                });
+            });
+
+        }
+
 
         function addIndex() {
             $('#saveIndex').form('clear');
@@ -624,6 +645,7 @@
                         $.ajax({
                             url: 'indexMenu/delete?indexName=' + node.text,
                             dataType: 'json',
+                            type: 'POST',
                             success: function (data) {
                                 $.messager.alert("提示", data.message, 'info', function () {
                                     //刷新树数据
@@ -690,7 +712,14 @@
 </div>
 <div data-options="region:'center'">
     <div id="permissionSet_dg_toolbar">
-        <div class="datagrid-title-div"><span>文件列表</span></div>
+        <div>
+            <span class="datagrid-title-div" id="indexName">
+            </span>
+            <span class="datagrid-title-div" id="index">
+            </span>
+            <span class="datagrid-title-div" id="menu">
+            </span>
+        </div>
         <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
              onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
         <img src="images/px-icon/newFolder.png" class="easyui-tooltip div-toolbar-img-next"
@@ -716,6 +745,7 @@
         <table cellspacing="10" class="pxzn-dialog-font" style="margin:20px 50px;">
             <input name="pid" type="hidden">
             <input name="id" type="hidden">
+            <input name="indexName" type="hidden">
             <tr>
                 <td><span class="pxzn-span-two">名称</span></td>
                 <td>
@@ -773,17 +803,6 @@
                 <td><input name="indexName" class="easyui-validatebox"
                            data-options="required:true,missingMessage:'索引名称不能为空!'" placeholder=""></td>
             </tr>
-            <tr>
-                <td>分片数</td>
-                <td><input name="shardNum" class="easyui-validatebox"
-                           data-options="required:false,missingMessage:'默认是5'" placeholder="不填默认5"></td>
-            </tr>
-            <tr>
-                <td>副本数</td>
-                <td><input name="replicaNum" class="easyui-validatebox"
-                           data-options="required:false,missingMessage:'默认是1'" placeholder="不填默认1"></td>
-            </tr>
-
         </table>
         <button id="btnSaveIndex" type="button">保存</button>
     </form>

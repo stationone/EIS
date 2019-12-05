@@ -153,14 +153,14 @@
                     '                    <a onclick="file_show(' + fileId + ', ' + pageNO + ')" href="javaScript:void(0)"\n' +
                     '                       title="' + filename + '" style="font-size: 15px">\n' +
                     '                        ' + filename + '\n' +
-                    '                    </a>\n' +
+                    '                    </a> (词频: '+data[i].wordCount+')\n' +
                     '                </p>\n' +
                     '                <p style="color: grey;font-size: 5px;" class="fr">关键词:\n' +
                     '                    <span class="score">' + keyword + '</span>\n' +
                     '                </p>\n' +
                     '            </dt>\n' +
                     '            <dt class="fl">\n' +
-                    '                <p style="font-size: 10px">' + content + '</p>\n' +
+                    '                <p style="font-size: 10px">' + content + '......</p>\n' +
                     '                <div style="color: grey;font-size: 5px;">\n' +
                     '                    ' + dateFormat + '\n' +
                     '                    <i> &nbsp;&nbsp;&nbsp; </i>   ' + pageNO + '|' + data[i].pageTotal + '页<i>&nbsp;&nbsp;&nbsp;</i>' + data[i].downloadCount + '次下载<i>&nbsp;&nbsp;&nbsp; </i>\n' +
@@ -455,30 +455,6 @@
 </head>
 <body id="permissionSet_layout" class="easyui-layout">
 
-<div data-options="region:'west'" class="layout-west">
-    <div class="layout-title-div">
-        资源目录
-        <img src="images/px-icon/hide-left-black.png" onclick="layoutHide('permissionSet_layout','west')"
-             class="layout-title-img">
-    </div>
-    <div style="margin:5px 0;border-bottom:1px ">
-        <div id="toolbar1">
-            <img src="images/px-icon/shuaxin.png" style="padding:0 10px" class="easyui-tooltip div-toolbar-img-first"
-                 onclick="$('#'+treeId).tree('reload')" title="刷新">
-            <img src="images/px-icon/newFolder.png" style="padding:0 10px" class="easyui-tooltip div-toolbar-img-next"
-                 onclick="newFolder()" title="添加">
-            <img src="images/px-icon/editFolder.png" style="padding:0 10px" class="easyui-tooltip div-toolbar-img-next"
-                 onclick="editFolder()" title="编辑">
-            <img src="images/px-icon/deleteFolder.png" style="padding:0 10px"
-                 class="easyui-tooltip div-toolbar-img-next"
-                 onclick="deleteFolder()" title="删除">
-        </div>
-    </div>
-    <jsp:include page="/px-tool/px-tree.jsp">
-        <jsp:param value="<%=treeId%>" name="div-id"/>
-    </jsp:include>
-
-</div>
 <div data-options="region:'center'">
     <div id="permissionSet_dg_toolbar">
         <div class="datagrid-title-div"><span>文件列表</span></div>
@@ -503,12 +479,6 @@
                         frameborder="0">
                     您的浏览器不支持iframe，请升级
                 </iframe>
-
-                <%--<embed src="../knowledgeCenterFileManger/6b349fbac214ddff8c65aa76e33217bd/6b349fbac214ddff8c65aa76e33217bd.pdf"--%>
-                <%--width="90%" height="90%">--%>
-                <%--<embed src="../knowledgeCenterFileManger/6b349fbac214ddff8c65aa76e33217bd/6b349fbac214ddff8c65aa76e33217bd.pdf"--%>
-                <%--width="90%" height="90%">--%>
-
             </ul>
         </div>
     </div>

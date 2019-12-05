@@ -124,14 +124,14 @@ public class FileInfo {
     /**
      * 文件所处的索引库
      */
-    private String indexId;
+    private String indexName;
 
-    public String getIndexId() {
-        return indexId;
+    public String getIndexName() {
+        return indexName;
     }
 
-    public void setIndexId(String indexId) {
-        this.indexId = indexId;
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
     }
 
     public String getFileId() {

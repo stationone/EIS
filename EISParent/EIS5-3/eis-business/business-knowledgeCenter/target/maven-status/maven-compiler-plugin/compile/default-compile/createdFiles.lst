@@ -23,6 +23,7 @@ com\ecspace\business\knowledgeCenter\administrator\service\FileBaseService.class
 com\ecspace\business\knowledgeCenter\user\dao\TextDao.class
 com\ecspace\business\knowledgeCenter\administrator\service\impl\FileBaseServiceImpl.class
 com\ecspace\business\knowledgeCenter\administrator\controller\IndexMenuController.class
+com\ecspace\business\knowledgeCenter\administrator\controller\WordCounts.class
 com\ecspace\business\knowledgeCenter\user\service\impl\TextServiceImpl.class
 com\ecspace\business\knowledgeCenter\administrator\service\impl\MenuServiceImpl.class
 com\ecspace\business\knowledgeCenter\administrator\service\impl\FileServiceImpl.class

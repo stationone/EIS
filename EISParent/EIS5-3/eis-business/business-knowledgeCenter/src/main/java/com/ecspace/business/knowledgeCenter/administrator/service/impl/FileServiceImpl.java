@@ -126,6 +126,8 @@ public class FileServiceImpl implements FileService {
 
         Menu menu = menuDao.findById(fileInfo.getMenuId()).orElse(new Menu());
         String menuUrl = menu.getUrl();
+        String indexName = menu.getIndexName();
+        fileInfo.setIndexName(indexName);
         //离散文件, 将内容存入page
         /*************************离散文件在用户上传文件成功后, 后台静默执行, **************************************************/
 

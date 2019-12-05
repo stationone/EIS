@@ -33,16 +33,19 @@ public class MenuServiceImpl implements MenuService {
      * @return
      */
     @Override
-    public List<Menu> getMenuList(String pid) {
-        List<Menu> byPid = menuDao.findByPid(pid);
-        for (Menu menu : byPid) {
+    public List<Menu> getMenuList(String pid , String indexName) {
+//        List<Menu> byPid = menuDao.findByPid(pid);
+
+        List<Menu> list = menuDao.findByPidAndIndexName(pid, indexName);
+
+        for (Menu menu : list) {
             int i = menuDao.countMenuByPid(menu.getId());
             if (i > 0) {
                 //该菜单有子节点
                 menu.setState("closed");
             }
         }
-        return byPid;
+        return list;
     }
 
     /**
@@ -58,13 +61,19 @@ public class MenuServiceImpl implements MenuService {
     public GlobalResult insertMenu(Menu menu) {
         //获取pid
         String pid = menu.getPid();
+        if ("root".equals(pid)) {
+            //库下根目录
+
+        }
         //定义文件夹名称
         String text = getText(menu, pid);
         //根据pid查找url
         Menu pmenu = menuDao.findById(pid).orElse(new Menu());
+
         String purl = pmenu.getUrl() == null? "E:" : pmenu.getUrl();
         //拼接该目录的url
         String url = purl + "/" + text;
+
         //设置id
         String generateId = TNOGenerator.generateId();
         menu.setId(generateId);
@@ -74,16 +83,6 @@ public class MenuServiceImpl implements MenuService {
         menu.setText(text);
         //保存
         Menu data = menuDao.save(menu);
-        //在本地创建文件夹
-        java.io.File directory = new java.io.File(url);
-        if (!directory.exists()) {
-            boolean mkdir = directory.mkdir();
-//            System.out.println(mkdir);
-        }
-        ;
-        ;
-        ;
-//        System.out.println(data);
         return new GlobalResult(true, 2000, "干的漂亮");
     }
 
@@ -138,9 +137,9 @@ public class MenuServiceImpl implements MenuService {
         Menu save = menuDao.save(menu);//此时菜单中有id存在, 执行更新操作
 
         //修改本地文件夹
-        java.io.File file = new java.io.File(oldUrl);
-        boolean rename = file.renameTo(new File(url));
-        if (rename && save != null) {
+//        java.io.File file = new java.io.File(oldUrl);
+//        boolean rename = file.renameTo(new File(url));
+        if (save != null) {
             return new GlobalResult(true, 2000, "操作成功");
         }
 

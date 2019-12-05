@@ -22,6 +22,15 @@ public interface MenuDao extends ElasticsearchRepository<Menu, String> {
      * @return
      */
     List<Menu> findByPid(String pid);
+
+    /**
+     * **********新增, 获取库下树目录
+     *
+     * @param pid
+     * @param indexName
+     * @return
+     */
+    List<Menu> findByPidAndIndexName(String pid, String indexName);
 //    Optional<Menu> findByPid(String pid);
 
 

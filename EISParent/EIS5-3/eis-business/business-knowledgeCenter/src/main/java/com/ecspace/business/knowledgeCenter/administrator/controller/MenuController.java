@@ -37,13 +37,15 @@ public class MenuController {
      * @return
      */
     @GetMapping("/listTree")
-    public List<Menu> listTree(String id){
+    public List<Menu> listTree(String id , String indexName){
+
         if(id == null || "".equals(id)){
             //第一次加载, 设置pid为000000000000000000
-            id = "000000000000000000";
+                    //改为root
+            id = "root";
         }
         //从elasticsearch中的document中获取文件夹目录列表
-        return menuService.getMenuList(id);
+        return menuService.getMenuList(id , indexName);
     }
 
     /**

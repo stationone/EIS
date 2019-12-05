@@ -24,6 +24,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
@@ -101,38 +102,14 @@ public class FileSearchServiceImpl implements FileSearchService {
         highlightBuilder.preTags("<tag style=\"color: red;\">");//设置前缀
         highlightBuilder.postTags("</tag>");//设置后缀
 
-//        menuId匹配
-//        TermVectorsFields fields = new TermVectorsFields();
-        //词频
-        TermVectorsRequestBuilder termVectorsRequestBuilder = client.prepareTermVectors();
-//        MultiTermVectorsRequestBuilder multiTermVectorsRequestBuilder = client.prepareMultiTermVectors();
-
-        TermVectorsResponse termVectorResponse = client.prepareTermVectors().setIndex("page").setType("page")
-                .setId("0wsoTCufR7KrXX_OpnXFxw").setSelectedFields("content").setTermStatistics(true).execute()
-                .actionGet();
-//        Fields fields = termVectorsResponse.getFields();
-
-        XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON);
-        termVectorResponse.toXContent(builder, null);
-        System.out.println(":");
-        System.out.println(builder.string());
-        Fields fields = termVectorResponse.getFields();
-        Iterator<String> iterator1 = fields.iterator();
-
-        Iterator<String> iterator = fields.iterator();
-        while (iterator.hasNext()) {
-            String field = iterator.next();
-            Terms terms = fields.terms(field);
-            TermsEnum termsEnum = terms.iterator();
-            while (termsEnum.next() != null) {
-                BytesRef term = termsEnum.term();
-                if (term != null) {
-                    System.out.println(":");
-                    System.out.println(term.utf8ToString() + termsEnum.totalTermFreq());
-                }
-            }
-        }
-
+////        menuId匹配
+////        TermVectorsFields fields = new TermVectorsFields();
+//        //词频
+//            //构建第二查询
+//        SearchRequestBuilder searchRequest = client.prepareSearch();
+//        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("", "");
+//        SearchResponse response = searchRequest.setQuery(termQueryBuilder).get();
+//        SearchHits respHits = response.getHits();//term查询
 
 //
         //正文字段进行匹配
@@ -166,6 +143,12 @@ public class FileSearchServiceImpl implements FileSearchService {
         for (SearchHit searchHit : searchHits) {
             //源文档内容
             Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+
+            //统计词频
+            String content = (String) sourceAsMap.get("content");
+            int count = wordCount(content, search);
+            sourceAsMap.put("wordCount", count);
+
             String fileId = (String) sourceAsMap.get("fileId");//根据源文档内容获取fileId
             //根据fileId查找file文档
             FileInfo fileInfo = fileInfoDao.findById(fileId).orElse(new FileInfo());
@@ -202,7 +185,8 @@ public class FileSearchServiceImpl implements FileSearchService {
                         }
 //                    name = stringBuffer.toString();
                         //替换原文档内容为高亮内容
-                        sourceAsMap.put(field, stringBuffer.toString());
+                        String highLightDoc = stringBuffer.toString();
+                        sourceAsMap.put(field, highLightDoc);
                     }
                 }
             }
@@ -212,4 +196,21 @@ public class FileSearchServiceImpl implements FileSearchService {
         pageData.setRows(list);
         return pageData;
     }
+
+    /**
+     * 统计词频
+     * @param document 查询文档
+     * @param word 检索词
+     * @return 词频
+     */
+    private int wordCount(String document, String word) {
+        int count = 0;
+        while (document.contains(word)) {
+            document = document.substring(document.indexOf(word) + word.length());
+            count++;
+        }
+//        System.out.println("指定字符串在原字符串中出现：" + count + "次");
+        return count;
+    }
+
 }

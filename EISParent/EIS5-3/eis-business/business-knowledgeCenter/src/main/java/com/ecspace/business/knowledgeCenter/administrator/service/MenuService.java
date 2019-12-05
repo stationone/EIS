@@ -16,7 +16,7 @@ public interface MenuService {
      * @param pid
      * @return
      */
-    List<Menu> getMenuList(String pid);
+    List<Menu> getMenuList(String pid, String indexName);
 
     /**
      * 新增目录
