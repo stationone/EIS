@@ -5,13 +5,16 @@ import com.ecspace.business.knowledgeCenter.administrator.pojo.FileBase;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileBaseService;
-import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
+import org.apache.commons.collections4.IterableUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author zhangch
@@ -35,9 +38,20 @@ public class FileBaseServiceImpl implements FileBaseService {
         Pageable pageable = new PageRequest(page, size);
         Page<FileBase> fileBasePage = fileBaseDao.findAll(pageable);
         PageData pageData = new PageData();
-        pageData.setTotal(fileBasePage.getNumberOfElements());
+        pageData.setTotal(new Long(fileBasePage.getTotalElements()).intValue());
         pageData.setRows(fileBasePage.getContent());
         return pageData;
+    }
+
+    @Override
+    public List<FileBase> listFileBase(){
+        ArrayList<FileBase> bases = new ArrayList<>();
+        Iterable<FileBase> fileBases = fileBaseDao.findAll();
+        for (FileBase fileBase : fileBases) {
+            bases.add(fileBase);
+        }
+        return bases;
+
     }
 
     @Override

@@ -395,6 +395,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
 
     /**
      * 获取索引库中可被查询的字段名数组, 存入map中返回
+     *
      * @param indexName
      * @return map[{"analyzerArr":text字段},{"notAnalyzer":keyword字段}]
      */
@@ -416,6 +417,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
 
     /**
      * 获取索引库数组中可被查询的字段名数组, 存入map中返回
+     *
      * @param indexNames
      * @return map[{"analyzerArr":text字段},{"notAnalyzer":keyword字段}]
      */
@@ -803,7 +805,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         JSONObject o = JSON.parseObject(json);
         try {
 //            for (int i = 0; i < 300000; i++) {
-                elasticsearchTemplate.getClient().prepareIndex(indexName, indexName).setSource(o.toString(), XContentType.JSON).get();
+            elasticsearchTemplate.getClient().prepareIndex(indexName, indexName).setSource(o.toString(), XContentType.JSON).get();
 //            }
             elasticsearchTemplate.getClient().prepareIndex(indexName, indexName).setSource(o.toString(), XContentType.JSON).get();
         } catch (Exception e) {
@@ -852,9 +854,10 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         //将sourceAsMap转为Map
         Map properties = (Map) sourceAsMap.get("properties");
 //        System.out.println(properties);
-
-        JSONObject paramsObj = new JSONObject(properties);
-
+        JSONObject paramsObj = null;
+        if (properties != null) {
+            paramsObj = new JSONObject(properties);
+        }
 //        JSONObject jsonObject = JSON.parseObject(properties.toString());
         return paramsObj;
     }

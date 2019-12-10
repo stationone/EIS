@@ -38,11 +38,11 @@
             /**
              * 获取库目录
              */
-            loadTree();
-            /**
-             * 获取树目录
-             */
-            getTree();
+            loadTree();//树目录在库目录获取完成后再进行获取
+            // /**
+            //  * 获取树目录
+            //  */
+            // getTree();
 
             //初始化创建索引库窗口
             $('#saveIndexDlg').dialog({
@@ -70,7 +70,7 @@
                 multiple: false,
                 onClick: function (node) {
                     //点击事件 获取dataList
-                    loadDataList(node.id)
+                    loadDataList(node.id);
 
                     //将目录名称显示在顶部
                     document.getElementById("index").innerHTML = "";
@@ -122,15 +122,35 @@
                     {field: 'pageTotal', title: '页面总数', width: 180, align: 'center'},
                     {
                         field: 'creationTime', title: '创建时间', width: 180, align: 'center',
-                        formatter: function (value) {
+                        // formatter: function (value) {
+                        //     var date = new Date(value);
+                        //     var y = date.getFullYear();
+                        //     var M = date.getMonth() + 1;
+                        //     var d = date.getDate();
+                        //     var H = date.getHours();
+                        //     var m = date.getMinutes();
+                        //     var s = date.getSeconds();
+                        //     return y + '-' + M + '-' + d + ' ' + H + ':' + m + ':' + s;
+                        // }
+                        formatter: function (value, fmt) {
+                            //固定日期格式
+                            fmt = 'yyyy-MM-dd hh:mm:ss';
                             var date = new Date(value);
-                            var y = date.getFullYear();
-                            var M = date.getMonth() + 1;
-                            var d = date.getDate();
-                            var H = date.getHours();
-                            var m = date.getMinutes();
-                            var s = date.getSeconds();
-                            return y + '-' + M + '-' + d + ' ' + H + ':' + m + ':' + s;
+                            var o = {
+                                "M+": date.getMonth() + 1,     //月份
+                                "d+": date.getDate(),     //日
+                                "h+": date.getHours(),     //小时
+                                "m+": date.getMinutes(),     //分
+                                "s+": date.getSeconds(),     //秒
+                                "q+": Math.floor((date.getMonth() + 3) / 3), //季度
+                                "S": date.getMilliseconds()    //毫秒
+                            };
+                            if (/(y+)/.test(fmt))
+                                fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+                            for (var k in o)
+                                if (new RegExp("(" + k + ")").test(fmt))
+                                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                            return fmt;
                         }
                     },
                     {field: 'indexName', title: '所在库', width: 180, align: 'center'},
@@ -150,8 +170,9 @@
                             return size + unitArr[index];
                         }
                     },
-                    {field: 'authorName', title: '作者', width: 180, align: 'center'},
-                    {field: 'content', title: '摘要', width: 300, align: 'center'},
+                    {field: 'author', title: '作者', width: 180, align: 'center'},
+                    {field: 'authorName', title: '上传人员', width: 180, align: 'center'},
+                    {field: 'content', title: '正文', width: 300, align: 'center'},
                     {
                         field: 'operate', title: '操作', align: 'center', width: $(this).width() * 0.1,
                         formatter: function (value, row, index) {
@@ -180,11 +201,6 @@
                     clearDataGrid();
                 }
             });
-
-        }
-
-        function h() {
-            alert("失败")
         }
 
         /**
@@ -252,15 +268,7 @@
          * 文件预览
          */
         function file_show(fileId, pageNo) {
-            <%--//清除--%>
-            <%--$('#dataList').remove();--%>
-            <%--//创建--%>
-            <%--$('#dataParent').append('<ul id="dataList">\n' +--%>
-            <%--'        &lt;%&ndash;正文内容&ndash;%&gt;\n' +--%>
-            <%--'    </ul>');--%>
-            // $('#dataList').append('我就是文件, 你要预览的就是我');
             window.location.href = "./views/resource/knowledgeCenter/file_show.jsp?fileId=" + fileId + "&pageNo=" + pageNo
-
         }
 
         //时间戳转日期格式
@@ -295,10 +303,10 @@
 
         //格式化文件大小
         function renderSize(value) {
-            if (null == value || value == '') {
+            if (null == value || '' === value) {
                 return "0 Bytes";
             }
-            var unitArr = new Array("Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB");
+            var unitArr = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
             var index = 0;
             var srcsize = parseFloat(value);
             index = Math.floor(Math.log(srcsize) / Math.log(1024));
@@ -323,6 +331,23 @@
 
             });
             console.log(node.id);
+            //打开之前加载select
+            $('#filetype').combobox({
+                url: 'fileType/listFileType',
+                method: 'get',
+                valueField: 'id',
+                textField: 'text',
+                panelHeight: 'auto',
+                editable: false,
+                // readonly: 'true',
+                onChange: function () {
+                    console.log('changed');
+                    var getText = $('#type').combobox('getText');
+                    var getValue = $('#type').combobox('getValue');
+                    console.log('索引名称:' + getText + ', 索引docId:' + getValue);
+                }
+            });
+
             $('#file_dialog').dialog('open').dialog('center').dialog('setTitle', '文件上传');
         }
 
@@ -444,19 +469,14 @@
         /**
          * 提交目录表单
          */
-        var isClick = true;//用来防止多次点击发送请求
+        var menu_submit_flag = true;//用来防止多次点击发送请求
 
         function folder_dialog_ok() {
-            if (isClick) {
-                isClick = false;
-                //提交表单事件
-                // console.log($(this).attr("data-val"));
+            if (menu_submit_flag) {
+                menu_submit_flag = false;
                 $("#folder_dialog_form").form("submit", {
                     url: "menu/submit",
                     onSubmit: function () {
-                        // if ($(this).form("validate")) {
-                        //     $('#saveFolder-button').linkbutton('disable');
-                        // }
                         return $(this).form("validate");
                     },
                     success: function (result) {
@@ -467,15 +487,13 @@
                         // console.log(data);
                         folder_dialog_close();
                         $('#' + treeId).tree('reload');
-                        isClick = true;
+                        menu_submit_flag = true;
                     },
                     error: function () {
                         $.messager.alert("系统提示", "异常，请重新的登录后尝试!");
                     }
                 });
-                console.log("submit");
             }
-            console.log("1");
         }
 
 
@@ -485,9 +503,11 @@
         }
 
         //文件上传界面保存按钮
+        var file_upload_flag = true;
+
         function file_dialog_ok() {
-            if (isClick) {
-                isClick = false;
+            if (file_upload_flag) {
+                file_upload_flag = false;
 
                 //组装数据
                 var formData = new FormData();
@@ -496,8 +516,10 @@
                 formData.append('file', $('#file')[0].files[0]);
                 formData.append('menuId', menuId);
                 formData.append('keyword', $('#keyword').val());
-
-                // console.log(formData);
+                formData.append('author', $('#author').val());
+                formData.append('professional', $('#professional').val());
+                formData.append('switchbutton', $('#switchbutton').val());
+                formData.append('filetype', $('#filetype').val());
 
                 //提交表单
                 $.ajax({
@@ -513,15 +535,11 @@
                         //关闭窗口, 刷新列表
                         file_dialog_close();
                         // $('#' + treeId).tree('reload');
-
                         //调用文件解析接口, 后台自动解析
                         fileSpread(result.data);
+                        file_upload_flag = true;
                     }
                 });
-                //定时器
-                setTimeout(function () {
-                    isClick = true;
-                }, 1000);//一秒内不能重复点击
             }
         }
 
@@ -580,11 +598,15 @@
                 },
                 //加载完tree型菜单后, 选中第一条数据
                 onLoadSuccess: function (node, data) {
+                    //什么都不干
+
                     if (data.length > 0) {
                         //找到第一个元素
                         var n = $('#tt').tree('find', data[0].id);
                         //调用选中事件
                         $('#tt').tree('select', n.target);
+
+                        getTree();
 
                         //将索引库名称显示在顶部
                         document.getElementById("indexName").innerHTML = "";
@@ -769,11 +791,47 @@
 
         <table cellspacing="10" class="pxzn-dialog-font" style="margin:20px 50px;">
             <input id="menuId" name="menuId" type="hidden">
+
             <tr>
-                <td class="pe-label"><span class="sp_waning"></span>简介(关键词)：</td>
+                <td>
+                    作者
+                </td>
+                <td>
+                    <input id="author" class="easyui-textbox" style="width:100%;"
+                           name="author">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    文档类型
+                </td>
+                <td>
+                    <input id="filetype" class="easyui-combobox" style="width:100%;"
+                           name="filetype"/>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    专业
+                </td>
+                <td>
+                    <input id="professional" class="easyui-textbox" style="width:100%;"
+                           name="professional">
+                </td>
+            </tr>
+
+            <tr>
+                <td class="pe-label">
+                    <span class="sp_waning">
+                       <%--<input id="switchbutton" name="switchbutton" class="easyui-switchbutton" data-options="onText:'摘要',offText:'关键词', ">--%>
+                        摘要或关键词
+                    </span>
+                </td>
                 <td class="pe-content" colspan="6">
                     <input id="keyword" class="easyui-textbox" name="keyword" style="width:100%;height:60px"
-                           data-options="multiline:true,prompt:'随便写点儿介绍关键词什么的用于被检索...'">
+                           data-options="multiline:true,prompt:'...'">
                 </td>
             </tr>
             <tr>

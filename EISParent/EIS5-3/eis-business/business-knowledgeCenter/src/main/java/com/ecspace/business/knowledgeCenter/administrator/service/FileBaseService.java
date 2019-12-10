@@ -4,6 +4,8 @@ import com.ecspace.business.knowledgeCenter.administrator.pojo.FileBase;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 
+import java.util.List;
+
 /**
  * @author zhangch
  * @date 2019/11/29 0029 下午 20:39
@@ -28,4 +30,6 @@ public interface FileBaseService {
      * @return
      */
     GlobalResult deleteFileBase(String id);
+
+    List<FileBase> listFileBase();
 }

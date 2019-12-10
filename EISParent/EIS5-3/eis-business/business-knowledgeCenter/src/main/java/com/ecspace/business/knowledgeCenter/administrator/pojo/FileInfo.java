@@ -121,10 +121,96 @@ public class FileInfo {
 
     private String fileId;
 
+    //作者
+    private String author;
+
+    //专业
+    private String professional;
+
+
     /**
-     * 文件所处的索引库
+     * 文件所处的索引库对象
      */
     private String indexName;
+
+    //成员类型
+    private String memberType;
+
+    //成员
+    private String members;
+    //离散工具
+    private String discreteTool;
+    //轻量化转换工具
+    private String lightWeightConversion;
+
+    //对应轻量化文件的地址
+    private String lightWeightURL;
+    //对应文档的展示工具
+    private String jsp;
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getProfessional() {
+        return professional;
+    }
+
+    public void setProfessional(String professional) {
+        this.professional = professional;
+    }
+
+    public String getMemberType() {
+        return memberType;
+    }
+
+    public void setMemberType(String memberType) {
+        this.memberType = memberType;
+    }
+
+    public String getMembers() {
+        return members;
+    }
+
+    public void setMembers(String members) {
+        this.members = members;
+    }
+
+    public String getDiscreteTool() {
+        return discreteTool;
+    }
+
+    public void setDiscreteTool(String discreteTool) {
+        this.discreteTool = discreteTool;
+    }
+
+    public String getLightWeightConversion() {
+        return lightWeightConversion;
+    }
+
+    public void setLightWeightConversion(String lightWeightConversion) {
+        this.lightWeightConversion = lightWeightConversion;
+    }
+
+    public String getLightWeightURL() {
+        return lightWeightURL;
+    }
+
+    public void setLightWeightURL(String lightWeightURL) {
+        this.lightWeightURL = lightWeightURL;
+    }
+
+    public String getJsp() {
+        return jsp;
+    }
+
+    public void setJsp(String jsp) {
+        this.jsp = jsp;
+    }
 
     public String getIndexName() {
         return indexName;

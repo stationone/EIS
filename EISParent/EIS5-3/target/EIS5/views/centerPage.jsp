@@ -137,8 +137,8 @@
 
         //知识中心
         var knowledgeTitle = [{"moduleNO":"14","moduleName":"文档管理","moduleURL":"views/resource/knowledgeCenter/knowledgeCenter.jsp","icon":"resourceMaintain-light.png","event":"","order":3}
-            ,{"moduleNO":"15","moduleName":"文档基础属性","moduleURL":"views/resource/knowledgeCenter/admin.jsp","icon":"resourceMaintain-light.png","event":"","order":1}
-            ,{"moduleNO":"16","moduleName":"类型定义","moduleURL":"views/resource/knowledgeCenter/fileBaseType.jsp","icon":"resourceMaintain-light.png","event":"","order":2}
+            ,{"moduleNO":"15","moduleName":"文档基础属性","moduleURL":"views/resource/knowledgeCenter/fileBase.jsp","icon":"resourceMaintain-light.png","event":"","order":1}
+            ,{"moduleNO":"16","moduleName":"类型定义","moduleURL":"views/resource/knowledgeCenter/file_type.jsp","icon":"resourceMaintain-light.png","event":"","order":2}
 
             ,{"moduleNO":"17","moduleName":"全文检索","moduleURL":"views/resource/knowledgeCenter/file_search.jsp","icon":"resourceMaintain-light.png","event":"","order":4}
             ,{"moduleNO":"18","moduleName":"我的收藏","moduleURL":"views/resource/knowledgeCenter/documentCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":5}

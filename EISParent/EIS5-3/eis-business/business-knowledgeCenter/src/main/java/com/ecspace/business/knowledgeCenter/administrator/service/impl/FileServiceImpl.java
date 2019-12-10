@@ -64,9 +64,6 @@ public class FileServiceImpl implements FileService {
         //文件名
         String filename = file.getOriginalFilename();
         //组装文件路径
-//        Menu menu = menuDao.findById(menuId).orElse(new Menu());
-//        String menuUrl = menu.getUrl();
-//        String path = menuUrl + "/" + filename;
         String path;
         //文件分类存储
         assert filename != null;
@@ -172,7 +169,7 @@ public class FileServiceImpl implements FileService {
         if (page == null) {
             page = 0;
         } else {
-            page = page - 1;
+            page = (page - 1)*rows;
         }
         if (rows == null) {
             rows = 10;

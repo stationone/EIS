@@ -4,12 +4,15 @@ com\ecspace\business\knowledgeCenter\administrator\service\IndexMenuService.clas
 com\ecspace\business\knowledgeCenter\administrator\service\MenuService.class
 com\ecspace\business\knowledgeCenter\administrator\FileAnalysis\Test.class
 com\ecspace\business\knowledgeCenter\administrator\controller\MenuController.class
+com\ecspace\business\knowledgeCenter\administrator\service\FileTypeService.class
 com\ecspace\business\knowledgeCenter\administrator\controller\FileBaseController.class
 com\ecspace\business\knowledgeCenter\administrator\FileAnalysis\Office2Html.class
 com\ecspace\business\knowledgeCenter\administrator\pojo\Page.class
 com\ecspace\business\knowledgeCenter\administrator\service\impl\IndexMenuServiceImpl.class
+com\ecspace\business\knowledgeCenter\administrator\controller\FileTypeController.class
 com\ecspace\business\knowledgeCenter\administrator\service\FileSearchService.class
 com\ecspace\business\knowledgeCenter\user\controller\TextController.class
+com\ecspace\business\knowledgeCenter\administrator\pojo\FileType.class
 com\ecspace\business\knowledgeCenter\user\service\TextService.class
 com\ecspace\business\knowledgeCenter\administrator\controller\FileSearchController.class
 com\ecspace\business\knowledgeCenter\administrator\pojo\FileInfo.class
@@ -21,9 +24,10 @@ com\ecspace\business\knowledgeCenter\administrator\dao\FileBaseDao.class
 com\ecspace\business\knowledgeCenter\administrator\FileAnalysis\PDFReader.class
 com\ecspace\business\knowledgeCenter\administrator\service\FileBaseService.class
 com\ecspace\business\knowledgeCenter\user\dao\TextDao.class
+com\ecspace\business\knowledgeCenter\administrator\dao\FileTypeDao.class
 com\ecspace\business\knowledgeCenter\administrator\service\impl\FileBaseServiceImpl.class
 com\ecspace\business\knowledgeCenter\administrator\controller\IndexMenuController.class
-com\ecspace\business\knowledgeCenter\administrator\controller\WordCounts.class
+com\ecspace\business\knowledgeCenter\administrator\service\impl\FileTypeServiceImpl.class
 com\ecspace\business\knowledgeCenter\user\service\impl\TextServiceImpl.class
 com\ecspace\business\knowledgeCenter\administrator\service\impl\MenuServiceImpl.class
 com\ecspace\business\knowledgeCenter\administrator\service\impl\FileServiceImpl.class

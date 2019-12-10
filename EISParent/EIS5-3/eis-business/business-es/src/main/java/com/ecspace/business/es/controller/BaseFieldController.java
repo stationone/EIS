@@ -58,7 +58,7 @@ public class BaseFieldController {
     }
 
     /**
-     * 保存基础字段
+     * 删除基础字段
      * @return id
      */
     @RequestMapping("/deleteField")

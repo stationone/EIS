@@ -37,7 +37,7 @@ public class FileController {
      * @return
      */
     @PostMapping(value = "fileUpload")
-    public GlobalResult handleFileUpload(@RequestParam("file") MultipartFile file ,String menuId, String keyword) throws Exception {
+    public GlobalResult handleFileUpload(@RequestParam("file") MultipartFile file ,String menuId, String keyword , String author , String filetype, String professional ,String switchbutton) throws Exception {
         //非空判断
         if (file.isEmpty() || "".equals(menuId)) {
             return new GlobalResult(false, 2001, "非法参数");
