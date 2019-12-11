@@ -1,20 +1,18 @@
 package com.ecspace.business.knowledgeCenter.administrator.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.ecspace.business.knowledgeCenter.administrator.dao.PageDao;
+import com.ecspace.business.knowledgeCenter.administrator.pojo.FileBase;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.xml.ws.Action;
-import java.io.File;
-import java.io.IOException;
+import java.util.List;
+
 
 /**
  * 文件管理接口
@@ -37,14 +35,27 @@ public class FileController {
      * @return
      */
     @PostMapping(value = "fileUpload")
-    public GlobalResult handleFileUpload(@RequestParam("file") MultipartFile file ,String menuId, String keyword , String author , String filetype, String professional ,String switchbutton) throws Exception {
+    public GlobalResult handleFileUpload(@RequestParam("file") MultipartFile file) throws Exception {
         //非空判断
-        if (file.isEmpty() || "".equals(menuId)) {
+        if (file.isEmpty()) {
             return new GlobalResult(false, 2001, "非法参数");
         }
 
         //调用文件服务
-        return fileService.saveFile(file, menuId, keyword);
+        return fileService.saveFile(file);
+    }
+
+
+    /**
+     * 保存文件参数
+     *
+     * @param json
+     * @return
+     */
+    @PostMapping(value = "fileForm")
+    public GlobalResult fileForm(String json) throws Exception {
+
+        return null;
     }
 
 
@@ -100,6 +111,12 @@ public class FileController {
     public FileInfo fileDetail(String fileId) throws Exception {
 
        return fileService.getFileDetail(fileId);
+    }
+
+    @GetMapping(value = "getFormField")
+    public List<FileBase> getFormField(String indexName) throws Exception{
+
+        return fileService.getFormField(indexName);
     }
 
 

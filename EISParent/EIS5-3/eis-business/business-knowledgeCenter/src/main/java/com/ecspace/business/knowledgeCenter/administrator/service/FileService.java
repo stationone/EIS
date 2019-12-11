@@ -1,11 +1,12 @@
 package com.ecspace.business.knowledgeCenter.administrator.service;
 
+import com.ecspace.business.knowledgeCenter.administrator.pojo.FileBase;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.util.List;
 
 //
 //
@@ -20,11 +21,9 @@ public interface FileService {
     /**
      * 保存上传的文件
      * @param file
-     * @param menuId
-     * @param keyword
      * @return
      */
-    GlobalResult saveFile(MultipartFile file, String menuId, String keyword) throws Exception;
+    GlobalResult saveFile(MultipartFile file) throws Exception;
 
     /**
      * 静默离散文件
@@ -59,6 +58,13 @@ public interface FileService {
      * @return
      */
     FileInfo getFileDetail(String fileId);
+
+    /**
+     * 获取上传表单列
+     * @param indexName
+     * @return
+     */
+    List<FileBase> getFormField(String indexName);
 //
 //
 //    /**

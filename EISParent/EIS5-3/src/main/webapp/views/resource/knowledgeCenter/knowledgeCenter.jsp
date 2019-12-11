@@ -30,11 +30,22 @@
     <script>
         var treeId = "<%=treeId%>";
         var datagridId1 = "<%=datagridId1%>";
-
+        //临时数组, 做数据交换
+        var temp = [];
         /**
          * 入口函数
          */
         $(function () {
+            var $input = $("#file");
+
+            $input.change(function () {
+                //如果value不为空，调用文件加载方法
+                if ($(this).val() != "") {
+                    file_upload_pre();
+                    alert(11)
+                }
+                alert(22);
+            });
             /**
              * 获取库目录
              */
@@ -122,16 +133,6 @@
                     {field: 'pageTotal', title: '页面总数', width: 180, align: 'center'},
                     {
                         field: 'creationTime', title: '创建时间', width: 180, align: 'center',
-                        // formatter: function (value) {
-                        //     var date = new Date(value);
-                        //     var y = date.getFullYear();
-                        //     var M = date.getMonth() + 1;
-                        //     var d = date.getDate();
-                        //     var H = date.getHours();
-                        //     var m = date.getMinutes();
-                        //     var s = date.getSeconds();
-                        //     return y + '-' + M + '-' + d + ' ' + H + ':' + m + ':' + s;
-                        // }
                         formatter: function (value, fmt) {
                             //固定日期格式
                             fmt = 'yyyy-MM-dd hh:mm:ss';
@@ -149,7 +150,7 @@
                                 fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
                             for (var k in o)
                                 if (new RegExp("(" + k + ")").test(fmt))
-                                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
                             return fmt;
                         }
                     },
@@ -157,11 +158,12 @@
                     {field: 'filePath', title: '文件路径', width: 180, align: 'center'},
                     {
                         field: 'fileSize', title: '文件大小', width: 180, align: 'center',
+                        //文件大小格式化
                         formatter: function (value) {
-                            if (null == value || value == '') {
+                            if (null == value || '' === value) {
                                 return "0 Bytes";
                             }
-                            var unitArr = new Array("Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB");
+                            var unitArr = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
                             var index = 0;
                             var srcsize = parseFloat(value);
                             index = Math.floor(Math.log(srcsize) / Math.log(1024));
@@ -195,7 +197,11 @@
                 pageSize: 10,
                 onLoadSuccess: function (data) {
                     // alert("加载完成");
-                    $("a[name='opera']").linkbutton({text: '预览', plain: true, iconCls: '/images/px-icon/yulan.png'});
+                    $("a[name='opera']").linkbutton({
+                        text: '预览',
+                        plain: true,
+                        iconCls: '/images/px-icon/yulan.png'
+                    });
                 },
                 onLoadError: function () {
                     clearDataGrid();
@@ -264,13 +270,6 @@
 
         }
 
-        /**
-         * 文件预览
-         */
-        function file_show(fileId, pageNo) {
-            window.location.href = "./views/resource/knowledgeCenter/file_show.jsp?fileId=" + fileId + "&pageNo=" + pageNo
-        }
-
         //时间戳转日期格式
         function formatDate(time, format) {
             var t = new Date(time);
@@ -301,20 +300,6 @@
             })
         };
 
-        //格式化文件大小
-        function renderSize(value) {
-            if (null == value || '' === value) {
-                return "0 Bytes";
-            }
-            var unitArr = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-            var index = 0;
-            var srcsize = parseFloat(value);
-            index = Math.floor(Math.log(srcsize) / Math.log(1024));
-            var size = srcsize / Math.pow(1024, index);
-            size = size.toFixed(2);//保留的小数位数
-            return size + unitArr[index];
-        }
-
         /**
          * 打开文件上传窗口
          */
@@ -325,12 +310,12 @@
                 message_Show('请选择要上传的目录');
                 return;
             }
-            $('#file_dialog_form').form('clear');
-            $('#file_dialog_form').form('load', {
+            $('#file_dialog_upload').form('clear');
+            $('#file_dialog_upload').form('load', {
                 menuId: node.id
 
             });
-            console.log(node.id);
+            // console.log(node.id);
             //打开之前加载select
             $('#filetype').combobox({
                 url: 'fileType/listFileType',
@@ -341,13 +326,52 @@
                 editable: false,
                 // readonly: 'true',
                 onChange: function () {
-                    console.log('changed');
-                    var getText = $('#type').combobox('getText');
-                    var getValue = $('#type').combobox('getValue');
-                    console.log('索引名称:' + getText + ', 索引docId:' + getValue);
+                    $('#filedTable').html('');
+                    var getText = $('#filetype').combobox('getText');
+                    if (getText == null || getText.length == 0) {
+                        return;
+                    }
+                    console.log(getText);
+
+
+                    //动态生成表单
+                    $.ajax({
+                        url: 'file/getFormField?indexName=' + getText,
+                        dataType: 'json',
+                        success: function (datas) {
+                            if (datas.length === 0) {
+                                return;
+                            }
+                            //表单填充
+                            var textHtml = "";
+                            var data = datas;
+                            for (var i = 0; i < data.length; i++) {
+                                var field = data[i];
+                                var ignore = ['content', 'directory', 'discreteTool', 'jsp', 'library', '', 'path', 'type', 'uploadTime', 'lightWeightURL', 'lightWeightConversion'];
+                                if (ignore.indexOf(field.filename) !== -1) {
+                                    continue;
+                                }
+                                textHtml += '<tr>';
+                                textHtml += '<td class="pe-label" style="width: 40%">' + field.desc + '(' + field.filename + ')</td>';
+                                // if (field.filename === 'abstract') {
+                                //     textHtml += '<td><input id="' + field.filename + '" name="' + field.filename + '" class="easyui-textbox" style="width:100%;height:25px"  ></td>';
+                                // }else {
+                                //
+                                //     textHtml += '<td><input id="' + field.filename + '" name="' + field.filename + '" class="easyui-textbox" style="width:100%;height:25px"  ></td>';
+                                // }
+                                textHtml += '<td><input id="' + field.filename + '" name="' + field.filename + '" class="easyui-textbox" style="width:100%;height:25px"  ></td>';
+                                textHtml += '</tr>';
+                            }
+                            if (temp.length > 0) {
+                                console.log(temp[0].path);
+                            }
+
+                            $('#filedTable').html(textHtml);
+                        }
+                    });
+
                 }
             });
-
             $('#file_dialog').dialog('open').dialog('center').dialog('setTitle', '文件上传');
         }
 
@@ -503,8 +527,7 @@
         }
 
         //文件上传界面保存按钮
-        var file_upload_flag = true;
-
+        var file_upload_flag = true;//用来防止多次点击发送请求的标记
         function file_dialog_ok() {
             if (file_upload_flag) {
                 file_upload_flag = false;
@@ -513,35 +536,97 @@
                 var formData = new FormData();
                 var node = $('#' + treeId).tree('getSelected');
                 var menuId = node.id;
-                formData.append('file', $('#file')[0].files[0]);
+                formData.append('path', temp[0].path);
+                //初始化数组
+                temp = [];
                 formData.append('menuId', menuId);
-                formData.append('keyword', $('#keyword').val());
-                formData.append('author', $('#author').val());
-                formData.append('professional', $('#professional').val());
-                formData.append('switchbutton', $('#switchbutton').val());
-                formData.append('filetype', $('#filetype').val());
 
-                //提交表单
+                //append动态表单列
+                var getText = $('#filetype').combobox('getText');
                 $.ajax({
-                    url: 'file/fileUpload',
-                    processData: false, //因为data值是FormData对象，不需要对数据做处理。
-                    contentType: false,
-                    cache: false,
-                    type: 'POST',
-                    data: formData,
-                    success: function (result) {
-                        console.log(result);
-                        message_Show(result.message);
-                        //关闭窗口, 刷新列表
-                        file_dialog_close();
-                        // $('#' + treeId).tree('reload');
-                        //调用文件解析接口, 后台自动解析
-                        fileSpread(result.data);
-                        file_upload_flag = true;
+                    url: 'file/getFormField?indexName=' + getText,
+                    dataType: 'json',
+                    success: function (datas) {
+                        if (datas.length === 0) {
+                            return;
+                        }
+                        //formData表单填充
+                        var data = datas;
+                        for (var i = 0; i < data.length; i++) {
+                            var field = data[i];
+                            var name = field.filename;
+                            console.log('\'' + name + '\'');
+                            formData.append('\'' + name + '\'', $('#' + name).val());
+                            console.log($('#' + name).val())
+                        }
+
+                        //formData转为json字符串
+                        var json = JSON.stringify(formData);
+                        //提交表单
+                        $.ajax({
+                            url: 'file/fileForm?json=' + json,
+                            processData: false, //因为data值是FormData对象，不需要对数据做处理。
+                            contentType: false,
+                            cache: false,
+                            type: 'POST',
+                            // data: formData,
+                            success: function (result) {
+                                console.log(result);
+                                message_Show(result.message);
+                                //关闭窗口, 刷新列表
+                                file_dialog_close();
+                                // $('#' + treeId).tree('reload');
+                                //调用文件解析接口, 后台自动解析
+                                // fileSpread(result.data);
+                                file_upload_flag = true;
+                            }
+                        });
                     }
                 });
+
+
             }
         }
+
+
+        function file_upload_pre() {
+            var file = $('#file')[0].files[0];
+            if (file == null) {
+                return;
+            }
+            //组装数据
+            var formData = new FormData();
+            var node = $('#' + treeId).tree('getSelected');
+            var menuId = node.id;
+            formData.append('file', $('#file')[0].files[0]);
+            formData.append('menuId', menuId);
+            //提交表单
+            $.ajax({
+                url: 'file/fileUpload',
+                processData: false, //因为data值是FormData对象，不需要对数据做处理。
+                contentType: false,
+                cache: false,
+                type: 'POST',
+                data: formData,
+                success: function (result) {
+                    console.log(result);
+                    // message_Show(result.message);
+                    // //关闭窗口, 刷新列表
+                    // file_dialog_close();
+                    // $('#' + treeId).tree('reload');
+                    //调用文件解析接口, 后台自动解析
+                    // fileSpread(result.data);
+
+                    //服务器文件地址存入交换数组
+                    temp.push(
+                        {'path': result.data}
+                    );
+                    console.log(temp[0].path);//文件服务器地址
+                    file_upload_flag = true;
+                }
+            });
+        }
+
 
         //取消
         function file_dialog_close() {
@@ -679,6 +764,11 @@
                 });
             }
         }
+
+        function changeTest() {
+            alert(33);
+
+        }
     </script>
 </head>
 <body id="permissionSet_layout" class="easyui-layout">
@@ -786,61 +876,30 @@
 
 <%--新增文件--%>
 <div id="file_dialog" class="easyui-dialog"
-     data-options="closed:true, modal:true,border:'thin', buttons:'#file_dialog_button'">
+     data-options="closed:true, modal:true,border:'thin', buttons:'#file_dialog_button'"
+     style="height:100%; width: 50%;">
     <form id="file_dialog_upload" method="post" enctype="multipart/form-data">
-
-        <table cellspacing="10" class="pxzn-dialog-font" style="margin:20px 50px;">
+        <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
             <input id="menuId" name="menuId" type="hidden">
-
+            <input id="filename" name="filename" type="hidden">
             <tr>
-                <td>
-                    作者
-                </td>
-                <td>
-                    <input id="author" class="easyui-textbox" style="width:100%;"
-                           name="author">
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    文档类型
+                <td class="pe-label" style="width: 40%">
+                    文档类库
                 </td>
                 <td>
                     <input id="filetype" class="easyui-combobox" style="width:100%;"
                            name="filetype"/>
                 </td>
             </tr>
-
             <tr>
-                <td>
-                    专业
-                </td>
-                <td>
-                    <input id="professional" class="easyui-textbox" style="width:100%;"
-                           name="professional">
-                </td>
-            </tr>
-
-            <tr>
-                <td class="pe-label">
-                    <span class="sp_waning">
-                       <%--<input id="switchbutton" name="switchbutton" class="easyui-switchbutton" data-options="onText:'摘要',offText:'关键词', ">--%>
-                        摘要或关键词
-                    </span>
-                </td>
-                <td class="pe-content" colspan="6">
-                    <input id="keyword" class="easyui-textbox" name="keyword" style="width:100%;height:60px"
-                           data-options="multiline:true,prompt:'...'">
-                </td>
-            </tr>
-            <tr>
-                <td class="pe-label">文 件 上 传：</td>
+                <td class="pe-label" style="width: 40%">文 件 上 传：</td>
                 <td class="pe-content" colspan="6">
                     <input id="file" name="file" class="easyui-file" type="file"
-                           style="width:100%">
+                           style="width:100%" onblur="file_upload_pre()">
                 </td>
             </tr>
+        </table>
+        <table id="filedTable" cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
         </table>
 
     </form>
@@ -863,6 +922,7 @@
             </tr>
         </table>
         <button id="btnSaveIndex" type="button">保存</button>
+        <%--<input placeholder="添点什么">--%>
     </form>
 </div>
 

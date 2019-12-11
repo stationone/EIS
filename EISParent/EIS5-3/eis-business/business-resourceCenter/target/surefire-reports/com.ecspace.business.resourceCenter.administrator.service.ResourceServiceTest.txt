@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: com.ecspace.business.resourceCenter.administrator.service.ResourceServiceTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.165 s <<< FAILURE! - in com.ecspace.business.resourceCenter.administrator.service.ResourceServiceTest
+list(com.ecspace.business.resourceCenter.administrator.service.ResourceServiceTest)  Time elapsed: 0.01 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.ecspace.business.resourceCenter.administrator.service.ResourceServiceTest.list(ResourceServiceTest.java:21)
+

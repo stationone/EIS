@@ -2,6 +2,7 @@ package com.ecspace.business.knowledgeCenter.administrator.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.ecspace.business.knowledgeCenter.administrator.dao.FileBaseDao;
 import com.ecspace.business.knowledgeCenter.administrator.dao.FileTypeDao;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileBase;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileType;
@@ -77,50 +78,75 @@ public class FileTypeServiceImpl implements FileTypeService {
         return new GlobalResult(index, 2000, String.valueOf(index));
     }
 
-    @Override
-    public PageData fileTypeDetail(String id) {
-        FileType fileType = fileTypeDao.findById(id).orElse(new FileType());
-        String typeName = fileType.getTypeName();
-        if (typeName == null || "".equals(typeName)) {
-            return null;
-        }
-//        if (page != null) {
-//            page = (page - 1)*size;
-//        }else {
-//            page = 0;
+    //    public PageData fileTypeDetail(String id) {
+//        FileType fileType = fileTypeDao.findById(id).orElse(new FileType());
+//        String typeName = fileType.getTypeName();
+//        if (typeName == null || "".equals(typeName)) {
+//            return null;
 //        }
-//        if (size == null) {
-//            size = 10;
+//        //获取mapping详情
+//        JSONObject properties = getMappingInfo(typeName);
+//        //提取所有的key
+//        if (properties == null) {
+//            return null;
 //        }
-        //获取mapping详情
-        JSONObject properties = getMappingInfo(typeName);
-        //提取所有的key
-        if (properties == null) {
-            return null;
-        }
-        Set<String> keys = properties.keySet();
-        //转为list
-        List<FileBase> list = new ArrayList<>();
-        List<Map<String, Object>> lists = new ArrayList<Map<String, Object>>();
+//        Set<String> keys = properties.keySet();
+//        //转为list
+//        List<FileBase> list = new ArrayList<>();
+//        List<Map<String, Object>> lists = new ArrayList<Map<String, Object>>();
+//
+//        Map<String, Object> stringObjectHashMap = new HashMap<>();
+//        for (String key : keys) {
+//            FileBase fileBase = new FileBase();
+//            fileBase.setFilename(key);
+//            list.add(fileBase);
+//            stringObjectHashMap.put("typeName",key);
+//        }
+//        PageData pageData = new PageData();
+//        lists.add(stringObjectHashMap);
+//        pageData.setRows(list);
+//        pageData.setTotal(list.size());
+//        return pageData;
+//    }
+    @Autowired
+    private FileBaseDao fileBaseDao;
 
-        Map<String, Object> stringObjectHashMap = new HashMap<>();
-        for (String key : keys) {
-            FileBase fileBase = new FileBase();
-            fileBase.setFilename(key);
-            list.add(fileBase);
-            stringObjectHashMap.put("typeName",key);
+    @Override
+    public PageData fileTypeDetail(String id, Integer page, Integer size) {
+        FileType fileType = fileTypeDao.findById(id).orElse(new FileType());
+        String indexName = fileType.getTypeName();
+        if (indexName == null || "".equals(indexName)) {
+            return null;
         }
+        JSONObject mappingInfo = getMappingInfo(indexName);
+        if (mappingInfo == null) {
+            return new PageData(new ArrayList());
+        }
+        //封装mapping信息至IndexField
+        List<FileBase> fieldList = new ArrayList<>();
+        for (String s : mappingInfo.keySet()) {
+
+            FileBase fileBase = new FileBase();
+            //字段名称
+            fileBase.setFilename(s);
+            FileBase base = fileBaseDao.findByFilename(s).orElse(fileBase);
+
+            //将indexField加入fieldList
+            fieldList.add(base);
+        }
+
+        //填充pageData
         PageData pageData = new PageData();
-        lists.add(stringObjectHashMap);
-        pageData.setRows(list);
-        pageData.setTotal(list.size());
+        //设置字段数量为键值对的数量
+        pageData.setTotal(mappingInfo.keySet().size());
+        pageData.setRows(fieldList);
         return pageData;
     }
 
     /**
      * 创建类型同时创建索引库
      */
-    private boolean createIndex(String indexName){
+    private boolean createIndex(String indexName) {
         //将索引库名称变为小写
         indexName = indexName.toLowerCase();
 
@@ -155,9 +181,11 @@ public class FileTypeServiceImpl implements FileTypeService {
 
     /**
      * 获取字段信息
+     *
      * @param indexName
      * @return
      */
+    @Override
     public JSONObject getMappingInfo(String indexName) {
         IndicesAdminClient adminClient = elasticsearchTemplate.getClient().admin().indices();
         GetMappingsResponse dev1 = adminClient.prepareGetMappings(indexName).get();

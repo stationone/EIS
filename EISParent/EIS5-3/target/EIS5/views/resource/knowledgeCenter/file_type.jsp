@@ -39,15 +39,28 @@
         });
 
         function getTree() {
-                $('#' + treeId).tree({
-                url: 'fileType/listFileType',
-                method: "GET",
-                checkbox: false,
-                multiple: false,
-                onClick: function (node) {
-                    loadDataList(node.id);
+            $('#' + treeId).tree({
+                    url: 'fileType/listFileType',
+                    method: "GET",
+                    checkbox: false,
+                    multiple: false,
+                    onClick: function (node) {
+                        loadDataList(node.id);
+                    },
+                    onLoadSuccess: function (node, data) {
+                        //什么都不干
+
+                        if (data.length > 0) {
+                            //找到第一个元素
+                            var n =  $('#' + treeId).tree('find', data[0].id);
+                            //调用选中事件
+                            $('#' + treeId).tree('select', n.target);
+
+                        }
+                        loadDataList(n.id);
+                    }
                 }
-            });
+            );
         }
 
         /**
@@ -65,6 +78,9 @@
 
                 columns: [[
                     {field: 'filename', title: '字段名称', width: 180, align: 'center'},
+                    {field: 'type', title: '类型', width: 180, align: 'center'},
+                    {field: 'scope', title: '取值范围', width: 180, align: 'center'},
+                    {field: 'desc', title: '备注', width: 180, align: 'center'}
                 ]],
                 rownumbers: true,
                 title: '映射字段名称信息',
@@ -72,12 +88,13 @@
                 collapsible: true,
                 nowrap: true,
                 striped: true,
+                // pagination: true,
                 loading: true,
                 emptyMsg: "没有获取到数据",
                 loadMsg: "正在努力加载数据,表格渲染中...",
                 onLoadSuccess: function (data) {
-                    // alert("加载完成");
-                    $("a[name='opera']").linkbutton({text: '预览', plain: true, iconCls: '/images/px-icon/yulan.png'});
+                    // // alert("加载完成");
+                    // $("a[name='opera']").linkbutton({text: '预览', plain: true, iconCls: '/images/px-icon/yulan.png'});
                 },
                 onLoadError: function () {
                     clearDataGrid();
@@ -183,9 +200,7 @@
         //打开
         function newFolder() {
             $('#folder_dialog_form').form('clear');
-            $('#folder_dialog_form').form('load', {
-
-            });
+            $('#folder_dialog_form').form('load', {});
             $('#folder_dialog').dialog('open').dialog('center').dialog('setTitle', '创建类型');
         }
 

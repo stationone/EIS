@@ -8,18 +8,18 @@ package com.ecspace.business.knowledgeCenter.administrator.service.impl;
 //import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 //import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 
+import com.alibaba.fastjson.JSONObject;
 import com.ecspace.business.knowledgeCenter.administrator.FileAnalysis.*;
+import com.ecspace.business.knowledgeCenter.administrator.dao.FileBaseDao;
 import com.ecspace.business.knowledgeCenter.administrator.dao.FileInfoDao;
 import com.ecspace.business.knowledgeCenter.administrator.dao.MenuDao;
 import com.ecspace.business.knowledgeCenter.administrator.dao.PageDao;
-import com.ecspace.business.knowledgeCenter.administrator.pojo.FileDirectoryNode;
-import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
-import com.ecspace.business.knowledgeCenter.administrator.pojo.Menu;
-import com.ecspace.business.knowledgeCenter.administrator.pojo.Page;
+import com.ecspace.business.knowledgeCenter.administrator.pojo.*;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
 //import org.springframework.beans.factory.annotation.Autowired;
+import com.ecspace.business.knowledgeCenter.administrator.service.FileTypeService;
 import com.ecspace.business.knowledgeCenter.administrator.util.FileHashCode;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
 import org.apache.commons.io.FileUtils;
@@ -31,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -55,12 +54,10 @@ public class FileServiceImpl implements FileService {
      * 上传文件操作
      *
      * @param file
-     * @param menuId
-     * @param keyword
      * @return
      */
     @Override
-    public GlobalResult saveFile(MultipartFile file, String menuId, String keyword) throws Exception {
+    public GlobalResult saveFile(MultipartFile file) throws Exception {
         //文件名
         String filename = file.getOriginalFilename();
         //组装文件路径
@@ -96,20 +93,20 @@ public class FileServiceImpl implements FileService {
         inputStream.close();//释放资源
 
         //封装fileInfo对象
-        FileInfo fileInfo = new FileInfo();
-        fileInfo.setHashCode(FileHashCode.generate(path));
-        fileInfo.setId(TNOGenerator.generateId());
-        fileInfo.setFileName(filename);
-        fileInfo.setFilePath(path);
-        fileInfo.setFileSize(file.getSize());
-        assert filename != null;
-        fileInfo.setFileNameSuffix(filename.substring(filename.lastIndexOf(".") + 1));
-        fileInfo.setFileNamePrefix(filename.substring(0, filename.lastIndexOf(".")));
-        fileInfo.setCreationTime(new Date());
-        fileInfo.setKeyword(keyword);
-        fileInfo.setMenuId(menuId);
+//        FileInfo fileInfo = new FileInfo();
+//        fileInfo.setHashCode(FileHashCode.generate(path));
+//        fileInfo.setId(TNOGenerator.generateId());
+//        fileInfo.setFileName(filename);
+//        fileInfo.setFilePath(path);
+//        fileInfo.setFileSize(file.getSize());
+//        assert filename != null;
+//        fileInfo.setFileNameSuffix(filename.substring(filename.lastIndexOf(".") + 1));
+//        fileInfo.setFileNamePrefix(filename.substring(0, filename.lastIndexOf(".")));
+//        fileInfo.setCreationTime(new Date());
+//        fileInfo.setKeyword(keyword);
+//        fileInfo.setMenuId(menuId);
 
-        return new GlobalResult(false, 2001, "干的漂亮, 稍后可以查看离散文件", fileInfo);
+        return new GlobalResult(false, 2001, "干的漂亮, 稍后可以查看离散文件", path);
     }
 
 
@@ -208,6 +205,39 @@ public class FileServiceImpl implements FileService {
         List<Page> pageList = pageDao.findByFileIdOrderByPageNOAsc(fileId);
         fileInfo.setPageList(pageList);
         return fileInfo;
+    }
+
+    /**
+     * 获取上传form所需要的表单列
+     * @param indexName
+     * @return
+     */
+    @Autowired
+    private FileTypeService fileTypeService;
+    @Autowired
+    private FileBaseDao fileBaseDao;
+    @Override
+    public List<FileBase> getFormField(String indexName) {
+        //根据索引名称获取字段
+        JSONObject mappingInfo = fileTypeService.getMappingInfo(indexName);
+        if (mappingInfo == null) {
+            return(new ArrayList());
+        }
+        //封装mapping信息至IndexField
+        List<FileBase> fieldList = new ArrayList<>();
+        for (String s : mappingInfo.keySet()) {
+
+            FileBase fileBase = new FileBase();
+            //字段名称
+            fileBase.setFilename(s);
+            //其他信息(找不到就只给个名字)
+            FileBase base = fileBaseDao.findByFilename(s).orElse(fileBase);
+
+            //将indexField加入fieldList
+            fieldList.add(base);
+        }
+
+        return fieldList;
     }
 
     /**
@@ -369,43 +399,6 @@ public class FileServiceImpl implements FileService {
             }
         }
         fileInfo.setPageList(pageList);
-//        for (int i = 0; i < fileInfo.getPageList().size(); i++) {
-//            System.out.println("第" + fileInfo.getPageList().get(i).getPageNO() + "页");
-//            System.out.println("content：" + fileInfo.getPageList().get(i).getContent());
-//            List<FileDirectoryNode> nodeList = fileInfo.getPageList().get(i).getNodeList();
-//            if (nodeList == null || nodeList.size() == 0) {
-//                System.out.println("    node：无");
-//            } else {
-//                for (FileDirectoryNode node : nodeList) {
-//                    System.out.println("    nodeName：" + node.getNodeName());
-//                    System.out.println("        level：" + node.getLevel());
-//                    if (node.getParentNode() != null) {
-//                        System.out.println("        parentNode：" + node.getParentNode().getNodeName());
-//                    } else {
-//                        System.out.println("        parentNode：无");
-//                    }
-//                    List<FileDirectoryNode> subNodeList = node.getSubNodeList();
-//                    if (subNodeList == null || subNodeList.size() == 0) {
-//                        System.out.println("        subNode：无");
-//                    } else {
-//                        for (FileDirectoryNode subNode : subNodeList) {
-//                            System.out.println("        subNode：" + subNode.getNodeName());
-//                        }
-//                    }
-//                    if (node.getPreviousNode() != null) {
-//                        System.out.println("        previoousNode：" + node.getPreviousNode().getNodeName());
-//                    } else {
-//                        System.out.println("        previoousNode：无");
-//                    }
-//                    if (node.getNextNode() != null) {
-//                        System.out.println("        nextNode：" + node.getNextNode().getNodeName());
-//                    } else {
-//                        System.out.println("        nextNode：无");
-//                    }
-//                }
-//            }
-//        }
     }
-
 
 }

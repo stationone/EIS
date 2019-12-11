@@ -71,9 +71,9 @@ public class FileTypeController {
 
     //根据树id, 查询index中的field信息
     @PostMapping("/fileTypeList")
-    public PageData fileTypeList(String id){
+    public PageData fileTypeList(String id, Integer page, Integer size){
 
-        return fileTypeService.fileTypeDetail(id);
+        return fileTypeService.fileTypeDetail(id ,page, size);
     }
 
 

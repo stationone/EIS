@@ -1,5 +1,6 @@
 package com.ecspace.business.knowledgeCenter.administrator.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileType;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
@@ -24,5 +25,7 @@ public interface FileTypeService {
      * 类型字段列表
      * @return
      */
-    PageData fileTypeDetail(String id);
+    PageData fileTypeDetail(String id, Integer page, Integer size);
+
+    JSONObject getMappingInfo(String indexName);
 }
