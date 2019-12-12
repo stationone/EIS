@@ -1,6 +1,7 @@
 package com.ecspace.business.knowledgeCenter.administrator.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileBase;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
@@ -54,8 +55,22 @@ public class FileController {
      */
     @PostMapping(value = "fileForm")
     public GlobalResult fileForm(String json) throws Exception {
+        if (json == null) {
+            return new GlobalResult(false,4000,"非法参数");
+        }
+        //解析json
+        JSONObject jsonObject = JSON.parseObject(json);
+        if ("".equals(jsonObject.get("path"))) {
+            return new GlobalResult(false,4000,"没有文件");
+        }
+        if ("".equals(jsonObject.get("library"))) {
+            return new GlobalResult(false,4000,"没选类型");
+        }
 
-        return null;
+        //调用文件服务
+        FileInfo fileInfo = fileService.saveFileInfo(jsonObject);
+        System.out.println(json);
+        return new GlobalResult(true, 2000, "true", fileInfo);
     }
 
 
@@ -69,10 +84,9 @@ public class FileController {
     @PostMapping(value = "fileAnalyzer")
     public GlobalResult fileAnalyzer(@RequestBody FileInfo fileInfo) throws Exception {
 
-//        Thread.sleep(10000);//加载一会
-
         //调用文件服务
-        return fileService.fileAnalyzer(fileInfo);
+//        return fileService.fileAnalyzer(fileInfo);
+        return fileService.file2Html(fileInfo);
     }
 
     /**

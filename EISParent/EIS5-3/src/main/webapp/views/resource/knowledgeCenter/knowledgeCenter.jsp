@@ -26,6 +26,7 @@
     <script src="js/px-tool/px-util.js"></script>
     <script src="js/pxzn.easyui.util.js"></script>
     <script src="js/easyui-language/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="ui/jquery.serializejson.min.js"></script>
 
     <script>
         var treeId = "<%=treeId%>";
@@ -36,16 +37,6 @@
          * 入口函数
          */
         $(function () {
-            var $input = $("#file");
-
-            $input.change(function () {
-                //如果value不为空，调用文件加载方法
-                if ($(this).val() != "") {
-                    file_upload_pre();
-                    alert(11)
-                }
-                alert(22);
-            });
             /**
              * 获取库目录
              */
@@ -270,6 +261,21 @@
 
         }
 
+        /**
+         * 文件预览
+         */
+        function file_show(fileId, pageNo) {
+            <%--//清除--%>
+            <%--$('#dataList').remove();--%>
+            <%--//创建--%>
+            <%--$('#dataParent').append('<ul id="dataList">\n' +--%>
+            <%--'        &lt;%&ndash;正文内容&ndash;%&gt;\n' +--%>
+            <%--'    </ul>');--%>
+            // $('#dataList').append('我就是文件, 你要预览的就是我');
+            window.location.href = "./views/resource/knowledgeCenter/file_show.jsp?fileId=" + fileId + "&pageNo=" + pageNo
+
+        }
+
         //时间戳转日期格式
         function formatDate(time, format) {
             var t = new Date(time);
@@ -342,7 +348,7 @@
                             if (datas.length === 0) {
                                 return;
                             }
-                            //表单填充
+                            //表单列替换
                             var textHtml = "";
                             var data = datas;
                             for (var i = 0; i < data.length; i++) {
@@ -370,6 +376,10 @@
                         }
                     });
 
+                    //
+                    $('#file_dialog_upload').form('load', {
+                        library: getText,
+                    });
                 }
             });
             $('#file_dialog').dialog('open').dialog('center').dialog('setTitle', '文件上传');
@@ -479,18 +489,6 @@
         }
 
         /**
-         * 获取树节点
-         * 根节点id
-         */
-        function getParent(node) {
-            var rootNode = $('#' + treeId).tree('getParent', node.target);
-            if (rootNode == null) {
-                return node;
-            }
-            return getParent(rootNode);
-        }
-
-        /**
          * 提交目录表单
          */
         var menu_submit_flag = true;//用来防止多次点击发送请求
@@ -532,63 +530,31 @@
             if (file_upload_flag) {
                 file_upload_flag = false;
 
-                //组装数据
-                var formData = new FormData();
-                var node = $('#' + treeId).tree('getSelected');
-                var menuId = node.id;
-                formData.append('path', temp[0].path);
-                //初始化数组
-                temp = [];
-                formData.append('menuId', menuId);
-
-                //append动态表单列
-                var getText = $('#filetype').combobox('getText');
+                var str = JSON.stringify($('#file_dialog_upload').serializeJSON());
+                console.log(str);
                 $.ajax({
-                    url: 'file/getFormField?indexName=' + getText,
-                    dataType: 'json',
-                    success: function (datas) {
-                        if (datas.length === 0) {
-                            return;
-                        }
-                        //formData表单填充
-                        var data = datas;
-                        for (var i = 0; i < data.length; i++) {
-                            var field = data[i];
-                            var name = field.filename;
-                            console.log('\'' + name + '\'');
-                            formData.append('\'' + name + '\'', $('#' + name).val());
-                            console.log($('#' + name).val())
-                        }
-
-                        //formData转为json字符串
-                        var json = JSON.stringify(formData);
-                        //提交表单
-                        $.ajax({
-                            url: 'file/fileForm?json=' + json,
-                            processData: false, //因为data值是FormData对象，不需要对数据做处理。
-                            contentType: false,
-                            cache: false,
-                            type: 'POST',
-                            // data: formData,
-                            success: function (result) {
-                                console.log(result);
-                                message_Show(result.message);
-                                //关闭窗口, 刷新列表
-                                file_dialog_close();
-                                // $('#' + treeId).tree('reload');
-                                //调用文件解析接口, 后台自动解析
-                                // fileSpread(result.data);
-                                file_upload_flag = true;
-                            }
-                        });
+                    url: 'file/fileForm',
+                    type: 'POST',
+                    dataType: 'JSON',
+                    // contentType: 'application/json',
+                    data: {json: str},
+                    success: function (result) {
+                        console.log(result);
+                        message_Show(result.message);
+                        //关闭窗口, 刷新列表
+                        file_dialog_close();
+                        // $('#' + treeId).tree('reload');
+                        //调用文件解析接口, 后台自动解析
+                        fileSpread(result.data);
+                        file_upload_flag = true;
                     }
                 });
-
-
             }
         }
 
-
+        /**
+         * 文件选择完上传
+         */
         function file_upload_pre() {
             var file = $('#file')[0].files[0];
             if (file == null) {
@@ -610,18 +576,20 @@
                 data: formData,
                 success: function (result) {
                     console.log(result);
-                    // message_Show(result.message);
-                    // //关闭窗口, 刷新列表
-                    // file_dialog_close();
-                    // $('#' + treeId).tree('reload');
-                    //调用文件解析接口, 后台自动解析
-                    // fileSpread(result.data);
-
-                    //服务器文件地址存入交换数组
                     temp.push(
                         {'path': result.data}
                     );
                     console.log(temp[0].path);//文件服务器地址
+
+                    //上传完成加载表单其他属性
+                    // var node = $('#' + treeId).tree('getSelected');
+                    // var menuId = node.id;
+                    $('#file_dialog_upload').form('load', {
+                        menuId: menuId,
+                        path: temp[0].path,
+                    });
+                    //清空数组
+                    temp = [];
                     file_upload_flag = true;
                 }
             });
@@ -648,7 +616,6 @@
                 contentType: 'application/json',
                 data: JSON.stringify(fileInfo),
                 // async: false,
-                contentType: "application/json",
                 success: function (result) {
                     //成功后右下角窗口提醒
                     message_Show(result.message)
@@ -881,7 +848,15 @@
     <form id="file_dialog_upload" method="post" enctype="multipart/form-data">
         <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
             <input id="menuId" name="menuId" type="hidden">
-            <input id="filename" name="filename" type="hidden">
+            <input id="path" name="path" type="hidden">
+            <input id="library" name="library" type="hidden">
+            <tr>
+                <td class="pe-label" style="width: 40%">文 件 上 传：</td>
+                <td class="pe-content" colspan="6">
+                    <input id="file" name="file" class="easyui-file" type="file"
+                           style="width:100%" onblur="file_upload_pre()">
+                </td>
+            </tr>
             <tr>
                 <td class="pe-label" style="width: 40%">
                     文档类库
@@ -889,13 +864,6 @@
                 <td>
                     <input id="filetype" class="easyui-combobox" style="width:100%;"
                            name="filetype"/>
-                </td>
-            </tr>
-            <tr>
-                <td class="pe-label" style="width: 40%">文 件 上 传：</td>
-                <td class="pe-content" colspan="6">
-                    <input id="file" name="file" class="easyui-file" type="file"
-                           style="width:100%" onblur="file_upload_pre()">
                 </td>
             </tr>
         </table>

@@ -141,7 +141,7 @@
             ,{"moduleNO":"16","moduleName":"类型定义","moduleURL":"views/resource/knowledgeCenter/file_type.jsp","icon":"resourceMaintain-light.png","event":"","order":2}
 
             ,{"moduleNO":"17","moduleName":"全文检索","moduleURL":"views/resource/knowledgeCenter/file_search.jsp","icon":"resourceMaintain-light.png","event":"","order":4}
-            ,{"moduleNO":"18","moduleName":"我的收藏","moduleURL":"views/resource/knowledgeCenter/documentCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":5}
+            ,{"moduleNO":"18","moduleName":"检索日志","moduleURL":"views/resource/knowledgeCenter/documentCreate.jsp","icon":"resourceMaintain-light.png","event":"","order":5}
         ];
 
         //搜索

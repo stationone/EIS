@@ -23,9 +23,12 @@ import com.ecspace.business.knowledgeCenter.administrator.service.FileTypeServic
 import com.ecspace.business.knowledgeCenter.administrator.util.FileHashCode;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
 import org.apache.commons.io.FileUtils;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -216,6 +219,8 @@ public class FileServiceImpl implements FileService {
     private FileTypeService fileTypeService;
     @Autowired
     private FileBaseDao fileBaseDao;
+    @Autowired
+    private ElasticsearchTemplate elasticsearchTemplate;
     @Override
     public List<FileBase> getFormField(String indexName) {
         //根据索引名称获取字段
@@ -238,6 +243,60 @@ public class FileServiceImpl implements FileService {
         }
 
         return fieldList;
+    }
+
+    @Override
+    public FileInfo saveFileInfo(JSONObject jsonObject) throws Exception {
+        String path = (String) jsonObject.get("path");
+        String menuId = (String) jsonObject.get("menuId");
+//        jsonObject
+        File file = new File(path);//new出来文件
+        String filename = file.getName();//文件名
+        long length = file.length();//文件大小
+//        //封装fileInfo对象
+        String id = TNOGenerator.generateId();
+//        FileInfo fileInfo1 = new FileInfo();
+//        fileInfo.setHashCode(FileHashCode.generate(path));
+//        fileInfo1.setId(id);
+
+//        fileInfo.setFileName(filename);
+//        fileInfo.setFilePath(path);
+//        fileInfo.setFileSize(length);
+//        fileInfo.setFileNameSuffix(filename.substring(filename.lastIndexOf(".") + 1));
+//        fileInfo.setFileNamePrefix(filename.substring(0, filename.lastIndexOf(".")));
+//        fileInfo.setCreationTime(new Date());
+////        fileInfo.setKeyword(keyword);
+//        fileInfo.setMenuId(menuId);
+        //封装一个map
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        map.put("id", id);
+        map.put("fileName", filename);
+        map.put("hashCode", FileHashCode.generate(path));
+        map.put("filePath", path);
+        map.put("fileSize", length);
+        map.put("fileNameSuffix", filename.substring(filename.lastIndexOf(".") + 1));
+        map.put("fileNamePrefix", filename.substring(0, filename.lastIndexOf(".")));
+        map.put("creationTime", new Date().getTime());
+        map.put("menuId", menuId);
+        jsonObject.putAll(map);//拼接
+        IndexResponse indexResponse = elasticsearchTemplate.getClient().prepareIndex("file", "file")
+                .setSource(jsonObject, XContentType.JSON)
+                .setId(id)
+                .get();
+
+        return fileInfoDao.findById(id).orElse(new FileInfo());
+    }
+
+    @Override
+    public GlobalResult file2Html(FileInfo fileInfo) {
+        Menu menu = menuDao.findById(fileInfo.getMenuId()).orElse(new Menu());
+        String menuUrl = menu.getUrl();
+        String indexName = menu.getIndexName();
+        fileInfo.setIndexName(indexName);
+
+
+        return null;
     }
 
     /**

@@ -57,7 +57,6 @@ public class FileSearchServiceImpl implements FileSearchService {
 
     /**
      * 无检索词
-     *
      * @param menuId
      * @param page
      * @param rows
@@ -72,7 +71,6 @@ public class FileSearchServiceImpl implements FileSearchService {
 
     /**
      * 有检索词
-     *
      * @param menuId
      * @param search
      * @param page
@@ -81,8 +79,6 @@ public class FileSearchServiceImpl implements FileSearchService {
      */
     @Override
     public PageData getFilePageList(String menuId, String search, Integer page, Integer rows) throws IOException {
-        //获取搜索词
-//        String search = (String) JSON.parseObject(json).get("search");
         //获取客户端, 构建查询
         Client client = elasticsearchTemplate.getClient();
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch();
@@ -102,16 +98,6 @@ public class FileSearchServiceImpl implements FileSearchService {
         highlightBuilder.preTags("<tag style=\"color: red;\">");//设置前缀
         highlightBuilder.postTags("</tag>");//设置后缀
 
-////        menuId匹配
-////        TermVectorsFields fields = new TermVectorsFields();
-//        //词频
-//            //构建第二查询
-//        SearchRequestBuilder searchRequest = client.prepareSearch();
-//        TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("", "");
-//        SearchResponse response = searchRequest.setQuery(termQueryBuilder).get();
-//        SearchHits respHits = response.getHits();//term查询
-
-//
         //正文字段进行匹配
         boolQueryBuilder.must(QueryBuilders.multiMatchQuery(search, "content"))
                 .minimumShouldMatch("80%");

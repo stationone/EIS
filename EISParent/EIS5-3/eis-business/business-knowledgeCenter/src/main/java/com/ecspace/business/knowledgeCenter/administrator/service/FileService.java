@@ -1,5 +1,6 @@
 package com.ecspace.business.knowledgeCenter.administrator.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileBase;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
@@ -65,6 +66,20 @@ public interface FileService {
      * @return
      */
     List<FileBase> getFormField(String indexName);
+
+    /**
+     * 存储文件信息
+     * @param jsonObject
+     * @return
+     */
+    FileInfo saveFileInfo(JSONObject jsonObject) throws Exception;
+
+    /**
+     * office转html
+     * @param fileInfo
+     * @return
+     */
+    GlobalResult file2Html(FileInfo fileInfo);
 //
 //
 //    /**

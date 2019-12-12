@@ -16,4 +16,6 @@
         <!--<package name="com.ecspace.business.com.ecspace.business.accountCenter.administrator.dao.mapper"/>-->
     </typeAliases>
 
+
+
 </configuration>

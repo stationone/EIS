@@ -22,4 +22,6 @@ public interface FileInfoDao extends ElasticsearchRepository<FileInfo, String> {
     Optional<FileInfo> findById(String id);
 
     List<FileInfo> findByMenuId(String menuId);
+
+    Optional<FileInfo> findByHashCode(String hashCode);
 }
