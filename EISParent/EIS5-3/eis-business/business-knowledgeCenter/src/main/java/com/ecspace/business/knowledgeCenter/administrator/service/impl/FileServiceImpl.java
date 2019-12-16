@@ -10,10 +10,7 @@ package com.ecspace.business.knowledgeCenter.administrator.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.ecspace.business.knowledgeCenter.administrator.FileAnalysis.*;
-import com.ecspace.business.knowledgeCenter.administrator.dao.FileBaseDao;
-import com.ecspace.business.knowledgeCenter.administrator.dao.FileInfoDao;
-import com.ecspace.business.knowledgeCenter.administrator.dao.MenuDao;
-import com.ecspace.business.knowledgeCenter.administrator.dao.PageDao;
+import com.ecspace.business.knowledgeCenter.administrator.dao.*;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.*;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
@@ -22,10 +19,12 @@ import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileTypeService;
 import com.ecspace.business.knowledgeCenter.administrator.util.FileHashCode;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
+import com.itextpdf.text.pdf.PdfReader;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
@@ -94,21 +93,6 @@ public class FileServiceImpl implements FileService {
         InputStream inputStream = file.getInputStream();
         FileUtils.copyInputStreamToFile(inputStream, fileObj);//复制文件至服务器本地
         inputStream.close();//释放资源
-
-        //封装fileInfo对象
-//        FileInfo fileInfo = new FileInfo();
-//        fileInfo.setHashCode(FileHashCode.generate(path));
-//        fileInfo.setId(TNOGenerator.generateId());
-//        fileInfo.setFileName(filename);
-//        fileInfo.setFilePath(path);
-//        fileInfo.setFileSize(file.getSize());
-//        assert filename != null;
-//        fileInfo.setFileNameSuffix(filename.substring(filename.lastIndexOf(".") + 1));
-//        fileInfo.setFileNamePrefix(filename.substring(0, filename.lastIndexOf(".")));
-//        fileInfo.setCreationTime(new Date());
-//        fileInfo.setKeyword(keyword);
-//        fileInfo.setMenuId(menuId);
-
         return new GlobalResult(false, 2001, "干的漂亮, 稍后可以查看离散文件", path);
     }
 
@@ -169,7 +153,7 @@ public class FileServiceImpl implements FileService {
         if (page == null) {
             page = 0;
         } else {
-            page = (page - 1)*rows;
+            page = (page - 1) * rows;
         }
         if (rows == null) {
             rows = 10;
@@ -212,6 +196,7 @@ public class FileServiceImpl implements FileService {
 
     /**
      * 获取上传form所需要的表单列
+     *
      * @param indexName
      * @return
      */
@@ -221,12 +206,13 @@ public class FileServiceImpl implements FileService {
     private FileBaseDao fileBaseDao;
     @Autowired
     private ElasticsearchTemplate elasticsearchTemplate;
+
     @Override
     public List<FileBase> getFormField(String indexName) {
         //根据索引名称获取字段
         JSONObject mappingInfo = fileTypeService.getMappingInfo(indexName);
         if (mappingInfo == null) {
-            return(new ArrayList());
+            return (new ArrayList());
         }
         //封装mapping信息至IndexField
         List<FileBase> fieldList = new ArrayList<>();
@@ -247,7 +233,11 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public FileInfo saveFileInfo(JSONObject jsonObject) throws Exception {
-        String path = (String) jsonObject.get("path");
+        String path = (String) jsonObject.get("filePath");
+        if (path == null || "".equals(path)) {
+            return new FileInfo();
+
+        }
         String menuId = (String) jsonObject.get("menuId");
 //        jsonObject
         File file = new File(path);//new出来文件
@@ -288,16 +278,13 @@ public class FileServiceImpl implements FileService {
         return fileInfoDao.findById(id).orElse(new FileInfo());
     }
 
+    //类型选择框
     @Override
-    public GlobalResult file2Html(FileInfo fileInfo) {
-        Menu menu = menuDao.findById(fileInfo.getMenuId()).orElse(new Menu());
-        String menuUrl = menu.getUrl();
-        String indexName = menu.getIndexName();
-        fileInfo.setIndexName(indexName);
-
-
-        return null;
+    public List<FileBase> listTypeField(String indexName) {
+        List<FileBase> baseList = fileBaseDao.findByIndexName(indexName);
+        return baseList;
     }
+
 
     /**
      * 解析office文件, 设置pegeList, nodeList, fileId
@@ -399,7 +386,7 @@ public class FileServiceImpl implements FileService {
                     //将PDF文件的页生成新的PDF文件
                     if (PDFReader.splitPdfFile(pdfFilePath, splitPdfFilePath, i + 1, i + 1)) {
                         page.setPdfPage(new java.io.File(splitPdfFilePath));     //转换成文件封装进对象
-                        page.setPageWebPath("../knowledgeCenterFileManger/webDoc/" + fileInfo.getHashCode() + "/" + fileInfo.getHashCode() + "_"+ String.valueOf(i+1) + ".pdf");
+                        page.setPageWebPath("../knowledgeCenterFileManger/webDoc/" + fileInfo.getHashCode() + "/" + fileInfo.getHashCode() + "_" + String.valueOf(i + 1) + ".pdf");
                     } //不存储
 //                    page.setKnowledge(fileInfo);//page所在的file//不存储
                     //page所在的文件id

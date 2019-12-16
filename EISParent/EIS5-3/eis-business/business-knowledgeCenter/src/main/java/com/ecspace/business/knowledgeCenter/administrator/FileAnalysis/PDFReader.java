@@ -1,5 +1,6 @@
 package com.ecspace.business.knowledgeCenter.administrator.FileAnalysis;
 
+import com.ecspace.business.knowledgeCenter.administrator.util.FileHashCode;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfCopy;
@@ -12,6 +13,8 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 解析PDF文档  （itext）
@@ -24,19 +27,20 @@ public class PDFReader {
 	
     public static void main(String[] args) {
         /************************获取PDF总页数*****************************/
-        System.out.println(getPageCount("C:\\Users\\Administrator\\Desktop\\file\\word\\100808.pdf"));
+//        System.out.println(getPageCount("C:\\Users\\Administrator\\Desktop\\file\\word\\100808.pdf"));
         /******************读取PDF文件的文本内容**********************/
-        String s = readPdfText("C:\\Users\\Administrator\\Desktop\\file\\word\\100808.pdf", 1, 13);
-        System.out.println(s);
+//        String s = readPdfText("C:\\Users\\Administrator\\Desktop\\file\\word\\100808.pdf", 1, 13);
+//        System.out.println(s);
         /**********************将PDF文件的指定范围页生成新的PDF文件**************************/
 //    	String pdfFilePath = "C:\\Users\\Administrator\\Desktop\\file\\pdf/TEST201709.pdf";
 //    	String savePath = "C:\\Users\\Administrator\\Desktop\\file\\pdf\\splitFile/TEST201709.pdf";
 //    	splitPdfFile(pdfFilePath, savePath, 1, 2);
     	
     	/*****************************将PDF文件转换成图片(.png)*********************************/
-//    	String pdfPath = "C:\\Users\\Administrator\\Desktop\\file\\pdf/TEST201709.pdf";
-//    	String imgPath = "C:\\Users\\Administrator\\Desktop\\file\\pdf\\pdfImg/TEST201709.png";
-//        int pageCount = getPageCount(pdfFilePath);
+    	String pdfPath = "C:\\Users\\Administrator\\Desktop\\file\\pdf\\TEST201709.pdf";
+    	String imgPath = "C:\\Users\\Administrator\\Desktop\\file\\pdf\\pdfImg/";
+        int pageCount = getPageCount(pdfPath);
+        pdf2Image(pdfPath, imgPath);
 //        for (int i = 0; i < pageCount; i++) {
 //            pdf2Image(pdfPath, imgPath);
 //            imgPath = "C:\\Users\\Administrator\\Desktop\\file\\pdf\\pdfImg/TEST201709"+i+".png";
@@ -143,21 +147,31 @@ public class PDFReader {
     /**
      * 将PDF文件转换成图片
      * @param pdfPath	pdf文件路径
-     * @param imgPath	图片路径
+     * @param imgPath	图片包路径
      */
-    public static void pdf2Image(String pdfPath, String imgPath) {
+    public static List<String> pdf2Image(String pdfPath, String imgPath) {
     	File file = new File(pdfPath);
     	try{
     		PDDocument doc = PDDocument.load(file);
     		PDFRenderer renderer = new PDFRenderer(doc);
     		int pageCount = doc.getNumberOfPages();
-    		for(int i=0;i<pageCount;i++){
+            String hashCode = FileHashCode.generate(pdfPath);
+            String webPath;
+            ArrayList<String> webPathList = new ArrayList<>();
+            for(int i=0;i<pageCount;i++){
     			BufferedImage image = renderer.renderImageWithDPI(i, 296);
 //    	          BufferedImage image = renderer.renderImage(i, 2.5f);
-    			ImageIO.write(image, "PNG", new File(imgPath));
-    		}
-    	} catch (IOException e) {  
-            e.printStackTrace();  
+                webPath = imgPath + hashCode + i + ".png";
+                boolean png = ImageIO.write(image, "PNG", new File(webPath));
+                if (png) {
+                    webPathList.add(webPath);
+                }
+            }
+
+    		return webPathList;
+    	} catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
     

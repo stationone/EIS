@@ -35,6 +35,79 @@
          * 入口函数
          */
         $(function () {
+            var h = 300;
+            var w = 350;
+            if (typeof(height) != "undefined") {
+                h = height;
+            }
+
+            if (typeof(width) != "undefined") {
+                w = width;
+            }
+
+            //初始化保存窗口
+            $('#saveIndexDlg').dialog({
+                title: '创建索引库',//窗口标题
+                width: w,//窗口宽度
+                // height: 100,//窗口高度
+                closed: true,//窗口是是否为关闭状态, true：表示关闭
+                modal: true//模式窗口
+            });
+
+            $('#saveDocumentDlg').dialog({
+                title: '新增',//窗口标题
+                width: w,//窗口宽度
+                //height: 100,//窗口高度
+                closed: true,//窗口是是否为关闭状态, true：表示关闭
+                modal: true//模式窗口
+            });
+            $('#updateDocumentDlg').dialog({
+                title: '更新',//窗口标题
+                width: w,//窗口宽度
+                //height: 100,//窗口高度
+                closed: true,//窗口是是否为关闭状态, true：表示关闭
+                modal: true//模式窗口
+            });
+            $('#saveFiledDlg').dialog({
+                title: '新增',//窗口标题
+                width: w,//窗口宽度
+                //height: 100,//窗口高度
+                closed: true,//窗口是是否为关闭状态, true：表示关闭
+                modal: true//模式窗口
+            });
+
+            /**
+             * createMapping的表单提交
+             * 2019年10月15日
+             */
+            $('#btnSaveFiled').bind('click', function () {
+                //提取下拉框选项
+                //提交表单
+                $('#saveFiled').form('submit', {
+                    url: 'fileBase/save',
+                    type: 'post',
+                    onSubmit: function () {
+                        // do some checked
+                        //做表单字段验证，当所有字段都有效的时候返回true。该方法使用validatebox(验证框)插件。
+                        var isValid = $('#saveFiled').form('validate');
+                        if (isValid == false) {
+                            return;
+                        }
+                        // return false to prevent submit;
+                    },
+                    success: function (data) {
+                        var data = eval('(' + data + ')');
+                        $.messager.alert("提示", data.message, 'info', function () {
+                            //成功的话，我们要关闭窗口
+                            $('#saveFiledDlg').dialog('close');
+                            //刷新表格数据
+                            $("#mygrid").datagrid('reload');
+                        });
+                    }
+                });
+            });
+
+            //获取树
             getTree();
         });
 
@@ -45,7 +118,7 @@
                     checkbox: false,
                     multiple: false,
                     onClick: function (node) {
-                        loadDataList(node.id);
+                        loadDataList(node.text);
                     },
                     onLoadSuccess: function (node, data) {
                         //什么都不干
@@ -57,7 +130,7 @@
                             $('#' + treeId).tree('select', n.target);
 
                         }
-                        loadDataList(n.id);
+                        loadDataList(n.text);
                     }
                 }
             );
@@ -66,24 +139,24 @@
         /**
          * 获取数据
          */
-        function loadDataList(id) {
+        function loadDataList(text) {
             /**
              * 获取基础字段的数据, 展示数据网格
              */
             $('#mygrid').datagrid({
-                url: "fileType/fileTypeList?id=" + id, // 索引信息
+                url: "fileBase/fileBaseList?indexName=" + text, // 索引信息
                 type: "POST",
                 dataType: 'json',
                 contentType: "application/json",
-
                 columns: [[
                     {field: 'filename', title: '字段名称', width: 180, align: 'center'},
                     {field: 'type', title: '类型', width: 180, align: 'center'},
                     {field: 'scope', title: '取值范围', width: 180, align: 'center'},
-                    {field: 'desc', title: '备注', width: 180, align: 'center'}
+                    {field: 'desc', title: '备注', width: 180, align: 'center'},
+                    {field: 'indexName', title: '索引库名称', width: 180, align: 'center'}
                 ]],
                 rownumbers: true,
-                title: '映射字段名称信息',
+                title: '自定义扩展字段名称信息',
                 singleSelect: true,
                 collapsible: true,
                 nowrap: true,
@@ -93,8 +166,7 @@
                 emptyMsg: "没有获取到数据",
                 loadMsg: "正在努力加载数据,表格渲染中...",
                 onLoadSuccess: function (data) {
-                    // // alert("加载完成");
-                    // $("a[name='opera']").linkbutton({text: '预览', plain: true, iconCls: '/images/px-icon/yulan.png'});
+
                 },
                 onLoadError: function () {
                     clearDataGrid();
@@ -104,83 +176,65 @@
         }
 
         /**
-         * 数据展示
+         * 清空添加字段的表单项
          */
-        function dataShow(result) {
-            if (result === null) {
-                return;
+        function addField() {
+            var treeNode = $('#' + treeId).tree('getSelected');
+            if (treeNode == null)
+                $.messager.alert('提示消息', '请先选择索引！');
+            else {
+            $('#saveFiled').form('clear');
+            //加载数据
+            $('#saveFiled').form('load', {indexName: treeNode.text});
+            $('#saveFiledDlg').dialog('open');
             }
-            //清除
-            $('#dataList').remove();
-            //创建
-            $('#dataParent').append('<ul id="dataList">\n' +
-                '        <%--正文内容--%>\n' +
-                '    </ul>');
-            //遍历
-            var data = result.rows;
-
-            for (var i = 0; i < result.total; i++) {
-                var time = data[i].creationTime;
-                //格式化日期
-                var dateFormat = formatDate(time, 'yyyy-MM-dd HH:mm:ss');
-                //作者
-                var author = data[i].authorName == null ? '佚名' : data[i].authorName;
-                //正文
-                var content = data[i].content == null ? '' : data[i].content;
-                //文件名
-                var filename = data[i].fileName == null ? '' : data[i].fileName;
-                //关键词
-                var keyword = data[i].keyword == null ? '' : data[i].keyword;
-
-                var pageNO = data[i].pageNO == null ? '' : data[i].pageNO;
-
-                var fileId = '\'' + data[i].fileId + '\'';
-                //文档路径
-                var pdfFilePath = data[i].pdfFilePath == null ? 'javaScript:void(0)' : data[i].pdfFilePath;
-                $('#dataList').append(' <li value="' + i + '">\n' +
-                    '            <dt>\n' +
-                    '                <p class="fl">\n' +
-                    '                    <a onclick="file_show(' + fileId + ', ' + pageNO + ')" href="javaScript:void(0)"\n' +
-                    '                       title="' + filename + '" style="font-size: 15px">\n' +
-                    '                        ' + filename + '\n' +
-                    '                    </a>\n' +
-                    '                </p>\n' +
-                    '                <p style="color: grey;font-size: 5px;" class="fr">关键词:\n' +
-                    '                    <span class="score">' + keyword + '</span>\n' +
-                    '                </p>\n' +
-                    '            </dt>\n' +
-                    '            <dt class="fl">\n' +
-                    '                <p style="font-size: 10px">' + content + '</p>\n' +
-                    '                <div style="color: grey;font-size: 5px;">\n' +
-                    '                    ' + dateFormat + '\n' +
-                    '                    <i> &nbsp;&nbsp;&nbsp; </i>   ' + pageNO + '|' + data[i].pageTotal + '页<i>&nbsp;&nbsp;&nbsp;</i>' + data[i].downloadCount + '次下载<i>&nbsp;&nbsp;&nbsp; </i>\n' +
-                    '                    作者：<span href="#">\n' +
-                    '                    ' + author + '\n' +
-                    '                </span>\n' +
-                    '                </div>\n' +
-                    '            </dt>\n' +
-                    '        </li>');
-            }
-
         }
 
         /**
-         * 打开文件上传窗口
+         * 编辑
          */
-        //打开
-        function upload_dialog_open() {
-            var node = $('#' + treeId).tree('getSelected');
-            if (node == null) {
-                message_Show('请选择要上传的目录');
-                return;
+        function updateField() {
+            var gridNode = $('#mygrid').datagrid('getSelected');
+            console.log(gridNode);
+            if (gridNode == null) {
+                $.messager.alert('提示消息', '请先选择一行数据！');
+            } else {
+                $('#saveFiled').form('clear');
+                //加载数据
+                $('#saveFiled').form('load', gridNode);
+                // $('#updateDocument').form('clear');
+                $('#saveFiledDlg').dialog('open');
             }
-            $('#file_dialog_form').form('clear');
-            $('#file_dialog_form').form('load', {
-                menuId: node.id
+        }
 
-            });
-            console.log(node.id);
-            $('#file_dialog').dialog('open').dialog('center').dialog('setTitle', '文件上传');
+        /**
+         * 删除
+         */
+        function deleteField() {
+            var gridNode = $('#mygrid').datagrid('getSelected');
+            if (gridNode == null) {
+                $.messager.alert('提示消息', '请先选择一行数据！');
+            } else {
+                $.messager.confirm("确认", "确认要删除吗？", function (yes) {
+                    if (yes) {
+                        $.ajax({
+                            url: 'fileBase/deleteField?id=' + gridNode.id,
+                            dataType: 'json',
+                            type: 'post',
+                            success: function (data) {
+                                //var data = eval('(' + data + ')');
+                                $.messager.alert("提示", data.message, 'info', function () {
+                                    //刷新表格数据
+                                    // loadGrid();
+                                    $('#mygrid').datagrid('reload');
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+
         }
 
 
@@ -272,10 +326,9 @@
         }
 
         /**
-         * 提交目录表单
+         * 提交目录表单 创建新的类型
          */
         var isClick = true;//用来防止多次点击发送请求
-
         function folder_dialog_ok() {
             if (isClick) {
                 isClick = false;
@@ -312,52 +365,6 @@
         //取消
         function folder_dialog_close() {
             $('#folder_dialog').dialog('close');
-        }
-
-        //文件上传界面保存按钮
-        function file_dialog_ok() {
-            if (isClick) {
-                isClick = false;
-
-                //组装数据
-                var formData = new FormData();
-                var node = $('#' + treeId).tree('getSelected');
-                var menuId = node.id;
-                formData.append('file', $('#file')[0].files[0]);
-                formData.append('menuId', menuId);
-                formData.append('keyword', $('#keyword').val());
-
-                // console.log(formData);
-
-                //提交表单
-                $.ajax({
-                    url: 'file/fileUpload',
-                    processData: false, //因为data值是FormData对象，不需要对数据做处理。
-                    contentType: false,
-                    cache: false,
-                    type: 'POST',
-                    data: formData,
-                    success: function (result) {
-                        console.log(result);
-                        message_Show(result.message);
-                        //关闭窗口, 刷新列表
-                        file_dialog_close();
-                        // $('#' + treeId).tree('reload');
-
-                        //调用文件解析接口, 后台自动解析
-                        fileSpread(result.data);
-                    }
-                });
-                //定时器
-                setTimeout(function () {
-                    isClick = true;
-                }, 1000);//一秒内不能重复点击
-            }
-        }
-
-        //取消
-        function file_dialog_close() {
-            $('#file_dialog').dialog('close');
         }
     </script>
 </head>
@@ -400,17 +407,15 @@
             </span>
         </div>
         <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
-             onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
+             onclick="$('#mygrid').datagrid('reload');" title="刷新">
         <img src="images/px-icon/newFolder.png" class="easyui-tooltip div-toolbar-img-next"
-             onclick="upload_dialog_open()" title="上传文件">
-        <img src="images/px-icon/deleteFolder.png" class="easyui-tooltip div-toolbar-img-next"
-             onclick="deleteFile()" title="删除文件">
-
-        <%-- 搜索框 --%>
-        <a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"
-           style="float: right;margin-top: 8px;margin-right: 20px;width:80px" onclick="searchFile()">查询文档</a>
-        <input id="search" class="div-toolbar-span" style="float: right;margin-top: 8px;width:200px;height:25px"/>
-
+             onclick="addField()" title="添加字段">
+        <img src="images/px-icon/bianji.png" class="easyui-tooltip div-toolbar-img-next"
+             onclick="updateField()" title="编辑字段">
+        <%--<img src="images/px-icon/newFolder.png" class="easyui-tooltip div-toolbar-img-next"--%>
+        <%--onclick="addDocument()" title="新增数据">--%>
+        <img src="images/px-icon/shanchu.png" class="easyui-tooltip div-toolbar-img-next"
+             onclick="deleteField()" title="删除字段">
     </div>
     <table id="mygrid" style="height: 450px"></table>
 
@@ -439,6 +444,45 @@
         <input type="button" onclick="folder_dialog_close()" value="取消" style="margin-left:40px;"
                class="pxzn-button">
     </div>
+</div>
+<div id="saveFiledDlg">
+    <form id="saveFiled" method="post">
+        <table>
+            <tr>
+                <%--<td>id</td>--%>
+                <td><input name="id" class="easyui-validatebox"
+                           data-options="" type="hidden"></td>
+            </tr>
+            <tr>
+                <td>字段名称</td>
+                <td><input name="filename" class="easyui-validatebox"
+                           data-options="required:false,missingMessage:'字段名称不能为空!'"></td>
+            </tr>
+            <tr>
+                <td>字段类型</td>
+                <td><input name="type" class="easyui-validatebox"
+                           data-options="required:false,missingMessage:'字段类型不能为空!'"></td>
+            </tr>
+
+            <tr>
+                <td>取值范围</td>
+                <td><input name="scope" class="easyui-validatebox"
+                           data-options="required:false,missingMessage:''"></td>
+            </tr>
+
+            <tr>
+                <td>备注</td>
+                <td><input name="desc" class="easyui-validatebox"
+                           data-options="required:false,missingMessage:''"></td>
+            </tr>
+            <tr>
+                <%--<td>索引库名称</td>--%>
+                <td><input name="indexName" class="easyui-validatebox"
+                           data-options="required:false,missingMessage:''" type="hidden"></td>
+            </tr>
+        </table>
+        <button id="btnSaveFiled" type="button">保存</button>
+    </form>
 </div>
 </body>
 </html>

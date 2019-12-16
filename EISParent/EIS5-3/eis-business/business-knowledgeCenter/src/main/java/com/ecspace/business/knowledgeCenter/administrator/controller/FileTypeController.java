@@ -24,7 +24,7 @@ public class FileTypeController {
     private FileTypeService fileTypeService;
 
     /**
-     * 获取类型树
+     * 获取 树菜单
      * @return
      */
     @GetMapping("/listFileType")
@@ -32,9 +32,10 @@ public class FileTypeController {
         return fileTypeService.listFileType();
     }
 
+    //类型内容
     @PostMapping("/insert")
     public GlobalResult insert(FileType fileType){
-        return fileTypeService.insert(fileType);
+        return fileTypeService.insertField(fileType);
     }
 
 

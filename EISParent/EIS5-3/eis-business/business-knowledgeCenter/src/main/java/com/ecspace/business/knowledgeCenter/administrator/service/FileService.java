@@ -75,11 +75,13 @@ public interface FileService {
     FileInfo saveFileInfo(JSONObject jsonObject) throws Exception;
 
     /**
-     * office转html
-     * @param fileInfo
+     * 类型数据
+     * @param indexName
      * @return
      */
-    GlobalResult file2Html(FileInfo fileInfo);
+    List<FileBase> listTypeField(String indexName);
+
+
 //
 //
 //    /**

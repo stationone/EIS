@@ -33,17 +33,29 @@ public class FileHashCode {
     /**
      * 获取文件的hash值, 文件改变, 则hash值改变
      *
-     * @param filename
+     * @param filePath
      * @return
      * @throws Exception
      */
-    public static String generate(String filename) throws Exception {
-        byte[] b = createChecksum(filename);
+    public static String generate(String filePath) throws Exception {
+        byte[] b = createChecksum(filePath);
         String result = "";
 
         for (int i=0; i < b.length; i++) {
             result += Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring(1);//加0x100是因为有的b[i]的十六进制只有1位
         }
         return result;
+    }
+
+    public static String getSrc (String localWebPath) {
+        //映射文件夹 knowledgeCenterWebPath , 映射虚拟路径 /
+//        E:/knowledgeCenterWebFile/
+        // E:/knowledgeCenterWebFile/index.html
+        int i = localWebPath.indexOf("/", 4);
+        String substring = localWebPath.substring(i + 1); //    ""  | index.html
+        //组装webPath
+        String src = "../" + substring;
+
+        return src;
     }
 }

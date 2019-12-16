@@ -28,4 +28,6 @@ public interface FileTypeService {
     PageData fileTypeDetail(String id, Integer page, Integer size);
 
     JSONObject getMappingInfo(String indexName);
+
+    GlobalResult insertField(FileType fileType);
 }

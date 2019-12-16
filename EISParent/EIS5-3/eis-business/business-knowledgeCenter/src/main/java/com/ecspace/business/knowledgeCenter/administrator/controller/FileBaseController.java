@@ -23,9 +23,9 @@ public class FileBaseController {
 
 
     @RequestMapping(value = "fileBaseList")
-    public PageData fileBaseList(@RequestParam(required = false) Integer page,@RequestParam(required = false) Integer size) throws Exception {
+    public PageData fileBaseList(String indexName ,@RequestParam(required = false) Integer page,@RequestParam(required = false) Integer size) throws Exception {
 
-        return fileBaseService.fileBaseList(page, size);
+        return fileBaseService.fileBaseList(indexName, page, size);
     }
 
     /**

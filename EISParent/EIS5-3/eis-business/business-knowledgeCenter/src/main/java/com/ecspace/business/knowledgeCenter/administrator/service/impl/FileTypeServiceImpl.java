@@ -46,7 +46,7 @@ public class FileTypeServiceImpl implements FileTypeService {
         if (!index) {
             fileTypeDao.deleteById(fileType.getId());
         }
-        return new GlobalResult(index, 2000, (String.valueOf(index)), type);
+        return new GlobalResult(index, 2000, String.valueOf(index), type);
     }
 
     @Override
@@ -161,22 +161,22 @@ public class FileTypeServiceImpl implements FileTypeService {
         settings.put("number_of_shards", 1);
 
         settings.put("number_of_replicas", 0);
-        elasticsearchTemplate.createIndex(indexName, settings);
+        boolean index = elasticsearchTemplate.createIndex(indexName, settings);
 
-        // 设置映射关系字符串 , 可以用json对象进行put , 初始化索引库
-        // 1. 提取初始化的基本字段
-        List<FileBase> rows = fileBaseService.listFileBase();
+//        // 设置映射关系字符串 , 可以用json对象进行put , 初始化索引库
+//        // 1. 提取初始化的基本字段
+//        List<FileBase> rows = fileBaseService.listFileBase();
+//
+//        //2. 提取rows中有用的信信息, 拼接要put的json数据, 创建映射
+//        for (FileBase fileBase : rows) {
+//            StringBuilder map = new StringBuilder();
+//            map.append("{\"properties\": {\"" + fileBase.getFilename() + "\":{\"type\":\"" + "text" + "\",\"index\":\"true\"");
+//            map.append("}}}");
+//            //创建该字段的映射
+//            elasticsearchTemplate.putMapping(indexName, indexName, JSON.parse(map.toString()));
+//        }
 
-        //2. 提取rows中有用的信信息, 拼接要put的json数据, 创建映射
-        for (FileBase fileBase : rows) {
-            StringBuilder map = new StringBuilder();
-            map.append("{\"properties\": {\"" + fileBase.getFilename() + "\":{\"type\":\"" + "text" + "\",\"index\":\"true\"");
-            map.append("}}}");
-            //创建该字段的映射
-            elasticsearchTemplate.putMapping(indexName, indexName, JSON.parse(map.toString()));
-        }
-
-        return true;
+        return index;
     }
 
     /**
@@ -202,5 +202,12 @@ public class FileTypeServiceImpl implements FileTypeService {
             paramsObj = new JSONObject(properties);
         }
         return paramsObj;
+    }
+
+    @Override
+    public GlobalResult insertField(FileType fileType) {
+        fileType.setId(TNOGenerator.generateId());
+        FileType type = fileTypeDao.save(fileType);
+        return new GlobalResult(true, 2000, "true",type);
     }
 }

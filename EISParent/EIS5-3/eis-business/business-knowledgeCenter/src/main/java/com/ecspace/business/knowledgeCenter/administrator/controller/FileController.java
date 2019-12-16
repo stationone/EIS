@@ -30,7 +30,7 @@ public class FileController {
 
 
     /**
-     * 上传文件 ****************************文件名正则, 不能有特殊字符*****************************
+     * 上传文件
      *
      * @param file
      * @return
@@ -60,12 +60,12 @@ public class FileController {
         }
         //解析json
         JSONObject jsonObject = JSON.parseObject(json);
-        if ("".equals(jsonObject.get("path"))) {
+        if ("".equals(jsonObject.get("filePath"))) {
             return new GlobalResult(false,4000,"没有文件");
         }
-        if ("".equals(jsonObject.get("library"))) {
-            return new GlobalResult(false,4000,"没选类型");
-        }
+//        if ("".equals(jsonObject.get("indexName"))) {
+//            return new GlobalResult(false,4000,"没选类型");
+//        }
 
         //调用文件服务
         FileInfo fileInfo = fileService.saveFileInfo(jsonObject);
@@ -74,20 +74,20 @@ public class FileController {
     }
 
 
-    /**
-     * 文件离散
-     *
-     * @param fileInfo
-     * @return
-     * @throws Exception
-     */
-    @PostMapping(value = "fileAnalyzer")
-    public GlobalResult fileAnalyzer(@RequestBody FileInfo fileInfo) throws Exception {
-
-        //调用文件服务
-//        return fileService.fileAnalyzer(fileInfo);
-        return fileService.file2Html(fileInfo);
-    }
+//    /**
+//     * 文件离散
+//     *
+//     * @param fileInfo
+//     * @return
+//     * @throws Exception
+//     */
+//    @PostMapping(value = "fileAnalyzer")
+//    public GlobalResult fileAnalyzer(@RequestBody FileInfo fileInfo) throws Exception {
+//
+//        //调用文件服务
+////        return fileService.fileAnalyzer(fileInfo);
+//        return fileService.file2Html(fileInfo);
+//    }
 
     /**
      * 获取目录文件
@@ -130,7 +130,9 @@ public class FileController {
     @GetMapping(value = "getFormField")
     public List<FileBase> getFormField(String indexName) throws Exception{
 
-        return fileService.getFormField(indexName);
+//        return fileService.getFormField(indexName);
+        //表单列由之前的mapping优化为document
+        return fileService. listTypeField(indexName);
     }
 
 

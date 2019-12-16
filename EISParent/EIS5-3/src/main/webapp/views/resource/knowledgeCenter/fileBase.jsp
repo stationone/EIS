@@ -100,12 +100,12 @@
         });
 
         //加载表数据
-        function loadGrid() {
+        function loadGrid(text) {
             /**
              * 获取基础字段的数据, 展示数据网格
              */
             $('#mygrid').datagrid({
-                url: "fileBase/fileBaseList", // 获取基础字段表
+                url: "fileBase/fileBaseList?indexName=" + text, // 索引信息
                 type: "GET",
                 dataType: 'json',
                 contentType: "application/json",
@@ -113,7 +113,8 @@
                     {field: 'filename', title: '名称', width: 180, align: 'center'},
                     {field: 'type', title: '类型', width: 180, align: 'center'},
                     {field: 'scope', title: '取值范围', width: 180, align: 'center'},
-                    {field: 'desc', title: '备注', width: 180, align: 'center'}
+                    {field: 'desc', title: '备注', width: 180, align: 'center'},
+                    // {field: 'indexName', title: '索引库名称', width: 180, align: 'center'}
                 ]],
                 rownumbers: true,
                 title: '文档基础属性',
@@ -151,7 +152,7 @@
          * 清空添加字段的表单项
          */
         function addField() {
-            // var treeNode = $('#tt').tree('getSelected');
+            var treeNode = $('#tt').tree('getSelected');
             // if (treeNode == null)
             //     $.messager.alert('提示消息', '请先选择索引！');
             // else {
@@ -168,15 +169,14 @@
         function updateField() {
             var gridNode = $('#mygrid').datagrid('getSelected');
             console.log(gridNode);
-            if (gridNode == null) {
-                $.messager.alert('提示消息', '请先选择一行数据！');
-            } else {
+
+
                 $('#saveFiled').form('clear');
                 //加载数据
                 $('#saveFiled').form('load', gridNode);
                 // $('#updateDocument').form('clear');
                 $('#saveFiledDlg').dialog('open');
-            }
+
         }
 
         /**
@@ -243,9 +243,7 @@
     <form id="saveFiled" method="post">
         <table>
             <tr>
-                <td>id</td>
-                <td><input name="id" class="easyui-validatebox"
-                           data-options="" type="hidden"></td>
+                <td><input name="id" type="hidden"></td>
             </tr>
             <tr>
                 <td>字段名称</td>
@@ -268,6 +266,11 @@
                 <td>备注</td>
                 <td><input name="desc" class="easyui-validatebox"
                            data-options="required:false,missingMessage:''"></td>
+            </tr>
+            <tr>
+                <%--<td>索引库名称</td>--%>
+                <td><input name="indexName" class="easyui-validatebox"
+                           data-options="required:false,missingMessage:''" type="hidden"></td>
             </tr>
         </table>
         <button id="btnSaveFiled" type="button">保存</button>

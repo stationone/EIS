@@ -6,7 +6,6 @@ import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResu
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileBaseService;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
-import org.apache.commons.collections4.IterableUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +25,7 @@ public class FileBaseServiceImpl implements FileBaseService {
     private FileBaseDao fileBaseDao;
 
     @Override
-    public PageData fileBaseList(Integer page, Integer size) {
+    public PageData fileBaseList(String indexName, Integer page, Integer size) {
         if (page == null) {
             page = 0;
         } else {
@@ -35,8 +34,13 @@ public class FileBaseServiceImpl implements FileBaseService {
         if (size == null) {
             size = 10;
         }
+        if (indexName == null || "".equals(indexName) || "undefined".equals(indexName)) {
+            indexName = "file_type";
+        }
+        //新增数据字段,
         Pageable pageable = new PageRequest(page, size);
-        Page<FileBase> fileBasePage = fileBaseDao.findAll(pageable);
+        Page<FileBase> fileBasePage = fileBaseDao.findByIndexName(indexName, pageable);
+//        Page<FileBase> fileBasePage = fileBaseDao.findAll(pageable);
         PageData pageData = new PageData();
         pageData.setTotal(new Long(fileBasePage.getTotalElements()).intValue());
         pageData.setRows(fileBasePage.getContent());
@@ -44,7 +48,7 @@ public class FileBaseServiceImpl implements FileBaseService {
     }
 
     @Override
-    public List<FileBase> listFileBase(){
+    public List<FileBase> listFileBase() {
         ArrayList<FileBase> bases = new ArrayList<>();
         Iterable<FileBase> fileBases = fileBaseDao.findAll();
         for (FileBase fileBase : fileBases) {
@@ -60,7 +64,12 @@ public class FileBaseServiceImpl implements FileBaseService {
         if ((id == null) || "".equals(id)) {
             id = TNOGenerator.generateId();
         }
+        String indexName = fileBase.getIndexName();
+        if (indexName == null || "".equals(indexName) || "undefined".equals(indexName)) {
+            indexName = "file_type";
+        }
         fileBase.setId(id);
+        fileBase.setIndexName(indexName);
         FileBase save = fileBaseDao.save(fileBase);
         return new GlobalResult(true, 2000, "干的漂亮", save);
     }

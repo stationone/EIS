@@ -15,7 +15,7 @@ public interface FileBaseService {
      * 文档基础属性列表
      * @return
      */
-    PageData fileBaseList(Integer page, Integer size);
+    PageData fileBaseList(String indexName, Integer page, Integer size);
 
     /**
      * 添加/更新fileBase

@@ -17,8 +17,17 @@ public class FileBase {
     private String type;//整数,字符串, 枚举
     private String scope;//1~100等
     private String desc;
+    private String indexName;//哪个库的属性
 
     public FileBase() {
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
     }
 
     public String getId() {

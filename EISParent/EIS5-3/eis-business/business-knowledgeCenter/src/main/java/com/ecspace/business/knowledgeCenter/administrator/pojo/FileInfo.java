@@ -127,6 +127,9 @@ public class FileInfo {
     //专业
     private String professional;
 
+    //摘要
+    private String fileAbstract;
+
 
     /**
      * 文件所处的索引库对象
@@ -147,6 +150,44 @@ public class FileInfo {
     private String lightWeightURL;
     //对应文档的展示工具
     private String jsp;
+
+    private String webPath;
+
+    private String src;
+
+    private String libraryPath;
+
+    public String getLibraryPath() {
+        return libraryPath;
+    }
+
+    public void setLibraryPath(String libraryPath) {
+        this.libraryPath = libraryPath;
+    }
+
+    public String getWebPath() {
+        return webPath;
+    }
+
+    public void setWebPath(String webPath) {
+        this.webPath = webPath;
+    }
+
+    public String getSrc() {
+        return src;
+    }
+
+    public void setSrc(String src) {
+        this.src = src;
+    }
+
+    public String getFileAbstract() {
+        return fileAbstract;
+    }
+
+    public void setFileAbstract(String fileAbstract) {
+        this.fileAbstract = fileAbstract;
+    }
 
     public String getAuthor() {
         return author;
