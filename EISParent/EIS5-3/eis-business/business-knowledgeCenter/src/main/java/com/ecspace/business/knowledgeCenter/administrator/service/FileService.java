@@ -81,6 +81,12 @@ public interface FileService {
      */
     List<FileBase> listTypeField(String indexName);
 
+    /**
+     * 存储文件信息
+     * @param jsonObject
+     */
+    FileInfo insertFile(JSONObject jsonObject);
+
 
 //
 //

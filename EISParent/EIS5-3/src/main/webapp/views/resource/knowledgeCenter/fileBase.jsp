@@ -117,7 +117,7 @@
                     // {field: 'indexName', title: '索引库名称', width: 180, align: 'center'}
                 ]],
                 rownumbers: true,
-                title: '文档基础属性',
+                // title: '文档基础属性',
                 singleSelect: true,
                 collapsible: true,
                 nowrap: true,

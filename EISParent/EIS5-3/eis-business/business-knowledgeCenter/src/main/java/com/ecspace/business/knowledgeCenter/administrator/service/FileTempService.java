@@ -3,6 +3,7 @@ package com.ecspace.business.knowledgeCenter.administrator.service;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import java.io.IOException;
 
@@ -25,4 +26,12 @@ public interface FileTempService {
      */
     GlobalResult fileTemp(MultipartFile file) throws Exception;
 
+    /**
+     * 批量上传文件
+     * @param file
+     * @param indexName
+     * @param menuId
+     * @return
+     */
+    GlobalResult fileTempUpload(MultipartFile file, String indexName, String menuId) throws Exception;
 }

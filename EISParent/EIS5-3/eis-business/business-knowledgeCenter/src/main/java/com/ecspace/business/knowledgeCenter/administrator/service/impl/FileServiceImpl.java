@@ -19,12 +19,10 @@ import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileTypeService;
 import com.ecspace.business.knowledgeCenter.administrator.util.FileHashCode;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
-import com.itextpdf.text.pdf.PdfReader;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
@@ -153,15 +151,16 @@ public class FileServiceImpl implements FileService {
         if (page == null) {
             page = 0;
         } else {
-            page = (page - 1) * rows;
+            page = (page - 1);
         }
         if (rows == null) {
             rows = 10;
         }
-        Pageable pageable = new PageRequest(page, rows);
+//        Pageable pageable = new PageRequest(page, rows); //方法过时, 用下面的
+        PageRequest pageable = PageRequest.of(page, rows);
         org.springframework.data.domain.Page<FileInfo> infoPage = fileInfoDao.findByMenuId(menuId, pageable);
         List<FileInfo> fileInfoList = infoPage.getContent();
-        return new PageData((int) infoPage.getNumberOfElements(), fileInfoList);
+        return new PageData((int) infoPage.getTotalElements(), fileInfoList);
     }
 
 
@@ -281,8 +280,24 @@ public class FileServiceImpl implements FileService {
     //类型选择框
     @Override
     public List<FileBase> listTypeField(String indexName) {
-        List<FileBase> baseList = fileBaseDao.findByIndexName(indexName);
-        return baseList;
+        return fileBaseDao.findByIndexName(indexName);
+    }
+
+    @Override
+    public FileInfo insertFile(JSONObject jsonObject) {
+        String path = (String) jsonObject.get("filePath");
+        if (path == null || "".equals(path)) {
+            return new FileInfo();
+        }
+        String id = (String) jsonObject.get("id");
+        IndexResponse indexResponse = elasticsearchTemplate.getClient().prepareIndex("file", "file")
+                .setSource(jsonObject, XContentType.JSON)
+                .setId(id)
+                .get();
+//        indexResponse.
+        FileInfo fileInfo = fileInfoDao.findById(id).orElse(new FileInfo());
+
+        return fileInfo;
     }
 
 

@@ -7,11 +7,16 @@ import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
+import com.ecspace.business.knowledgeCenter.administrator.service.FileTempService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.util.List;
 
 
@@ -56,16 +61,19 @@ public class FileController {
     @PostMapping(value = "fileForm")
     public GlobalResult fileForm(String json) throws Exception {
         if (json == null) {
-            return new GlobalResult(false,4000,"非法参数");
+            return new GlobalResult(false, 4000, "非法参数");
         }
         //解析json
         JSONObject jsonObject = JSON.parseObject(json);
         if ("".equals(jsonObject.get("filePath"))) {
-            return new GlobalResult(false,4000,"没有文件");
+            return new GlobalResult(false, 4000, "没有文件");
         }
 //        if ("".equals(jsonObject.get("indexName"))) {
 //            return new GlobalResult(false,4000,"没选类型");
 //        }
+
+        fileService.insertFile(jsonObject);
+//        fileService.saveFileInfo(jsonObject);
 
         //调用文件服务
         FileInfo fileInfo = fileService.saveFileInfo(jsonObject);
@@ -74,20 +82,20 @@ public class FileController {
     }
 
 
-//    /**
-//     * 文件离散
-//     *
-//     * @param fileInfo
-//     * @return
-//     * @throws Exception
-//     */
-//    @PostMapping(value = "fileAnalyzer")
-//    public GlobalResult fileAnalyzer(@RequestBody FileInfo fileInfo) throws Exception {
-//
-//        //调用文件服务
-////        return fileService.fileAnalyzer(fileInfo);
+    /**
+     * 文件离散
+     *
+     * @param fileInfo
+     * @return
+     * @throws Exception
+     */
+    @PostMapping(value = "fileAnalyzer")
+    public GlobalResult fileAnalyzer(@RequestBody FileInfo fileInfo) throws Exception {
+
+        //调用文件服务
+        return fileService.fileAnalyzer(fileInfo);
 //        return fileService.file2Html(fileInfo);
-//    }
+    }
 
     /**
      * 获取目录文件
@@ -106,7 +114,7 @@ public class FileController {
             return new PageData();
         }
         //没有请求参数时, 数据全部搜索出来
-        if (StringUtils.isBlank(json) || JSON.parseObject(json).isEmpty() || StringUtils.isBlank(JSON.parseObject(json).get("search").toString()) ) {
+        if (StringUtils.isBlank(json) || JSON.parseObject(json).isEmpty() || StringUtils.isBlank(JSON.parseObject(json).get("search").toString())) {
             //查询所有
             return fileService.getFileList(menuId, page, rows);
         }
@@ -117,6 +125,7 @@ public class FileController {
 
     /**
      * 查看文件详情
+     *
      * @param fileId
      * @return
      * @throws Exception
@@ -124,17 +133,42 @@ public class FileController {
     @GetMapping(value = "fileDetail")
     public FileInfo fileDetail(String fileId) throws Exception {
 
-       return fileService.getFileDetail(fileId);
+        return fileService.getFileDetail(fileId);
     }
 
     @GetMapping(value = "getFormField")
-    public List<FileBase> getFormField(String indexName) throws Exception{
+    public List<FileBase> getFormField(String indexName) throws Exception {
 
 //        return fileService.getFormField(indexName);
         //表单列由之前的mapping优化为document
-        return fileService. listTypeField(indexName);
+        return fileService.listTypeField(indexName);
     }
 
+    @Autowired
+    private FileTempService fileTempService;
+
+    /**
+     * 上传文件
+     *
+     * @param files
+     * @return
+     */
+//    @RequestMapping(value = "/fileTempUpload", method = RequestMethod.POST)
+//    public GlobalResult fileTempUpload(@RequestParam(value = "file")
+//                                                    CommonsMultipartFile[]  files,
+//                                       @RequestParam(value = "indexName")
+//                                                    String indexName,
+//                                       @RequestParam(value = "menuId")
+//                                                    String menuId) throws Exception {
+    @RequestMapping(value = "/fileTempUpload", method = RequestMethod.POST)
+    public GlobalResult fileTempUpload(@RequestParam(value = "file")
+                                               MultipartFile file,
+                                       @RequestParam(value = "indexName")
+                                               String indexName,
+                                       @RequestParam(value = "menuId")
+                                               String menuId) throws Exception {
+        return fileTempService.fileTempUpload(file, indexName, menuId);
+    }
 
 
 }

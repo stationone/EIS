@@ -112,9 +112,9 @@
                     {field: 'fileName', title: '名称', width: 180, align: 'center'},
 
                     {field: 'fileNameSuffix', title: '类型', width: 180, align: 'center'},
-                    {field: 'keyword', title: '关键词', width: 180, align: 'center'},
+                    // {field: 'keyword', title: '关键词', width: 180, align: 'center'},
 
-                    {field: 'pageTotal', title: '页面总数', width: 180, align: 'center'},
+                    // {field: 'pageTotal', title: '页面总数', width: 180, align: 'center'},
                     {
                         field: 'creationTime', title: '创建时间', width: 180, align: 'center',
                         formatter: function (value, fmt) {
@@ -138,8 +138,20 @@
                             return fmt;
                         }
                     },
-                    {field: 'indexName', title: '所在库', width: 180, align: 'center'},
-                    {field: 'filePath', title: '文件路径', width: 180, align: 'center'},
+                    {field: 'status', title: '状态', width: 130, align: 'center' ,
+                        formatter: function (value) {
+                            if (value === 0) {
+                                return '待解析'
+                            }else if (value === 1) {
+                                return '未审核'
+                            } else {
+                                return '已审核'
+                            }
+                        }
+                    },
+
+                    // {field: 'indexName', title: '所在库', width: 180, align: 'center'},
+                    // {field: 'filePath', title: '文件路径', width: 180, align: 'center'},
                     {
                         field: 'fileSize', title: '文件大小', width: 180, align: 'center',
                         //文件大小格式化
@@ -156,9 +168,9 @@
                             return size + unitArr[index];
                         }
                     },
-                    {field: 'author', title: '作者', width: 180, align: 'center'},
-                    {field: 'authorName', title: '上传人员', width: 180, align: 'center'},
-                    {field: 'content', title: '正文', width: 300, align: 'center'},
+                    // {field: 'author', title: '作者', width: 180, align: 'center'},
+                    // {field: 'authorName', title: '上传人员', width: 180, align: 'center'},
+                    // {field: 'content', title: '正文', width: 300, align: 'center'},
                     {
                         field: 'operate', title: '操作', align: 'center', width: $(this).width() * 0.1,
                         formatter: function (value, row, index) {
@@ -362,10 +374,10 @@
                             var data = datas;
                             for (var i = 0; i < data.length; i++) {
                                 var field = data[i];
-                                var ignore = ['content', 'directory', 'discreteTool', 'jsp', 'library', '', 'path', 'type', 'uploadTime', 'lightWeightURL', 'lightWeightConversion'];
-                                if (ignore.indexOf(field.filename) !== -1) {
-                                    continue;
-                                }
+                                // var ignore = ['content', 'directory', 'discreteTool', 'jsp', 'library', '', 'path', 'type', 'uploadTime', 'lightWeightURL', 'lightWeightConversion'];
+                                // if (ignore.indexOf(field.filename) !== -1) {
+                                //     continue;
+                                // }
                                 textHtml += '<tr>';
                                 textHtml += '<td class="pe-label" style="width: 40%">' + field.desc + '(' + field.filename + ')</td>';
                                 // if (field.filename === 'abstract') {
@@ -387,7 +399,7 @@
 
                     //
                     $('#file_dialog_upload').form('load', {
-                        library: getText,
+                        indexName: getText,
                     });
                 }
             });
@@ -603,7 +615,12 @@
                         filePath: data.filePath,
                         fileNameSuffix: data.fileNameSuffix,
                         fileSize: formatSize(data.fileSize),
-                        creationTime: formatDate(data.creationTime, 'yyyy-MM-dd HH:mm:ss')
+                        creationTime: formatDate(data.creationTime, 'yyyy-MM-dd HH:mm:ss'),
+                        id: data.id,
+                        fileNamePrefix: data.fileNamePrefix,
+                        hashCode: data.hashCode,
+                        status: data.status,
+
                     });
                     file_upload_flag = true;
 
@@ -628,7 +645,13 @@
                     if (result.data == null) {
                         return;
                     }
+                    //预览
                     $('#preSee').attr('src', result.data.src);
+                    //添加表单列的src和webPath列
+                    $('#file_dialog_upload').form('load', {
+                        src: result.data.src,
+                        webpath: result.data.webPath,
+                    });
                 },
                 error: function () {
                     alert('文件离散失败, 改文件可能是只读文件, 不可执行其他操作')
@@ -887,59 +910,27 @@
     </div>
 </div>
 
-<%--&lt;%&ndash;新增文件&ndash;%&gt;--%>
-<%--<div id="file_dialog" class="easyui-dialog"--%>
-<%--data-options="closed:true, modal:true,border:'thin', buttons:'#file_dialog_button'"--%>
-<%--style="height:100%; width: 50%;">--%>
-<%--<form id="file_dialog_upload" method="post" enctype="multipart/form-data">--%>
-<%--<table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>--%>
-<%--<input id="menuId" name="menuId" type="hidden">--%>
-<%--<input id="path" name="path" type="hidden">--%>
-<%--<input id="library" name="library" type="hidden">--%>
-<%--<tr>--%>
-<%--<td class="pe-label" style="width: 40%">文 件 上 传：</td>--%>
-<%--<td class="pe-content" colspan="6">--%>
-<%--<input id="file" name="file" class="easyui-file" type="file"--%>
-<%--style="width:100%" onblur="file_upload_pre()">--%>
-<%--</td>--%>
-<%--</tr>--%>
-<%--<tr>--%>
-<%--<td class="pe-label" style="width: 40%">--%>
-<%--文档类库--%>
-<%--</td>--%>
-<%--<td>--%>
-<%--<input id="filetype" class="easyui-combobox" style="width:100%;"--%>
-<%--name="filetype"/>--%>
-<%--</td>--%>
-<%--</tr>--%>
-<%--</table>--%>
-<%--<table id="filedTable" cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>--%>
-<%--</table>--%>
-
-<%--</form>--%>
-<%--<div id="file_dialog_button" class="pxzn-dialog-buttons">--%>
-<%--<input type="button" onclick="file_dialog_ok()" value="保存" class="pxzn-button">--%>
-<%--<input type="button" onclick="file_dialog_close()" value="取消" style="margin-left:40px;"--%>
-<%--class="pxzn-button">--%>
-<%--</div>--%>
-<%--</div>--%>
-
 <%--新增文件--%>
 <div id="file_dialog" class="easyui-dialog"
      data-options="closed:true, modal:true,border:'thin', buttons:'#file_dialog_button'"
      style="height:80%; width: 60%;">
     <form id="file_dialog_upload" method="post" enctype="multipart/form-data">
         <input id="menuId" name="menuId" type="hidden">
+        <input id="fileNamePrefix" name="fileNamePrefix" type="hidden">
+        <input id="hashCode" name="hashCode" type="hidden">
+        <input id="src" name="src" type="hidden">
+        <input id="webPath" name="webPath" type="hidden">
+        <input id="status" name="status" type="hidden">
+
+
         <div class="easyui-tabs" data-options="tools:'#tab-tools'" style="width:100%;height:95%">
             <div title="基本属性" style="padding:10px;">
                 <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
                     <tr>
                         <td class="pe-label" style="width: 40%" colspan="2">
-                            <input id="file" name="file"  type="file" style="width:100%; text-align: center" onchange="file_upload_pre()">
+                            <input id="file" name="file" type="file" style="width:100%; text-align: center"
+                                   onchange="file_upload_pre()">
                         </td>
-                        <%--<td class="pe-content" colspan="6">--%>
-                            <%--<input type="button" onclick="file_upload_pre()" value="点击上传" class="easyui-button">--%>
-                        <%--</td>--%>
                     </tr>
                     <tr>
                         <td class="pe-label" style="width: 40%">
@@ -1001,9 +992,6 @@
                  style="padding:10px;width:100%;height:100%">
                 <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
                     <tr>
-                        <%--<td class="pe-label" style="width: 40%">--%>
-                        <%--关键词--%>
-                        <%--</td>--%>
                         <td class="pe-content" colspan="6" aria-colspan="2">
                             <input id="keyword" label="关键词:" labelPosition="top" class="easyui-textbox"
                                    style="width:100%;height:120px" multiline="true"
@@ -1028,7 +1016,7 @@
                 <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
                     <tr>
                         <td class="pe-label" style="width: 40%">
-                                选择文档类型
+                            选择文档类型
                         </td>
                         <td class="pe-content" colspan="6">
                             <input id="filetype" class="easyui-combobox" style="width:100%;"

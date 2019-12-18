@@ -26,6 +26,12 @@
         var datagridId1 = "<%=datagridId1%>";
         //临时数组, 做数据交换
         var temp = [];
+
+        //组装表单(作文件上传
+        var formData = new FormData();
+        //建一个数组(作文件上传
+        var arr = [];
+
         /**
          * 入口函数
          */
@@ -70,7 +76,21 @@
                     //将目录名称显示在顶部
                     document.getElementById("index").innerHTML = "";
                     $('#index').append('<span>/' + node.text + '</span>')
+                },
+                onLoadSuccess: function (node, data) {
+                    //什么都不干
+                    if (data.length > 0) {
+                        //找到第一个元素
+                        var n = $('#' + treeId).tree('find', data[0].id);
+                        //调用选中事件
+                        $('#' + treeId).tree('select', n.target);
+                        loadDataList(n.id);
+                        //将索引库名称显示在顶部
+                        document.getElementById("indexName").innerHTML = "";
+                        $('#indexName').append('<span>' + data[0].text + '</span>')
+                    }
                 }
+
             });
         }
 
@@ -100,7 +120,7 @@
          */
         function loadDataList(menuId) {
             /**
-             * 获取基础字段的数据, 展示数据网格
+             * 文档列表
              */
             $('#mygrid').datagrid({
                 url: "file/fileList?menuId=" + menuId, // 文档表
@@ -109,12 +129,9 @@
                 contentType: "application/json",
 
                 columns: [[
-                    {field: 'fileName', title: '名称', width: 180, align: 'center'},
+                    {field: 'fileName', title: '名称', width: 250, align: 'left'},
 
-                    {field: 'fileNameSuffix', title: '类型', width: 180, align: 'center'},
-                    // {field: 'keyword', title: '关键词', width: 180, align: 'center'},
-
-                    // {field: 'pageTotal', title: '页面总数', width: 180, align: 'center'},
+                    {field: 'fileNameSuffix', title: '类型', width: 100, align: 'center'},
                     {
                         field: 'creationTime', title: '创建时间', width: 180, align: 'center',
                         formatter: function (value, fmt) {
@@ -138,22 +155,20 @@
                             return fmt;
                         }
                     },
-                    {field: 'status', title: '状态', width: 130, align: 'center' ,
+                    {
+                        field: 'status', title: '状态', width: 130, align: 'center',
                         formatter: function (value) {
                             if (value === 0) {
                                 return '待解析'
-                            }else if (value === 1) {
+                            } else if (value === 1) {
                                 return '未审核'
                             } else {
                                 return '已审核'
                             }
                         }
                     },
-
-                    // {field: 'indexName', title: '所在库', width: 180, align: 'center'},
-                    // {field: 'filePath', title: '文件路径', width: 180, align: 'center'},
                     {
-                        field: 'fileSize', title: '文件大小', width: 180, align: 'center',
+                        field: 'fileSize', title: '文件大小', width: 150, align: 'center',
                         //文件大小格式化
                         formatter: function (value) {
                             if (null == value || '' === value) {
@@ -168,24 +183,21 @@
                             return size + unitArr[index];
                         }
                     },
-                    // {field: 'author', title: '作者', width: 180, align: 'center'},
-                    // {field: 'authorName', title: '上传人员', width: 180, align: 'center'},
-                    // {field: 'content', title: '正文', width: 300, align: 'center'},
                     {
                         field: 'operate', title: '操作', align: 'center', width: $(this).width() * 0.1,
                         formatter: function (value, row, index) {
-                            var str = '<a href="javaScript:void(0)" onclick="file_show(\'' + row.fileId + '\')" name="opera" class="easyui-linkbutton" ></a>';
+                            var str = '<a href="javaScript:void(0)" onclick="file_show(\'' + row.fileId + '\')" name="opera" class="easyui-linkbutton" title="属性查看"></a>';
                             return str;
                         }
                     },
                 ]],
                 rownumbers: true,
-                title: '文档列表',
                 singleSelect: true,
                 collapsible: true,
                 nowrap: true,
-                striped: true,
+                // striped: true,
                 loading: true,
+                fit:false,//自适应高度
                 emptyMsg: "没有获取到数据",
                 loadMsg: "正在努力加载数据,表格渲染中...",
                 pagination: true,
@@ -194,78 +206,18 @@
                 onLoadSuccess: function (data) {
                     // alert("加载完成");
                     $("a[name='opera']").linkbutton({
-                        text: '预览',
+                        text: '编辑',
                         plain: true,
-                        iconCls: '/images/px-icon/yulan.png'
+                        iconCls: 'icon-search'
                     });
+                    //固定表格
+                    $('#mygrid').datagrid('fixRowHeight');
                 },
                 onLoadError: function () {
                     clearDataGrid();
                 }
             });
         }
-
-        /**
-         * 数据展示
-         */
-        function dataShow(result) {
-            if (result === null) {
-                return;
-            }
-            //清除
-            $('#dataList').remove();
-            //创建
-            $('#dataParent').append('<ul id="dataList">\n' +
-                '        <%--正文内容--%>\n' +
-                '    </ul>');
-            //遍历
-            var data = result.rows;
-
-            for (var i = 0; i < result.total; i++) {
-                var time = data[i].creationTime;
-                //格式化日期
-                var dateFormat = formatDate(time, 'yyyy-MM-dd HH:mm:ss');
-                //作者
-                var author = data[i].authorName == null ? '佚名' : data[i].authorName;
-                //正文
-                var content = data[i].content == null ? '' : data[i].content;
-                //文件名
-                var filename = data[i].fileName == null ? '' : data[i].fileName;
-                //关键词
-                var keyword = data[i].keyword == null ? '' : data[i].keyword;
-
-                var pageNO = data[i].pageNO == null ? '' : data[i].pageNO;
-
-                var fileId = '\'' + data[i].fileId + '\'';
-                //文档路径
-                var pdfFilePath = data[i].pdfFilePath == null ? 'javaScript:void(0)' : data[i].pdfFilePath;
-                $('#dataList').append(' <li value="' + i + '">\n' +
-                    '            <dt>\n' +
-                    '                <p class="fl">\n' +
-                    '                    <a onclick="file_show(' + fileId + ', ' + pageNO + ')" href="javaScript:void(0)"\n' +
-                    '                       title="' + filename + '" style="font-size: 15px">\n' +
-                    '                        ' + filename + '\n' +
-                    '                    </a>\n' +
-                    '                </p>\n' +
-                    '                <p style="color: grey;font-size: 5px;" class="fr">关键词:\n' +
-                    '                    <span class="score">' + keyword + '</span>\n' +
-                    '                </p>\n' +
-                    '            </dt>\n' +
-                    '            <dt class="fl">\n' +
-                    '                <p style="font-size: 10px">' + content + '</p>\n' +
-                    '                <div style="color: grey;font-size: 5px;">\n' +
-                    '                    ' + dateFormat + '\n' +
-                    '                    <i> &nbsp;&nbsp;&nbsp; </i>   ' + pageNO + '|' + data[i].pageTotal + '页<i>&nbsp;&nbsp;&nbsp;</i>' + data[i].downloadCount + '次下载<i>&nbsp;&nbsp;&nbsp; </i>\n' +
-                    '                    作者：<span href="#">\n' +
-                    '                    ' + author + '\n' +
-                    '                </span>\n' +
-                    '                </div>\n' +
-                    '            </dt>\n' +
-                    '        </li>');
-            }
-
-        }
-
         /**
          * 文件预览
          */
@@ -335,77 +287,194 @@
                 message_Show('请选择要上传的目录');
                 return;
             }
-            $('#file_dialog_upload').form('clear');
+            var nodeIndex = $('#tt').tree('getSelected');
+            if (nodeIndex == null) {
+                return;
+            }
+            var indexName = nodeIndex.text;
+            fileArray = [];
+            $('#files_form').form('clear');
+            $('#files_Text').empty();
+            $('#fileAllSize').text("");
+            $('#fileNumber').text("");
+
             $('#file_dialog_upload').form('load', {
-                menuId: node.id
-
+                indexName: indexName,
             });
-            // console.log(node.id);
-            //打开之前加载select
-            $('#filetype').combobox({
-                url: 'fileType/listFileType',
-                method: 'get',
-                valueField: 'id',
-                textField: 'text',
-                panelHeight: 'auto',
-                editable: false,
-                // readonly: 'true',
-                onChange: function () {
-                    //选择框值发生改变时
-
-                    $('#filedTable').html('');
-                    var getText = $('#filetype').combobox('getText');
-                    if (getText == null || getText.length == 0) {
-                        return;
-                    }
-                    console.log(getText);
-
-
-                    //动态生成表单
-                    $.ajax({
-                        url: 'file/getFormField?indexName=' + getText,
-                        dataType: 'json',
-                        success: function (datas) {
-                            if (datas.length === 0) {
-                                return;
-                            }
-                            //表单列替换
-                            var textHtml = "";
-                            var data = datas;
-                            for (var i = 0; i < data.length; i++) {
-                                var field = data[i];
-                                // var ignore = ['content', 'directory', 'discreteTool', 'jsp', 'library', '', 'path', 'type', 'uploadTime', 'lightWeightURL', 'lightWeightConversion'];
-                                // if (ignore.indexOf(field.filename) !== -1) {
-                                //     continue;
-                                // }
-                                textHtml += '<tr>';
-                                textHtml += '<td class="pe-label" style="width: 40%">' + field.desc + '(' + field.filename + ')</td>';
-                                // if (field.filename === 'abstract') {
-                                //     textHtml += '<td><input id="' + field.filename + '" name="' + field.filename + '" class="easyui-textbox" style="width:100%;height:25px"  ></td>';
-                                // }else {
-                                //
-                                //     textHtml += '<td><input id="' + field.filename + '" name="' + field.filename + '" class="easyui-textbox" style="width:100%;height:25px"  ></td>';
-                                // }
-                                textHtml += '<td><input id="' + field.filename + '" name="' + field.filename + '" class="easyui-textbox" style="width:100%;height:25px"  ></td>';
-                                textHtml += '</tr>';
-                            }
-                            if (temp.length > 0) {
-                                console.log(temp[0].path);
-                            }
-
-                            $('#filedTable').html(textHtml);
-                        }
-                    });
-
-                    //
-                    $('#file_dialog_upload').form('load', {
-                        indexName: getText,
-                    });
-                }
-            });
-            $('#file_dialog').dialog('open').dialog('center').dialog('setTitle', '文件上传');
+            $('#files').dialog('open').dialog('center').dialog('setTitle', '文件上传');
         }
 
+        //选择文件d
+        function selectFiles() {
+            document.getElementById('files_Batch').value = "";
+            document.getElementById('files_Batch').click();
+        }
+
+        //文件对象数组
+        var fileArray = [];
+
+        //保存文件名称和随机编号的对应关系[{id: "s_3571428845", name: "XXHash32.java"}]
+        var fileLists = [];
+
+        //文件大小
+        var fileAllSize = 0;
+
+        //选择文件改变时
+        function fileChange() {
+            fileAllSize = 0;
+            var file = document.getElementById("files_Batch");
+            var files = file.files;
+
+            fileArray = [];
+            Array.prototype.push.apply(fileArray, files);
+
+            $('#files_Text').empty();
+            if (fileArray.length > 0) {
+
+                for (var i = 0; i < fileArray.length; i++) {
+                    var fileRelevance = {};
+                    fileRelevance.id = getId("s_");
+                    fileRelevance.name = fileArray[i].name;
+                    fileLists.push(fileRelevance);
+                    $('#files_Text').append('<div id="' + fileRelevance.id + '" class="default" style="margin-top:5px;margin-left:8px;margin-right: 8px;" title="' + fileArray[i].name + '" class="easyui-tooltip" ><div style="float: left; width:279px;height:20px;font-size:14px;overflow:hidden;padding:3px 0;">' + fileArray[i].name + '</div><img style="width:20px;float:right" class="pointer" onmouseenter="pitchOn(this)" onmouseleave="uncheck(this)" onclick="removeDiv(\'' + fileRelevance.id + '\')" src="/EIS/images/px-icon/delete.png"></div>');
+                }
+
+                setFileNumber();
+                setFileSize();
+
+
+            } else {
+                $('#fileNumber').text("");
+                $('#fileAllSize').text("");
+            }
+        }
+
+        //删除
+        function removeDiv(id) {
+
+            $("#" + id).remove();
+            for (var i = 0; i < fileLists.length; i++) {
+                var fileObject = fileLists[i];
+                if (id == fileObject.id) {
+                    //一样的
+                    for (var y = 0; y < fileArray.length; y++) {
+                        if (fileObject.name == fileArray[y].name) {
+
+                            fileArray.splice(y, 1);
+                            fileLists.splice(i, 1);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            setFileNumber();
+            setFileSize();
+        }
+
+        //设置文件数量
+        function setFileNumber() {
+            if (fileArray.length == 0) {
+                $('#fileNumber').text("");
+                return;
+            }
+
+            $('#fileNumber').text(fileArray.length);
+        }
+
+        //设置文件大小
+        function setFileSize() {
+            if (fileArray.length == 0) {
+                $('#fileAllSize').text("");
+                return;
+            }
+            fileAllSize = 0;
+            for (var s = 0; s < fileArray.length; s++) {
+                fileAllSize += fileArray[s].size;
+            }
+
+            if (fileAllSize >= 1048576 && fileAllSize < 1073741824) {
+                //大于等于1M,小于1G
+                $('#fileAllSize').text(Math.round(fileAllSize / 1024 / 1024) + "MB");
+            } else if (fileAllSize < 1048576) {
+                //小于1M
+                $('#fileAllSize').text(Math.ceil(fileAllSize / 1024) + "KB");
+            } else {
+                //大于1G
+                $('#fileAllSize').text(Math.round(fileAllSize / 1024 / 1024 / 1024) + "GB");
+            }
+        }
+
+        //鼠标移上
+        function pitchOn(event) {
+            $(event).attr('src', "images/px-icon/delete-red.png");
+        }
+
+        //取消选中
+        function uncheck(event) {
+            $(event).attr('src', "images/px-icon/delete.png");
+        }
+
+        function files_form_close() {
+            $('#files_form').form('clear');
+            $('#files_Text').empty();
+            $('#files').dialog('close');
+        }
+
+        /**
+         * 批量上传
+         * 一条数据一条数据上传
+         */
+        function files_form_save() {
+            $.messager.confirm('系统提示', "请确认是否开始上传", function (r) {
+                if (r) {
+                    $.messager.show({
+                        title: '系统提示',
+                        msg: '开始上传文件',
+                        timeout: 1000,
+                        showType: 'slide'
+                    });
+                    var node = $('#' + treeId).tree('getSelected');
+                    var node2 = $('#tt').tree('getSelected');
+                    var menuId = node.id;
+                    var indexName = node2.text;
+
+                    var files = $('#files_Batch')[0].files;
+                    if (files.length > 0) {
+                        for (var i = 0; i < files.length; i++) {
+                            //组装数据
+                            var formData = new FormData();
+                            formData.append('file', files[i]);
+                            formData.append('menuId', menuId);
+                            formData.append('indexName', indexName);
+                            console.log(files[i]);
+
+                            //提交表单
+                            $.ajax({
+                                url: 'file/fileTempUpload',
+                                processData: false, //因为data值是FormData对象，不需要对数据做处理。
+                                contentType: false,
+                                cache: false,
+                                type: 'POST',
+                                data: formData,
+                                success: function (result) {
+                                    //刷新列表
+                                    $('#mygrid').datagrid('reload');
+                                    //后台解析文件
+
+                                }
+
+                            });
+                        }
+                    }
+
+                }
+            });
+
+            //关闭窗口
+            files_form_close();
+        }
 
         /*清除数据表格中的数据*/
         function clearDataGrid() {
@@ -580,12 +649,17 @@
          * 文件选择完上传
          */
         function file_upload_pre() {
+            //将文件对象放入到数组中
+            var fileList = $('#file')[0].files;
+            if (fileList.length == 0) {
+                return;
+            }
             var file = $('#file')[0].files[0];
             if (file == null) {
                 return;
             }
-            //组装数据
-            var formData = new FormData();
+
+
             var node = $('#' + treeId).tree('getSelected');
             var menuId = node.id;
             formData.append('file', $('#file')[0].files[0]);
@@ -629,6 +703,7 @@
                 }
             });
         }
+
 
         function file2Html(fileInfo) {
             $.ajax({
@@ -809,7 +884,7 @@
 </head>
 <body id="permissionSet_layout" class="easyui-layout">
 <div data-options="region:'west'" class="layout-west">
-    <div class="easyui-layout" style="width: 200px; height: 100%;">
+    <div class="easyui-layout" style="width: 170px; height: 100%;">
         <div data-options="region:'north'" style="height: 50%;">
             <div class="layout-title-div">
                 资源目录
@@ -869,7 +944,7 @@
             </span>
         </div>
         <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
-             onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
+             onclick="$('#mygrid').datagrid('reload');" title="刷新">
         <img src="images/px-icon/newFolder.png" class="easyui-tooltip div-toolbar-img-next"
              onclick="upload_dialog_open()" title="上传文件">
         <img src="images/px-icon/deleteFolder.png" class="easyui-tooltip div-toolbar-img-next"
@@ -881,7 +956,7 @@
         <input id="search" class="div-toolbar-span" style="float: right;margin-top: 8px;width:200px;height:25px"/>
 
     </div>
-    <table id="mygrid" style="height: 450px"></table>
+    <table id="mygrid" style="height: 400px;"></table>
 
 
 </div>
@@ -911,171 +986,66 @@
 </div>
 
 <%--新增文件--%>
-<div id="file_dialog" class="easyui-dialog"
-     data-options="closed:true, modal:true,border:'thin', buttons:'#file_dialog_button'"
-     style="height:80%; width: 60%;">
-    <form id="file_dialog_upload" method="post" enctype="multipart/form-data">
-        <input id="menuId" name="menuId" type="hidden">
-        <input id="fileNamePrefix" name="fileNamePrefix" type="hidden">
-        <input id="hashCode" name="hashCode" type="hidden">
-        <input id="src" name="src" type="hidden">
-        <input id="webPath" name="webPath" type="hidden">
-        <input id="status" name="status" type="hidden">
-
-
-        <div class="easyui-tabs" data-options="tools:'#tab-tools'" style="width:100%;height:95%">
-            <div title="基本属性" style="padding:10px;">
-                <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
-                    <tr>
-                        <td class="pe-label" style="width: 40%" colspan="2">
-                            <input id="file" name="file" type="file" style="width:100%; text-align: center"
-                                   onchange="file_upload_pre()">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="pe-label" style="width: 40%">
-                            文件名称
-                        </td>
-                        <td class="pe-content" colspan="6">
-                            <input id="fileName" class="easyui-textbox" style="width:100%;"
-                                   name="fileName"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="pe-label" style="width: 40%">
-                            文件大小
-                        </td>
-                        <td class="pe-content" colspan="6">
-                            <input id="fileSize" class="easyui-textbox" style="width:100%;"
-                                   name="fileSize"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="pe-label" style="width: 40%">
-                            上传时间
-                        </td>
-                        <td class="pe-content" colspan="6">
-                            <input id="creationTime" class="easyui-textbox" style="width:100%;"
-                                   name="creationTime"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="pe-label" style="width: 40%">
-                            文件暂存路径
-                        </td>
-                        <td class="pe-content" colspan="6">
-                            <input id="filePath" class="easyui-textbox" style="width:100%;"
-                                   name="filePath"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="pe-label" style="width: 40%">
-                            文件类型
-                        </td>
-                        <td class="pe-content" colspan="6">
-                            <input id="fileNameSuffix" class="easyui-textbox" style="width:100%;"
-                                   name="fileNameSuffix"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="pe-label" style="width: 40%">
-                            所处库
-                        </td>
-                        <td class="pe-content" colspan="6">
-                            <input class="easyui-textbox" style="width:100%;"
-                                   name="indexName"/>
-                        </td>
-                    </tr>
-                </table>
+<div id="files" class="easyui-dialog" style="width:600px"
+     data-options="closed:true, modal:true, title:'批量上传', buttons:'#files_form_btns'">
+    <form id="file_dialog_upload" method="post" novalidate style="width:550px;margin:0 auto;padding:20px 0 0 0"
+          enctype="multipart/form-data">
+        <%--<input id="files_id" name="resId" type="hidden">--%>
+        <%--<input id="files_catalogNO" name="catalogNO" type="hidden">--%>
+        <%--<input id="files_catalogPath" name="catalogPath" type="hidden">--%>
+        <input id="files_Batch" name="file" style="display: none" type="file" multiple="multiple"
+               onchange="fileChange()">
+        <table cellspacing="5">
+            <tr>
+                <td valign="top" style="padding-left: 12px">
+                    文件名:
+                </td>
+                <td>
+                    <div id="files_Text"
+                         style="width: 350px;height: 150px;border:1px solid #DADADA; overflow-y: auto"></div>
+                </td>
+                <td>
+                    <input type="button" value="选择文件" style="width: 71px;height: 150px;border: 0px;outline:none;"
+                           onclick="selectFiles()"/>
+                </td>
+            </tr>
+            <tr>
+                <td valign="top" style="padding-left: 12px">
+                    文件数量:
+                </td>
+                <td>
+                    <span id="fileNumber"></span>
+                </td>
+            </tr>
+            <tr>
+                <td valign="top" style="padding-left: 12px">
+                    文件大小:
+                </td>
+                <td>
+                    <span id="fileAllSize"></span>
+                </td>
+            </tr>
+        </table>
+        <div id="progress_bottom1" class="progress-bottom" style="display: none;padding-top: 14px;">
+            <div style="width:100%;position:absolute;top: 95px;display: none">
+                <san id="progress_span1" style="font-size: 22px;">1%</san>
             </div>
-            <div title="关键词和摘要" data-options="tools:'#tab-tools',closable:false"
-                 style="padding:10px;width:100%;height:100%">
-                <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
-                    <tr>
-                        <td class="pe-content" colspan="6" aria-colspan="2">
-                            <input id="keyword" label="关键词:" labelPosition="top" class="easyui-textbox"
-                                   style="width:100%;height:120px" multiline="true"
-                                   name="keyword"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <%--<td class="pe-label" style="width: 40%">--%>
-                        <%--摘要--%>
-                        <%--</td>--%>
-                        <td class="pe-content" colspan="6" aria-colspan="2">
-                            <input id="fileAbstract" label="摘要:" labelPosition="top" class="easyui-textbox"
-                                   style="width:100%;height:120px" multiline="true"
-                                   name="fileAbstract"/>
-                        </td>
-                    </tr>
-
-                </table>
+            <div id="progress_span_ok12" style="width: 100%;position:absolute;top: 121px;display:block">
+                <span id="progress_span_text112" style="font-size: 16px;font-weight: 800;color:#122b39"></span>
             </div>
-            <div title="其他属性" data-options="closable:false" style="padding:10px">
-
-                <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
-                    <tr>
-                        <td class="pe-label" style="width: 40%">
-                            选择文档类型
-                        </td>
-                        <td class="pe-content" colspan="6">
-                            <input id="filetype" class="easyui-combobox" style="width:100%;"
-                                   name="filetype"/>
-                        </td>
-                    </tr>
-                    <%--<tr>--%>
-                    <%--<td class="pe-label" style="width: 40%">--%>
-                    <%--文档作者--%>
-                    <%--</td>--%>
-                    <%--<td class="pe-content" colspan="6">--%>
-                    <%--<input id="author" class="easyui-textbox" style="width:100%;"--%>
-                    <%--name="author"/>--%>
-                    <%--</td>--%>
-                    <%--</tr>--%>
-                </table>
-
-                <table id="filedTable" cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
-                </table>
-            </div>
-
-            <div title="效果预览" data-options="closable:false" style="overflow:hidden">
-                <iframe id="preSee" scrolling="yes" frameborder="0" src="./views/resource/knowledgeCenter/admin.jsp"
-                        style="width:100%;height:100%;"></iframe>
-            </div>
-
-
-            <%--<table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>--%>
-            <%--<input id="menuId" name="menuId" type="hidden">--%>
-            <%--<input id="path" name="path" type="hidden">--%>
-            <%--<input id="library" name="library" type="hidden">--%>
-            <%--<tr>--%>
-            <%--<td class="pe-label" style="width: 40%">文 件 上 传：</td>--%>
-            <%--<td class="pe-content" colspan="6">--%>
-            <%--<input id="file" name="file" class="easyui-file" type="file"--%>
-            <%--style="width:100%" onblur="file_upload_pre()">--%>
-            <%--</td>--%>
-            <%--</tr>--%>
-            <%--<tr>--%>
-            <%--<td class="pe-label" style="width: 40%">--%>
-            <%--文档类库--%>
-            <%--</td>--%>
-            <%--<td>--%>
-            <%--<input id="filetype" class="easyui-combobox" style="width:100%;"--%>
-            <%--name="filetype"/>--%>
-            <%--</td>--%>
-            <%--</tr>--%>
-            <%--</table>--%>
-            <%--<table id="filedTable" cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>--%>
-            <%--</table>--%>
-
-
         </div>
+
     </form>
-    <div id="file_dialog_button" class="pxzn-dialog-buttons">
-        <input type="button" onclick="file_dialog_ok()" value="保存" class="pxzn-button">
-        <input type="button" onclick="file_dialog_close()" value="取消" style="margin-left:80px;"
-               class="pxzn-button">
+
+    <div id="files_form_btns" style="text-align: center; margin-right:10px; margin-bottom: 5px;">
+        <a href="javascript:files_form_save()" class="easyui-linkbutton c6" iconCls="icon-ok" style="width:90px">上传</a>
+        <a href="javascript:files_form_close()" class="easyui-linkbutton" iconCls="icon-cancel"
+           style="width:90px">取消</a>
     </div>
+</div>
+<%--扩展属性--%>
+<div id="files_attributes_dialog" class="easyui-dialog" style="width: 600px;" data-options="closed:true">
+
 </div>
 
 <%-- 创建索引库 --%>

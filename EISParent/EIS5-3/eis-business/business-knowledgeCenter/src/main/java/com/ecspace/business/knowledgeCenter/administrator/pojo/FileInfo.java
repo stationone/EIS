@@ -157,6 +157,16 @@ public class FileInfo {
 
     private String libraryPath;
 
+    private Integer status;//状态 (解析中0, 未审核1, 已审核2)
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
     public String getLibraryPath() {
         return libraryPath;
     }
