@@ -9,7 +9,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
  * @author zhangch
  * @date 2019/12/5 0005 下午 19:26
  */
-@Document(indexName = "file_type",type = "file_type", shards = 1, replicas = 0)
+@Document(indexName = "file_type", type = "file_type", shards = 1, replicas = 0)
 public class FileType {
     @Id
     private String id;

@@ -1,30 +1,16 @@
 package com.ecspace.business.knowledgeCenter.administrator.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.ecspace.business.knowledgeCenter.administrator.dao.FileInfoDao;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileSearchService;
-import org.apache.lucene.index.Fields;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.action.termvectors.MultiTermVectorsRequestBuilder;
-import org.elasticsearch.action.termvectors.TermVectorsFields;
-import org.elasticsearch.action.termvectors.TermVectorsRequestBuilder;
-import org.elasticsearch.action.termvectors.TermVectorsResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
-import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
@@ -35,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -144,7 +129,7 @@ public class FileSearchServiceImpl implements FileSearchService {
              */
             String fileName = fileInfo.getFileName();
             sourceAsMap.put("fileName", fileName);
-            sourceAsMap.put("authorName", fileInfo.getAuthorName());
+            sourceAsMap.put("authorName", fileInfo.getUploadUser());
             sourceAsMap.put("keyword", fileInfo.getKeyword());
             sourceAsMap.put("creationTime", fileInfo.getCreationTime());
             sourceAsMap.put("pageTotal", fileInfo.getPageTotal());

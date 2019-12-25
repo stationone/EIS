@@ -33,25 +33,27 @@ public class MenuServiceImpl implements MenuService {
      * @return
      */
     @Override
-    public List<Menu> getMenuList(String pid , String indexName) {
+    public List<Menu> getMenuList(String pid, String indexName) {
 //        List<Menu> byPid = menuDao.findByPid(pid);
 
         List<Menu> list = menuDao.findByPidAndIndexName(pid, indexName);
 
         for (Menu menu : list) {
-            int i = menuDao.countMenuByPid(menu.getId());
-            if (i > 0) {
+//            int i = menuDao.countMenuByPid(menu.getId());
+//            if (i > 0) {
                 //该菜单有子节点
-                menu.setState("closed");
-            }
+//                menu.setState("closed");
+                menu.setChildren(menuDao.findByPid(menu.getId()));
+                menu.setState("open");
+//            }
         }
         return list;
     }
 
     /**
      * 新增目录
-     *          改为不在本地同步更新文件夹, 只需添加虚拟目录
-     *              新增: 分为“库”→“目录”→“对象”三级结构；每一级结构都包括增删改查的功能；
+     * 改为不在本地同步更新文件夹, 只需添加虚拟目录
+     * 新增: 分为“库”→“目录”→“对象”三级结构；每一级结构都包括增删改查的功能；
      *
      * @param menu
      * @return
@@ -70,7 +72,7 @@ public class MenuServiceImpl implements MenuService {
         //根据pid查找url
         Menu pmenu = menuDao.findById(pid).orElse(new Menu());
 
-        String purl = pmenu.getUrl() == null? "E:" : pmenu.getUrl();
+        String purl = pmenu.getUrl() == null ? "E:" : pmenu.getUrl();
         //拼接该目录的url
         String url = purl + "/" + text;
 
@@ -148,6 +150,7 @@ public class MenuServiceImpl implements MenuService {
 
     /**
      * 删除目录及目录下的所有文件
+     *
      * @param id
      * @return
      */
@@ -173,10 +176,11 @@ public class MenuServiceImpl implements MenuService {
 
     /**
      * 递归删除es中目录数据
+     *
      * @param id
      * @return
      */
-    private boolean recursiveDelete(String id){
+    private boolean recursiveDelete(String id) {
         try {
             //根据id查找目录及其子目录
             Menu menu = menuDao.findById(id).orElse(new Menu());//当前目录
@@ -199,6 +203,7 @@ public class MenuServiceImpl implements MenuService {
 
     /**
      * 递归删除文件夹及文件夹下所有的文件
+     *
      * @param urlPath
      * @return boolean
      */
@@ -208,17 +213,17 @@ public class MenuServiceImpl implements MenuService {
         }
         try {
             java.io.File file = new java.io.File(urlPath);
-            if(file.isDirectory()){
+            if (file.isDirectory()) {
                 java.io.File[] files = file.listFiles();
                 assert files != null;
-                if(files.length>0){
-                    for (java.io.File tmpFile:files) {
+                if (files.length > 0) {
+                    for (java.io.File tmpFile : files) {
                         delUrlLocalFile(tmpFile.getAbsolutePath());
                     }
                 }
                 boolean delete = file.delete();
-            }else{
-                if(file.exists()){
+            } else {
+                if (file.exists()) {
                     boolean delete = file.delete();
                 }
             }

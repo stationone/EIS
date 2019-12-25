@@ -6,11 +6,9 @@ import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResu
 import com.ecspace.business.knowledgeCenter.administrator.service.IndexMenuService;
 import com.ecspace.business.knowledgeCenter.administrator.service.MenuService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -30,7 +28,7 @@ public class IndexMenuController {
      * 获取库目录
      * @return
      */
-    @GetMapping("/listIndexMenu")
+    @PostMapping("/listIndexMenu")
     public List<IndexMenu> listIndexMenu(){
         return indexMenuService.listIndexMenu();
     }
@@ -39,7 +37,7 @@ public class IndexMenuController {
      * 创建
      */
     @PostMapping("/create")
-    public GlobalResult create(IndexMenu indexMenu){
+    public GlobalResult create(IndexMenu indexMenu) throws ParseException {
         return indexMenuService.save(indexMenu);
     }
 

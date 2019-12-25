@@ -97,7 +97,7 @@
 
             }
             /*
-            authorName: null
+            uploadUser: null
             content: "说明：
             ↵这里搭建的是一个简单的集群，没有做集群节点角色的区分，所以 3个节点默认
             ↵的角色有主节点、<tag style="color: red;">数据</tag>节点、协调节点
@@ -134,7 +134,7 @@
                 //格式化日期
                 var dateFormat = formatDate(time, 'yyyy-MM-dd HH:mm:ss');
                 //作者
-                var author = data[i].authorName == null ? '佚名' : data[i].authorName;
+                var author = data[i].uploadUser == null ? '佚名' : data[i].uploadUser;
                 //正文
                 var content = data[i].content == null ? '' : data[i].content;
                 //文件名

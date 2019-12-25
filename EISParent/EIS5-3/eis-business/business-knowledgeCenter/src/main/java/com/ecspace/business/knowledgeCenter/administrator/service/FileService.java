@@ -7,6 +7,7 @@ import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResu
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.ParseException;
 import java.util.List;
 
 //
@@ -85,7 +86,7 @@ public interface FileService {
      * 存储文件信息
      * @param jsonObject
      */
-    FileInfo insertFile(JSONObject jsonObject);
+    FileInfo insertFile(JSONObject jsonObject) throws ParseException;
 
 
 //

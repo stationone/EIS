@@ -34,4 +34,11 @@ public interface FileTempService {
      * @return
      */
     GlobalResult fileTempUpload(MultipartFile file, String indexName, String menuId) throws Exception;
+
+    /**
+     * 删除临时上传的文件
+     * @param id
+     * @return
+     */
+    GlobalResult deleteFile(String id);
 }

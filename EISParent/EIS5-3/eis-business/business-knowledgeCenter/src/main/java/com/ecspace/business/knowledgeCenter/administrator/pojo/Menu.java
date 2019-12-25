@@ -5,6 +5,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.util.List;
+
 /**
  * @author zhangch
  * @date 2019/11/14 0014 下午 18:18
@@ -25,6 +27,19 @@ public class Menu {
     private String state;
 
     private String indexName;//目录所在的库
+
+    private List<Menu> children;//子节点
+
+    public Menu() {
+    }
+
+    public List<Menu> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<Menu> children) {
+        this.children = children;
+    }
 
     public String getIndexName() {
         return indexName;

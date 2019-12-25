@@ -68,15 +68,12 @@ public class FileController {
         if ("".equals(jsonObject.get("filePath"))) {
             return new GlobalResult(false, 4000, "没有文件");
         }
-//        if ("".equals(jsonObject.get("indexName"))) {
-//            return new GlobalResult(false,4000,"没选类型");
-//        }
 
-        fileService.insertFile(jsonObject);
+        FileInfo fileInfo = fileService.insertFile(jsonObject);
 //        fileService.saveFileInfo(jsonObject);
 
         //调用文件服务
-        FileInfo fileInfo = fileService.saveFileInfo(jsonObject);
+//        FileInfo fileInfo = fileService.saveFileInfo(jsonObject);
         System.out.println(json);
         return new GlobalResult(true, 2000, "true", fileInfo);
     }
@@ -122,6 +119,15 @@ public class FileController {
         return fileService.getFileList(menuId, json, page, rows);
     }
 
+    @RequestMapping(value = "fileListByStatus")
+    public PageData fileListByStatus(String menuId, Integer page, Integer rows) throws Exception {
+        if (StringUtils.isBlank(menuId)) {
+            return new PageData();
+        }
+        //根据状态查询所有()(已提交 - 未审核)
+        return fileService.getFileList(menuId, page, rows);
+    }
+
 
     /**
      * 查看文件详情
@@ -150,7 +156,7 @@ public class FileController {
     /**
      * 上传文件
      *
-     * @param files
+     * @param file
      * @return
      */
 //    @RequestMapping(value = "/fileTempUpload", method = RequestMethod.POST)

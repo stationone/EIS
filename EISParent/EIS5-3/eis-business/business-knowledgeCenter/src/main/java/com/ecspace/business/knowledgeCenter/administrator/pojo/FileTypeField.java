@@ -6,4 +6,5 @@ package com.ecspace.business.knowledgeCenter.administrator.pojo;
  */
 public class FileTypeField {
 
+
 }

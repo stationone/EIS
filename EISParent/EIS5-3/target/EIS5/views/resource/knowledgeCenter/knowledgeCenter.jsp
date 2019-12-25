@@ -63,6 +63,7 @@
                 method: "get",
                 checkbox: false,
                 multiple: false,
+                animate: true,
                 onClick: function (node) {
                     //点击事件 获取dataList
                     loadDataList(node.id);
@@ -138,11 +139,12 @@
                             return fmt;
                         }
                     },
-                    {field: 'status', title: '状态', width: 130, align: 'center' ,
+                    {
+                        field: 'status', title: '状态', width: 130, align: 'center',
                         formatter: function (value) {
                             if (value === 0) {
                                 return '待解析'
-                            }else if (value === 1) {
+                            } else if (value === 1) {
                                 return '未审核'
                             } else {
                                 return '已审核'
@@ -169,7 +171,7 @@
                         }
                     },
                     // {field: 'author', title: '作者', width: 180, align: 'center'},
-                    // {field: 'authorName', title: '上传人员', width: 180, align: 'center'},
+                    // {field: 'uploadUser', title: '上传人员', width: 180, align: 'center'},
                     // {field: 'content', title: '正文', width: 300, align: 'center'},
                     {
                         field: 'operate', title: '操作', align: 'center', width: $(this).width() * 0.1,
@@ -226,7 +228,7 @@
                 //格式化日期
                 var dateFormat = formatDate(time, 'yyyy-MM-dd HH:mm:ss');
                 //作者
-                var author = data[i].authorName == null ? '佚名' : data[i].authorName;
+                var author = data[i].uploadUser == null ? '佚名' : data[i].uploadUser;
                 //正文
                 var content = data[i].content == null ? '' : data[i].content;
                 //文件名
@@ -761,7 +763,6 @@
                     }
                 });
             });
-
         }
 
         function deleteFile() {
@@ -999,9 +1000,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <%--<td class="pe-label" style="width: 40%">--%>
-                        <%--摘要--%>
-                        <%--</td>--%>
                         <td class="pe-content" colspan="6" aria-colspan="2">
                             <input id="fileAbstract" label="摘要:" labelPosition="top" class="easyui-textbox"
                                    style="width:100%;height:120px" multiline="true"
@@ -1023,15 +1021,6 @@
                                    name="filetype"/>
                         </td>
                     </tr>
-                    <%--<tr>--%>
-                    <%--<td class="pe-label" style="width: 40%">--%>
-                    <%--文档作者--%>
-                    <%--</td>--%>
-                    <%--<td class="pe-content" colspan="6">--%>
-                    <%--<input id="author" class="easyui-textbox" style="width:100%;"--%>
-                    <%--name="author"/>--%>
-                    <%--</td>--%>
-                    <%--</tr>--%>
                 </table>
 
                 <table id="filedTable" cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>
@@ -1042,33 +1031,6 @@
                 <iframe id="preSee" scrolling="yes" frameborder="0" src="./views/resource/knowledgeCenter/admin.jsp"
                         style="width:100%;height:100%;"></iframe>
             </div>
-
-
-            <%--<table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>--%>
-            <%--<input id="menuId" name="menuId" type="hidden">--%>
-            <%--<input id="path" name="path" type="hidden">--%>
-            <%--<input id="library" name="library" type="hidden">--%>
-            <%--<tr>--%>
-            <%--<td class="pe-label" style="width: 40%">文 件 上 传：</td>--%>
-            <%--<td class="pe-content" colspan="6">--%>
-            <%--<input id="file" name="file" class="easyui-file" type="file"--%>
-            <%--style="width:100%" onblur="file_upload_pre()">--%>
-            <%--</td>--%>
-            <%--</tr>--%>
-            <%--<tr>--%>
-            <%--<td class="pe-label" style="width: 40%">--%>
-            <%--文档类库--%>
-            <%--</td>--%>
-            <%--<td>--%>
-            <%--<input id="filetype" class="easyui-combobox" style="width:100%;"--%>
-            <%--name="filetype"/>--%>
-            <%--</td>--%>
-            <%--</tr>--%>
-            <%--</table>--%>
-            <%--<table id="filedTable" cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='80%'>--%>
-            <%--</table>--%>
-
-
         </div>
     </form>
     <div id="file_dialog_button" class="pxzn-dialog-buttons">

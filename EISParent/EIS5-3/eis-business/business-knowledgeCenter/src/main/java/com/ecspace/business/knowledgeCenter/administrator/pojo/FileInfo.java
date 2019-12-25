@@ -1,7 +1,6 @@
 package com.ecspace.business.knowledgeCenter.administrator.pojo;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -80,7 +79,7 @@ public class FileInfo {
     @Field(index = true, store = true, type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private String keyword;
 
-    private String content;//page内容(一小段)
+    private String content;//文档内容(一小段)
     /**
      * 文件所处目录id
      */
@@ -88,7 +87,7 @@ public class FileInfo {
     /**
      * 上传人员
      */
-    private String authorName;
+    private String uploadUser;
     /**
      * 页面列表
      */
@@ -157,7 +156,7 @@ public class FileInfo {
 
     private String libraryPath;
 
-    private Integer status;//状态 (解析中0, 未审核1, 已审核2)
+    private Integer status;//状态 (解析中0, 未审核1, 已审核2)  更新为----->>>  上传中5、离散中0、待提交1、待审核2、驳回3、入库4 6种状态
 
     public Integer getStatus() {
         return status;
@@ -347,12 +346,12 @@ public class FileInfo {
         this.fileNamePrefix = fileNamePrefix;
     }
 
-    public String getAuthorName() {
-        return authorName;
+    public String getUploadUser() {
+        return uploadUser;
     }
 
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
+    public void setUploadUser(String uploadUser) {
+        this.uploadUser = uploadUser;
     }
 
     public String getId() {

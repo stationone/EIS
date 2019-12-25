@@ -99,10 +99,10 @@ public class FileTempServiceImpl implements FileTempService {
             fileInfo.setWebPath(webPath);
             fileInfo.setSrc(src);
 //            fileInfo.setIndexName("");
+            fileInfo.setStatus(1);//解析完成未审批
+
             info = fileInfoDao.save(fileInfo);
         }
-
-
         return new GlobalResult(flag, 0000, String.valueOf(flag), info);
     }
 
@@ -142,7 +142,8 @@ public class FileTempServiceImpl implements FileTempService {
 
     @Override
     public GlobalResult fileTempUpload(MultipartFile file, String indexName, String menuId) throws Exception {
-
+        //获取当前登录用户
+        String uploadUser = "系统管理员";
         //文件名
         String filename = file.getOriginalFilename();
         String[] split = filename != null ? filename.split("\\.") : new String[0];//split切割 . | * : ^ \ 需要加\\转义
@@ -169,6 +170,7 @@ public class FileTempServiceImpl implements FileTempService {
         fileInfo.setFilePath(path);
         fileInfo.setHashCode(FileHashCode.generate(path));
         fileInfo.setStatus(0);//状态, 初始为0 , 未解析
+        fileInfo.setUploadUser(uploadUser);
 
         fileInfo.setIndexName(indexName);
         fileInfo.setMenuId(menuId);
@@ -177,5 +179,11 @@ public class FileTempServiceImpl implements FileTempService {
 
 
         return new GlobalResult(true, 2000, "true", info);
+    }
+
+    @Override
+    public GlobalResult deleteFile(String id) {
+        fileInfoDao.deleteById(id);
+        return new GlobalResult(true, 2000, "ok");
     }
 }

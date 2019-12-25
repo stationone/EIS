@@ -40,4 +40,14 @@ public class FileTempController {
         //调用文件服务
         return fileTempService.file2Html(fileInfo);
     }
+
+    @PostMapping(value = "deleteFile")
+    public GlobalResult deleteFile(String id) throws Exception {
+        if (id == null || "".equals(id)) {
+            return new GlobalResult(false, 4000, "非法参数");
+        }
+
+        return fileTempService.deleteFile(id);
+
+    }
 }

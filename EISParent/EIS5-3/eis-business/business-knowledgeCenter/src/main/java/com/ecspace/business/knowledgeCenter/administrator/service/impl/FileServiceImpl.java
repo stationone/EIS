@@ -20,8 +20,12 @@ import com.ecspace.business.knowledgeCenter.administrator.service.FileTypeServic
 import com.ecspace.business.knowledgeCenter.administrator.util.FileHashCode;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
 import org.apache.commons.io.FileUtils;
+import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.get.GetResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +36,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 //
@@ -58,6 +64,8 @@ public class FileServiceImpl implements FileService {
      */
     @Override
     public GlobalResult saveFile(MultipartFile file) throws Exception {
+        //获取当前登录用户
+        String uploadUser = "系统管理员";
         //文件名
         String filename = file.getOriginalFilename();
         //组装文件路径
@@ -243,7 +251,11 @@ public class FileServiceImpl implements FileService {
         String filename = file.getName();//文件名
         long length = file.length();//文件大小
 //        //封装fileInfo对象
-        String id = TNOGenerator.generateId();
+        String id = (String) jsonObject.get("id");
+        if (id == null || "".equals(id)) {
+            //为空
+            id = TNOGenerator.generateId();
+        }
 //        FileInfo fileInfo1 = new FileInfo();
 //        fileInfo.setHashCode(FileHashCode.generate(path));
 //        fileInfo1.setId(id);
@@ -284,16 +296,41 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileInfo insertFile(JSONObject jsonObject) {
+    public FileInfo insertFile(JSONObject jsonObject) throws ParseException {
         String path = (String) jsonObject.get("filePath");
+//        String date = (String) jsonObject.get("creationTime");
+//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        Date parse = simpleDateFormat.parse(date);
+//        jsonObject.put("creationTime", parse);
+        jsonObject.put("creationTime",new Date().getTime());//
+//        String size = (String) jsonObject.get("fileSize");
+        jsonObject.remove("fileSize", jsonObject.get("fileSize"));
+        //46.85KB
+//        String fileSize = size.trim() * 1024
+
         if (path == null || "".equals(path)) {
             return new FileInfo();
         }
         String id = (String) jsonObject.get("id");
-        IndexResponse indexResponse = elasticsearchTemplate.getClient().prepareIndex("file", "file")
-                .setSource(jsonObject, XContentType.JSON)
-                .setId(id)
-                .get();
+        if (id == null || "".equals(id)) {
+            id = TNOGenerator.generateId();
+        }
+        String indexName = (String) jsonObject.get("indexName");
+        //更新文档
+        UpdateRequest updateRequest = new UpdateRequest("file","file",id);
+        //如果尚未存在，则表明必须将部分文档用作upsert文档
+        updateRequest.docAsUpsert(true);
+        //禁用noop检测
+        updateRequest.detectNoop(false);
+        //更新后是否获取_source
+        updateRequest.fetchSource(true);
+
+        updateRequest.upsert(jsonObject, XContentType.JSON);
+
+        updateRequest.doc(jsonObject, XContentType.JSON);
+
+        UpdateResponse updateResponse = elasticsearchTemplate.getClient().update(updateRequest).actionGet();
+
 //        indexResponse.
         FileInfo fileInfo = fileInfoDao.findById(id).orElse(new FileInfo());
 

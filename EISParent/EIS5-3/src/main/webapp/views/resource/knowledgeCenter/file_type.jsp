@@ -156,7 +156,7 @@
                     {field: 'indexName', title: '索引库名称', width: 180, align: 'center'}
                 ]],
                 rownumbers: true,
-                title: '自定义扩展字段名称信息',
+                // title: '自定义扩展字段名称信息',
                 singleSelect: true,
                 collapsible: true,
                 nowrap: true,
