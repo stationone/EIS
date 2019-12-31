@@ -85,88 +85,33 @@ public interface FileService {
     /**
      * 存储文件信息
      * @param jsonObject
+     * @param status
      */
-    FileInfo insertFile(JSONObject jsonObject) throws ParseException;
+    FileInfo insertFile(JSONObject jsonObject, String status) throws ParseException, Exception;
 
+    /**
+     * 根据文件状态获取文件列表
+     * @param menuId
+     * @param status
+     * @param page
+     * @param rows
+     * @return
+     */
+    PageData getFileListByStatus(String menuId, String status, Integer page, Integer rows);
 
-//
-//
-//    /**
-//     * 保存文件到数据库
-//     * @param name
-//     * @param desFile
-//     * @return
-//     */
-//    int insertFile(String name, String desFile);
-//
-//    /**
-//     * 文件列表
-//     * @param page
-//     * @param rows
-//     * @return
-//     */
-//    PageData getFileList(Integer page, Integer rows);
-//
-//    /**
-//     * 删除文件信息
-//     * @param fileId
-//     * @return
-//     */
-//    GlobalResult removeFile(Integer fileId);
-//
-//    /**
-//     * 查找文件
-//     * @param fileId
-//     * @return
-//     */
-//    GlobalResult getFile(Integer fileId);
-//
-//    /**
-//     * 查找文件
-//     * @param fileId
-//     * @return
-//     */
-//    File getFileById(Integer fileId);
-//
-//    /**
-//     * 查询文件详情
-//     * @param fileId
-//     * @return
-//     */
-//    File getFileAndRoleById(Integer fileId);
-//
-//    /**
-//     * 查询文件可以添加的角色
-//     * @param fileId
-//     * @return
-//     */
-//    PageData getFileOtherRole(Integer fileId);
-//
-//    /**
-//     * 移除文件角色
-//     * @param fileId
-//     * @param uuid
-//     * @return
-//     */
-//    GlobalResult removeFileRole(Integer fileId, Integer uuid);
-//
-//    /**
-//     * 文件角色关联
-//     * @param fileId
-//     * @param uuid
-//     * @return
-//     */
-//    GlobalResult addFileRole(Integer fileId, Integer uuid);
-//
-////    /**
-////     * 过去登录人的文件权限
-////     * @param userInfo
-////     * @return
-////     */
-////    PageData getUserFile(UserInfo userInfo);
-////
-////    /**
-////     * @return
-////     */
-////    GlobalResult getRole(UserInfo userInfo);
+    PageData getFileListByStatus(String menuId, Integer page, Integer rows);
+
+    /**
+     * 根据id查找file
+     * @param fileId
+     * @return
+     */
+    FileInfo getFileById(String fileId);
+
+    /**
+     * 文档解析入库
+     * @param fileId
+     * @return
+     */
+    GlobalResult fileAnalyzerSave(String fileId);
 }

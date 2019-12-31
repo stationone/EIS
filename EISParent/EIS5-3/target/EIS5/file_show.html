@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>知识中心</title>
+    <link rel="stylesheet" type="text/css" href="css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="css/px-style.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.easyui.min.1.5.2.js"></script>
+    <script src="js/pxzn.util.js"></script>
+    <script src="js/px-tool/px-util.js"></script>
+    <script src="js/pxzn.easyui.util.js"></script>
+    <script src="js/easyui-language/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="ui/jquery.serializejson.min.js"></script>
+
+</head>
+<body id="permissionSet_layout" class="easyui-layout">
+<div data-options="region:'center'" style="height: 100%">
+    <div class="easyui-layout" data-options="fit:true">
+
+        <div id="permissionSet_dg_toolbar" data-options="region:'north'">
+
+            <div class="datagrid-title-div" style="width: 100%;">
+                <span style="width: 70%">文件详情</span>
+                <span style="float: right; margin-right: 10px;">
+                    <a href="javascript:history.go(-1)">
+                    <img src="images/px-icon/zuojiantou.png" style="padding:0 10px"
+                         class="easyui-tooltip div-toolbar-img-first" title="返回">
+                </a>
+                <a href="javascript:location.reload()">
+                    <img src="images/px-icon/shuaxin.png" style="padding:0 10px;margin-left: 5px;"
+                         class="easyui-tooltip div-toolbar-img-first" title="刷新">
+                </a>
+                </span>
+            </div>
+        </div>
+        <div data-options="region:'west'" style="width: 65%;height: 525px;padding-left: 5px">
+            <div id="dataParent">
+                <div class="easyui-tabs" style="width: 100%;height: 525px;">
+                    <div title="文件预览" data-options="closable:false" style="overflow:hidden;height: 525px;">
+                        <iframe id="preSee" scrolling="yes" frameborder="0"
+                                src="iframe/ES说明V4.html"
+                                style="width:100%;height:94%;"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div data-options="region:'east'" style="width:35%">
+
+            <div data-options="buttons:'#file_dialog_button'">
+                <form id="file_dialog_upload" method="post" enctype="multipart/form-data">
+
+                    <input id="id" name="id" type="hidden">
+                    <input id="fileId" name="fileId" type="hidden">
+                    <input id="fileNamePrefix" name="fileNamePrefix" type="hidden">
+                    <input id="hashCode" name="hashCode" type="hidden">
+                    <input id="src" name="src" type="hidden">
+                    <input id="webPath" name="webPath" type="hidden">
+                    <input id="status" name="status" type="hidden">
+
+                    <div id="tabs" class="easyui-tabs" data-options="tools:'#tab-tools'"
+                         style="width:100%;height: 475px">
+                        <div title="基本属性" style="padding:10px;height: 475px">
+                            <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;height: 475px"
+                                   width='100%'>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                            文件名称:
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input id="fileName" class="easyui-textbox"
+                                               style="width:90%;padding-left: 5px;"
+                                               name="fileName"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                            文件大小:
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input id="fileSize" class="easyui-textbox"
+                                               style="width:90%;"
+                                               name="fileSize"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                            创建时间:
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input id="creationTime" class="easyui-textbox"
+                                               style="width:90%;"
+                                               name="creationTime"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                            最后更新时间:
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input id="lastUpdateTime" class="easyui-textbox"
+                                               style="width:90%;"
+                                               name="lastUpdateTime"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                            文件暂存路径 :
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input id="filePath" class="easyui-textbox"
+                                               style="width:90%;"
+                                               name="filePath"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                            文档类型:
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input id="fileNameSuffix" class="easyui-textbox"
+                                               style="width:90%;"
+                                               name="fileNameSuffix"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                             所属文件库:
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input class="easyui-textbox" style="width:90%;padding-left: 5px;"
+                                               name="indexName"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                             上传人员:
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input class="easyui-textbox" style="width:90%;padding-left: 5px;"
+                                               name="uploadUser"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                             状态:
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input id="detail_status" class="easyui-textbox"
+                                               style="width:90%;padding-left: 5px;"
+                                               name="status"/>
+                                    </td>
+
+                                </tr>
+
+                            </table>
+                        </div>
+                        <div title="关键词和摘要" data-options="tools:'#tab-tools',closable:false"
+                             style="padding:10px;width:100%;height:100%">
+                            <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='100%'>
+                                <tr>
+                                    <td class="pe-content" colspan="6" aria-colspan="2">
+                                        <input id="keyword" label="关键词:" labelPosition="top" class="easyui-textbox"
+                                               style="width:90%;height:120px" multiline="true"
+                                               name="keyword"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-content" colspan="6" aria-colspan="2">
+                                        <input id="fileAbstract" label="摘要:" labelPosition="top" class="easyui-textbox"
+                                               style="width:90%;height:120px" multiline="true"
+                                               name="fileAbstract"/>
+                                    </td>
+                                </tr>
+
+                            </table>
+                        </div>
+                        <div title="其他属性" data-options="closable:false" style="padding:10px">
+
+                            <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='100%'>
+                                <tr>
+                                    <td class="pe-label" style="width: 40%">
+                                        <span style="font-size: 15px;">
+                                            选择文档类型
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <select id="filetype" class="easyui-combobox" style="width:100%;"
+                                                name="filetype" data-options="editable:false">
+                                            <option value="aa">word</option>
+                                            <option>ppt</option>
+                                            <option>excel</option>
+                                            <option>pdf</option>
+                                            <option>other</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <table id="filedTable" cellspacing="10" class="pxzn-dialog-font" style="margin: auto;"
+                                   width='100%'>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+                <div id="file_dialog_button" class="pxzn-dialog-buttons">
+                    <input id="save" type="button" value="保存" class="pxzn-button">
+                    <input id="submit" type="button" value="提交" style="margin-left:10px;"
+                           class="pxzn-button">
+                    <input id="check" type="button" value="驳回" style="margin-left:10px;"
+                           class="pxzn-button">
+                    <input id="saveIndex" type="button" value="入库" style="margin-left:10px;"
+                           class="pxzn-button">
+                    <input id="download" type="button" value="下载" style="margin-left:10px;"
+                           class="pxzn-button">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -30,4 +30,20 @@ public interface FileSearchService {
      */
     PageData getFilePageList(String menuId, String search, Integer page, Integer rows) throws IOException;
 
+    /**
+     * 展示全部文档
+     * @param page
+     * @param rows
+     * @return
+     */
+    PageData fileList(Integer page, Integer rows);
+
+    /**
+     * DSL全文检索
+     * @param search
+     * @param page
+     * @param rows
+     * @return
+     */
+    PageData fileList(String search, Integer page, Integer rows);
 }

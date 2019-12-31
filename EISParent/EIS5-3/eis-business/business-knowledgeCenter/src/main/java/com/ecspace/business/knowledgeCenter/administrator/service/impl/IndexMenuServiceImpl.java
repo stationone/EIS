@@ -55,7 +55,7 @@ public class IndexMenuServiceImpl implements IndexMenuService {
             indexMenu.setLastUpdateTime(date);
         }else {
             //格式化创建时间
-            System.out.println(indexMenu.getCreationTimeStr() == null);
+//            System.out.println(indexMenu.getCreationTimeStr() == null);
             String creationTimeStr = indexMenu.getCreationTimeStr();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date date = simpleDateFormat.parse(creationTimeStr);

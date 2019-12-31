@@ -1,5 +1,6 @@
 com\ecspace\business\knowledgeCenter\administrator\pojo\entity\GlobalResult.class
 com\ecspace\business\knowledgeCenter\administrator\pojo\FileTemp.class
+com\ecspace\business\knowledgeCenter\administrator\util\PDF2HtmlUtil.class
 com\ecspace\business\knowledgeCenter\administrator\service\MenuService.class
 com\ecspace\business\knowledgeCenter\administrator\FileAnalysis\Test.class
 com\ecspace\business\knowledgeCenter\administrator\service\FileTypeService.class

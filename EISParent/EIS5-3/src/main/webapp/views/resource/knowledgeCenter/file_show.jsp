@@ -144,6 +144,30 @@
                 data: 'fileId=' + fileId,
                 dataType: 'json',
                 success: function (result) {
+                    //其他按钮按状态显隐
+                    switch (result.status) {
+                        case 1:
+                            $('#submit').show();//提交
+                            $('#saveIndex').hide();//入库
+                            $('#check').hide();//驳回
+                            break;
+                        case 2:
+                            $('#submit').hide();//提交
+                            $('#saveIndex').show();//入库
+                            $('#check').show();//驳回
+                            break;
+                        case 3:
+                            $('#submit').show();//提交
+                            $('#saveIndex').hide();//入库
+                            $('#check').hide();//驳回
+                            //让驳回高亮
+                            break;
+                        case 4:
+                            $('#submit').hide();//提交
+                            $('#saveIndex').hide();//入库
+                            $('#check').hide();//驳回
+                            break;
+                    }
                     if (result.author != null) {
                         var textHtml = '';
                         textHtml += '<tr>';
@@ -171,11 +195,31 @@
                         hashCode: result.hashCode,
                         src: result.src,
                         webPath: result.webPath,
-                        status: result.status,
+                        status: formatStatus(result.status),
+                        /*
+                        formatter: function (value) {//上传中、离散中、待提交、待审核、驳回、入库 6种状态；
+                            if (value === 0) {
+                                return '离散中';
+                            } else if (value === 1) {
+                                return '待提交';
+                            } else if (value === 2) {
+                                return '待审核';
+                            } else if (value === 3) {
+                                return '驳回';
+                            } else if (value === 4) {
+                                return '入库';
+                            } else {
+                                return '上传中';
+                            }
+
+                        }
+                         */
                         //上边是    隐藏属性
                         fileName: result.fileName,
                         fileSize: formatSize(result.fileSize),//大小需要格式化
                         creationTime: formatDate(result.creationTime, 'yyyy-MM-dd HH:mm:dd'),//日期需要格式化
+                        lastUpdateTime: formatDate(result.lastUpdateTime, 'yyyy-MM-dd HH:mm:dd'),//日期需要格式化
+
                         // creationTime: result.creationTime,
                         filePath: result.filePath,
                         fileNameSuffix: result.fileNameSuffix,
@@ -190,17 +234,35 @@
 
         }
 
+        //格式化状态
+        function formatStatus(value) {//上传中、离散中、待提交、待审核、驳回、入库 6种状态；
+            if (value === 0) {
+                return '离散中';
+            } else if (value === 1) {
+                return '待提交';
+            } else if (value === 2) {
+                return '待审核';
+            } else if (value === 3) {
+                return '驳回';
+            } else if (value === 4) {
+                return '入库';
+            } else {
+                return '上传中';
+            }
+
+        }
+
 
         //文件上传界面保存按钮
         var file_upload_flag = true;//用来防止多次点击发送请求的标记
-        function file_dialog_ok() {
+        function file_dialog_ok(status) {
             if (file_upload_flag) {
                 file_upload_flag = false;
 
                 var str = JSON.stringify($('#file_dialog_upload').serializeJSON());
                 console.log(str);
                 $.ajax({
-                    url: 'file/fileForm',
+                    url: 'file/fileForm?status=' + status,
                     type: 'POST',
                     dataType: 'JSON',
                     // contentType: 'application/json',
@@ -208,20 +270,52 @@
                     success: function (result) {
                         console.log(result);
                         message_Show(result.message);
-                        //关闭窗口, 刷新列表
-                        // file_dialog_close();
-                        // $('#' + treeId).tree('reload');
-                        //调用文件解析接口, 后台自动解析
                         if (result.success == false) {
                             return;
                         }
-                        // fileSpread(result.data);
                         file_upload_flag = true;
                         //跳转到文件列表页面
                         window.location.href = "./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp";
+
+                        //如果文档入库,调取接口解析文件
+                        console.log(result.data);
+                        var data = result.data;
+                        console.log(data.fileId);
+                        if (data.status === 4) {
+                            //审核入库, 解析
+                            fileSpread(data.fileId);
+                        }
+
                     }
                 });
             }
+        }
+
+        /**
+         * 文件离散接口
+         *
+         * @param fileInfo
+         */
+        function fileSpread(fileId) {
+            console.log(fileId);
+
+            $.ajax({
+                url: 'file/fileAnalyzer?fileId=' + fileId,
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                // data: {'fileId': fileId},
+                success: function (result) {
+                    if (result == null) {
+                        return;
+                    }
+                    //成功后右下角窗口提醒
+                    message_Show(result.message);
+                },
+                error: function () {
+                    alert('文件离散失败, 该文件可能是只读文件, 不可执行其他操作')
+                }
+            })
         }
 
         function mouseEnter() {
@@ -294,14 +388,58 @@
             })
         }
 
-        /**
-         * 文档提交
-         */
-        function file_commit() {
-            //保存按钮
-            alert('提交' == '' ? 'confirm' : '不为空');
+        function downloadFile() {
+            var fileId = document.getElementById("fileId").value;
+            console.log(fileId);
+            // return;
+            $.ajax({
+                url: "file/fileDownload?fileId=" + fileId,
+                dataType: 'json',
+                type: 'POST',
+                contentType: 'application/octet-stream',
+                success: function (result) {
+                    if (!result.success) {
+                        message_Show(result.message)
+                    }
+                }
+            });
 
+            // $("#downloadForm").form("submit", {
+            //     url: "file/fileDownload?fileId=" + fileId,
+            //     onSubmit: function () {
+            //         $.messager.alert('系统提示', '开始下载');
+            //         return $(this).form("validate");
+            //     },
+            //     success: function (data) {
+            //         if (data == "") {
+            //             serverError();
+            //             return;
+            //         }
+            //         data = eval('(' + data + ')');
+            //         data = returnMessager(data);
+            //         if (data == null) {
+            //             return;
+            //         }
+            //     }
+            // });
         }
+
+        function downloadFileByForm() {
+            var str_a = "magnet:?xt=urn:btih:";
+            var str_b = "0002405ceeb0de28e3e05ddc901038081a36d99e";
+            alert(str_a + str_b);
+
+
+            //此处data是需要传递的数据
+            var fileId = document.getElementById("fileId").value;
+            var url = "file/fileDownload"; //提交数据和下载地址
+            var form = $("<form></form>").attr("action", url).attr("method", "post");
+            //将数据赋值给Input进行form表单提交数据
+            form.append($("<input></input>").attr("type", "hidden").attr("name", "fileId").attr("value", fileId));
+            form.appendTo('body').submit().remove(); //模拟提交
+        }
+
+
     </script>
 </head>
 <body id="permissionSet_layout" class="easyui-layout">
@@ -309,18 +447,29 @@
     <div class="easyui-layout" data-options="fit:true">
 
         <div id="permissionSet_dg_toolbar" data-options="region:'north'">
-            <div class="datagrid-title-div"><span>文件详情</span></div>
+
+            <div class="datagrid-title-div" style="width: 100%;">
+                <span style="width: 70%">文件详情</span>
+                <span style="float: right; margin-right: 10px;">
+                    <a href="javascript:history.go(-1)">
+                    <img src="images/px-icon/zuojiantou.png" style="padding:0 10px"
+                         class="easyui-tooltip div-toolbar-img-first" title="返回">
+                </a>
+                <a href="javascript:location.reload()">
+                    <img src="images/px-icon/shuaxin.png" style="padding:0 10px;margin-left: 5px;"
+                         class="easyui-tooltip div-toolbar-img-first" title="刷新">
+                </a>
+                <%--<a href="javascript:history.go(-2);">返回前两页</a>--%>
+                <%--<a href="javascript:self.location=document.referrer;">返回上一页并刷新</a>--%>
+                </span>
+            </div>
         </div>
         <div data-options="region:'west'" style="width: 65%;padding-left: 5px">
             <div id="dataParent">
-                <%--<div id="dataList">--%>
-                <%----%>
-                <%----%>
-                <%--</div>--%>
                 <div class="easyui-tabs" style="width: 100%;">
                     <div title="文件预览" data-options="closable:false" style="overflow:hidden">
                         <iframe id="preSee" scrolling="yes" frameborder="0"
-                                src="./../201912102.html"
+                                src=""
                                 style="width:100%;height:94%;"></iframe>
                     </div>
                 </div>
@@ -344,15 +493,9 @@
                     <%--<input id="filePath" name="filePath" type="hidden">--%>
 
 
-                    <div id="tabs" class="easyui-tabs" data-options="tools:'#tab-tools'" style="width:100%;height:85%">
+                    <div id="tabs" class="easyui-tabs" data-options="tools:'#tab-tools'" style="width:100%;height: 92%">
                         <div title="基本属性" style="padding:10px;">
                             <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='100%'>
-                                <%--<tr>--%>
-                                <%--<td class="pe-label" style="width: 40%" colspan="2">--%>
-                                <%--<input id="file" name="file" type="file" style="width:100%; text-align: center"--%>
-                                <%--onchange="file_upload_pre()">--%>
-                                <%--</td>--%>
-                                <%--</tr>--%>
                                 <tr>
                                     <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
                                          <span>
@@ -380,7 +523,7 @@
                                 <tr>
                                     <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
                                          <span>
-                                            上传时间:
+                                            创建时间:
                                         </span>
                                     </td>
                                     <td class="pe-content" colspan="6">
@@ -389,6 +532,18 @@
                                                name="creationTime"/>
                                         <%--<input class="easyui-datebox" style="width:90%;" name="creationTime"--%>
                                         <%--data-options="formatter:myformatter,parser:myparser" >--%>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                                         <span>
+                                            最后更新时间:
+                                        </span>
+                                    </td>
+                                    <td class="pe-content" colspan="6">
+                                        <input id="lastUpdateTime" class="easyui-textbox"
+                                               style="width:90%;" readonly
+                                               name="lastUpdateTime"/>
                                     </td>
                                 </tr>
                                 <tr>
@@ -447,9 +602,11 @@
                                         </span>
                                     </td>
                                     <td class="pe-content" colspan="6">
-                                        <input class="easyui-textbox" readonly style="width:90%;padding-left: 5px;"
+                                        <input id="detail_status" class="easyui-textbox" readonly
+                                               style="width:90%;padding-left: 5px;"
                                                name="status"/>
                                     </td>
+
                                 </tr>
 
                             </table>
@@ -497,20 +654,57 @@
                                    width='100%'>
                             </table>
                         </div>
+                        <%--<div title="审批记录" data-options="closable:false" style="padding:10px">--%>
+
+                        <%--<table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='100%'>--%>
+                        <%--<tr>--%>
+                        <%--<td class="pe-label" style="text-align-last:justify;padding-right: 25px;width: 30%;">--%>
+                        <%--<span>--%>
+                        <%--审批人--%>
+                        <%--</span>--%>
+                        <%--</td>--%>
+                        <%--<td class="pe-content" colspan="6">--%>
+                        <%--<input id="" class="easyui-textbox" readonly style="width:70%;padding-left: 5px;"--%>
+                        <%--name="opinion" value="同意" />--%>
+                        <%--</td>--%>
+                        <%--</tr>--%>
+                        <%--</table>--%>
+                        <%--</div>--%>
                     </div>
                 </form>
                 <div id="file_dialog_button" class="pxzn-dialog-buttons">
-                    <input type="button" onclick="file_dialog_ok()" value="保存" class="pxzn-button">
-                    <input type="button" onclick="file_commit()" value="提交" style="margin-left:80px;"
+                    <input id="save" type="button" onclick="file_dialog_ok()" value="保存" class="pxzn-button">
+                    <input id="submit" type="button" onclick="file_dialog_ok(2)" value="提交" style="margin-left:10px;"
+                           class="pxzn-button">
+                    <input id="check" type="button" onclick="file_dialog_ok(3)" value="驳回" style="margin-left:10px;"
+                           class="pxzn-button">
+                    <input id="saveIndex" type="button" onclick="file_dialog_ok(4)" value="入库" style="margin-left:10px;"
+                           class="pxzn-button">
+                    <input id="download" type="button" onclick="downloadFileByForm()" value="下载" style="margin-left:10px;"
                            class="pxzn-button">
                 </div>
             </div>
-
-
         </div>
-
-
     </div>
+</div>
+
+<div id="downloadDlg" class="easyui-dialog" style="width:400px"
+     data-options="modal:true,closed:true,buttons:'#download-btns'">
+    <form id="downloadForm" method="post" novalidate style="margin:0;padding:20px 50px">
+        <div style="margin-bottom:10px;font-size:14px;"></div>
+        <div style="margin-bottom:5px;">
+            <span id="text"></span>
+            <input id="d_svnURL" name="svnURL" type="hidden">
+            <input id="d_svnVersion" name="svnVersion" type="hidden">
+        </div>
+    </form>
+    <div id="download-btns" style="text-align: center; margin-right:10px; margin-bottom: 5px;">
+        <a href="javascript:downloadFiles()" class="easyui-linkbutton c6" iconCls="icon-ok" style="width:90px">下载</a>
+        <a href="javascript:closeDownloadDlg()" class="easyui-linkbutton" iconCls="icon-cancel"
+           style="width:90px">取消</a>
+    </div>
+
+
 </div>
 </body>
 </html>

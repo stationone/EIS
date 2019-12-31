@@ -4,6 +4,7 @@ import com.ecspace.business.knowledgeCenter.administrator.dao.FileInfoDao;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileSearchService;
+import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -16,6 +17,9 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +46,7 @@ public class FileSearchServiceImpl implements FileSearchService {
 
     /**
      * 无检索词
+     *
      * @param menuId
      * @param page
      * @param rows
@@ -56,6 +61,7 @@ public class FileSearchServiceImpl implements FileSearchService {
 
     /**
      * 有检索词
+     *
      * @param menuId
      * @param search
      * @param page
@@ -169,9 +175,156 @@ public class FileSearchServiceImpl implements FileSearchService {
     }
 
     /**
+     * matchAll
+     *
+     * @param page
+     * @param rows
+     * @return
+     */
+    @Override
+    public PageData fileList(Integer page, Integer rows) {
+        if (page == null) {
+            page = 0;
+        } else {
+            page = page - 1;
+        }
+        if (rows == null) {
+            rows = 10;
+        }
+        Pageable pageable = PageRequest.of(page, rows);
+        Page<FileInfo> info = fileInfoDao.findByStatus(4,pageable);//入库文档可被检索
+        List<FileInfo> content = info.getContent();
+        for (FileInfo fileInfo : content) {
+            //正文过长截取
+            if (fileInfo.getContent() != null && fileInfo.getContent().length() > 400) {
+                String substring = fileInfo.getContent().substring(0, 399);
+                fileInfo.setContent(substring);
+            }
+        }
+        return new PageData((int) info.getTotalElements(), info.getContent());
+    }
+
+    /**
+     * DSL
+     *
+     * @param search
+     * @param page
+     * @param rows
+     * @return
+     */
+    @Override
+    public PageData fileList(String search, Integer page, Integer rows) {
+        //获取客户端, 构建查询
+        Client client = elasticsearchTemplate.getClient();
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch();
+        //设置分页参数
+        if (page != null && page > 0 && rows != null && rows > 0) {
+            searchRequestBuilder.setFrom((page - 1) * rows);
+            searchRequestBuilder.setSize(rows);
+        }
+        //设置索引库
+        searchRequestBuilder.setIndices("file");
+        searchRequestBuilder.setExplain(true);//按照匹配度排序
+        searchRequestBuilder.setSearchType(SearchType.QUERY_THEN_FETCH);//默认搜索方式
+        //构建布尔查询和高亮查询
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        //设置高亮前后缀(页面高亮的标签)
+        highlightBuilder.preTags("<tag style=\"color: red;\">");//设置前缀
+        highlightBuilder.postTags("</tag>");//设置后缀
+
+        //正文字段进行匹配
+        boolQueryBuilder.must(QueryBuilders.multiMatchQuery(search, "content"))
+                .minimumShouldMatch("80%");
+        //状态码匹配
+        boolQueryBuilder.must(QueryBuilders.termQuery("status", 4));//状态为4可被罗列
+        //字段高亮
+        highlightBuilder.field("content");
+        searchRequestBuilder.setQuery(boolQueryBuilder);
+        searchRequestBuilder.highlighter(highlightBuilder);
+        SearchResponse searchResponse = searchRequestBuilder.get();
+
+        //处理数据
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        //提取数据进行封装处理
+        PageData pageData = new PageData();//创建一个新的数据对象
+        SearchHits hits = null;
+        if (searchResponse != null) {
+            hits = searchResponse.getHits();
+        }
+        if (hits == null) {
+            return new PageData(new ArrayList());
+        }
+        Long totalHits = hits.getTotalHits();//匹配到的总条数  page库的总条数
+        pageData.setTotal(totalHits.intValue());//设置pageData
+
+
+        //        System.out.println(hits.getTotalHits());// 打印总条数
+        SearchHit[] searchHits = hits.getHits();
+        //创建一个集合存储数据
+
+        for (SearchHit searchHit : searchHits) {
+            //源文档内容
+            Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
+
+            //统计词频
+            String content = (String) sourceAsMap.get("content");
+            int count = wordCount(content, search);
+            sourceAsMap.put("wordCount", count);
+
+            String fileId = (String) sourceAsMap.get("fileId");//根据源文档内容获取fileId
+            //根据fileId查找file文档
+            FileInfo fileInfo = fileInfoDao.findById(fileId).orElse(new FileInfo());
+            //将fileInfo信息一并返回
+            /*
+            authorName filename keyword creationTime pageTotal downloadCount
+             */
+            String fileName = fileInfo.getFileName();
+            sourceAsMap.put("fileName", fileName);
+            sourceAsMap.put("authorName", fileInfo.getUploadUser());
+            sourceAsMap.put("keyword", fileInfo.getKeyword());
+            sourceAsMap.put("creationTime", fileInfo.getCreationTime());
+            sourceAsMap.put("pageTotal", fileInfo.getPageTotal());
+            sourceAsMap.put("downloadCount", fileInfo.getDownloadCount());
+
+            //取出高亮内容, 并替换源文档内容
+            Map<String, HighlightField> highlightFields = searchHit.getHighlightFields();
+            if (highlightFields != null) {
+//                int size = highlightFields.keySet().size();
+                //遍历高亮字段数组
+                for (String field : highlightFields.keySet()) {
+//                    System.out.println(field);//field代表的是index中的field
+                    //对每个高亮字段进行处理
+                    HighlightField nameField = highlightFields.get(field);
+                    if (nameField != null) {
+                        Text[] fragments = nameField.getFragments();
+
+//                        System.out.println(fragments);
+
+                        StringBuffer stringBuffer = new StringBuffer();
+                        for (Text str : fragments) {
+//                            System.out.println(str);
+                            stringBuffer.append(str.string());
+                        }
+//                    name = stringBuffer.toString();
+                        //替换原文档内容为高亮内容
+                        String highLightDoc = stringBuffer.toString();
+                        sourceAsMap.put(field, highLightDoc);
+                    }
+                }
+            }
+            list.add(sourceAsMap);
+        }
+
+        pageData.setRows(list);
+        return pageData;
+    }
+
+    /**
      * 统计词频
+     *
      * @param document 查询文档
-     * @param word 检索词
+     * @param word     检索词
      * @return 词频
      */
     private int wordCount(String document, String word) {

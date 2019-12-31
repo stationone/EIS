@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
@@ -26,6 +27,7 @@ import java.util.List;
  * @author zhangch
  * @date 2019/12/12 0012 下午 20:31
  */
+@Transactional
 @Service
 public class FileTempServiceImpl implements FileTempService {
 
@@ -86,6 +88,7 @@ public class FileTempServiceImpl implements FileTempService {
             default:
                 List<String> list = PDFReader.pdf2Image(path, fileTempPath);//list中是每页的图片路径
                 webPath = fileWebPath + fileName;
+                src = FileHashCode.getSrc(webPath);
 //                FileUtils.copyInputStreamToFile(new File(path).getInputStream(), new File(webPath));
                 //文件转存
                 FileUtils.copyFile(new File(path), new File(webPath));
@@ -116,7 +119,7 @@ public class FileTempServiceImpl implements FileTempService {
             return new GlobalResult(false, 4000, "false", filename);
         }
         String preName = split[0];
-        System.out.println(preName);
+//        System.out.println(preName);
         //组装文件路径
         String path = fileTempPath + filename;
 
@@ -130,7 +133,9 @@ public class FileTempServiceImpl implements FileTempService {
         fileInfo.setFileName(filename);
         fileInfo.setFileNamePrefix(preName);
         fileInfo.setFileNameSuffix(split[1]);
-        fileInfo.setCreationTime(new Date());
+        Date date = new Date();
+        fileInfo.setCreationTime(date);
+        fileInfo.setLastUpdateTime(date);
         fileInfo.setFileSize(size);
         fileInfo.setFilePath(path);
         fileInfo.setHashCode(FileHashCode.generate(path));
@@ -151,7 +156,7 @@ public class FileTempServiceImpl implements FileTempService {
             return new GlobalResult(false, 4000, "false", filename);
         }
         String preName = split[0];
-        System.out.println(preName);
+//        System.out.println(preName);
         //组装文件路径
         String path = fileTempPath + filename;
 
@@ -165,7 +170,9 @@ public class FileTempServiceImpl implements FileTempService {
         fileInfo.setFileName(filename);
         fileInfo.setFileNamePrefix(preName);
         fileInfo.setFileNameSuffix(split[1]);
-        fileInfo.setCreationTime(new Date());
+        Date date = new Date();
+        fileInfo.setCreationTime(date);
+        fileInfo.setLastUpdateTime(date);
         fileInfo.setFileSize(size);
         fileInfo.setFilePath(path);
         fileInfo.setHashCode(FileHashCode.generate(path));
@@ -183,7 +190,24 @@ public class FileTempServiceImpl implements FileTempService {
 
     @Override
     public GlobalResult deleteFile(String id) {
-        fileInfoDao.deleteById(id);
-        return new GlobalResult(true, 2000, "ok");
+        boolean deleteFilePath = false;
+        boolean deleteWebPath = false;
+        try {
+            //删除本地文件
+            FileInfo fileInfo = fileInfoDao.findById(id).orElse(new FileInfo());
+            String filePath = fileInfo.getFilePath();
+            String webPath = fileInfo.getWebPath();
+            deleteFilePath = new File(filePath).delete();
+            deleteWebPath = new File(webPath).delete();
+            //删除数据库存储
+            fileInfoDao.deleteById(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new GlobalResult(false, 4000, e.getMessage());
+        }
+        if (deleteFilePath && deleteWebPath) {
+            return new GlobalResult(true, 2000, "ok");
+        }
+        return new GlobalResult(false, 4000, "文件不存在");
     }
 }

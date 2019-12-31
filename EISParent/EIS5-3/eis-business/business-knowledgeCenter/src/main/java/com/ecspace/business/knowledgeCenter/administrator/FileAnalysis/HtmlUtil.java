@@ -46,8 +46,8 @@ public class HtmlUtil extends HTMLEditorKit.ParserCallback {
     }
 
     public static void main (String[] args) {
-        String s = getText("C:\\Users\\Administrator\\Desktop\\file\\html/basic.html");
+        String s = getText("E:\\knowledgeCenterWebFile\\测试excel.html");
         System.out.println(s);
-        System.out.println(formatSheetHtmlNum(59));
+//        System.out.println(formatSheetHtmlNum(9));
     }
 }

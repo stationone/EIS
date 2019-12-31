@@ -1,12 +1,4 @@
 package com.ecspace.business.knowledgeCenter.administrator.service.impl;
-//
-//
-//
-//import com.ecspace.business.knowledgeCenter.administrator.dao.FileMapper;
-//import com.ecspace.business.knowledgeCenter.administrator.pojo.File;
-//import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.FileSystemCode;
-//import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
-//import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 
 import com.alibaba.fastjson.JSONObject;
 import com.ecspace.business.knowledgeCenter.administrator.FileAnalysis.*;
@@ -15,20 +7,17 @@ import com.ecspace.business.knowledgeCenter.administrator.pojo.*;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
-//import org.springframework.beans.factory.annotation.Autowired;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileTypeService;
 import com.ecspace.business.knowledgeCenter.administrator.util.FileHashCode;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
 import org.apache.commons.io.FileUtils;
-import org.elasticsearch.action.ActionFuture;
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.get.GetResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,13 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
-//
-//import java.util.*;
-//
 @Transactional
 @Service
 public class FileServiceImpl implements FileService {
@@ -195,7 +179,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public FileInfo getFileDetail(String fileId) {
         FileInfo fileInfo = fileInfoDao.findById(fileId).orElse(new FileInfo());
-        System.out.println(fileInfo);
+//        System.out.println(fileInfo);
         List<Page> pageList = pageDao.findByFileIdOrderByPageNOAsc(fileId);
         fileInfo.setPageList(pageList);
         return fileInfo;
@@ -296,15 +280,21 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileInfo insertFile(JSONObject jsonObject) throws ParseException {
+    public FileInfo insertFile(JSONObject jsonObject, String status) throws Exception {
+//        System.out.println(status);
+        jsonObject.remove("status");//状态不变
+        if (!"undefined".equals(status)) {//更新状态
+            jsonObject.put("status", Integer.parseInt(status));
+        }
         String path = (String) jsonObject.get("filePath");
 //        String date = (String) jsonObject.get("creationTime");
 //        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //        Date parse = simpleDateFormat.parse(date);
 //        jsonObject.put("creationTime", parse);
-        jsonObject.put("creationTime",new Date().getTime());//
+        jsonObject.put("lastUpdateTime", new Date().getTime());//最后修改时间更新
+        jsonObject.remove("creationTime");//创建时间不变
 //        String size = (String) jsonObject.get("fileSize");
-        jsonObject.remove("fileSize", jsonObject.get("fileSize"));
+        jsonObject.remove("fileSize", jsonObject.get("fileSize"));//文件大小移除
         //46.85KB
 //        String fileSize = size.trim() * 1024
 
@@ -317,7 +307,7 @@ public class FileServiceImpl implements FileService {
         }
         String indexName = (String) jsonObject.get("indexName");
         //更新文档
-        UpdateRequest updateRequest = new UpdateRequest("file","file",id);
+        UpdateRequest updateRequest = new UpdateRequest("file", "file", id);
         //如果尚未存在，则表明必须将部分文档用作upsert文档
         updateRequest.docAsUpsert(true);
         //禁用noop检测
@@ -335,6 +325,81 @@ public class FileServiceImpl implements FileService {
         FileInfo fileInfo = fileInfoDao.findById(id).orElse(new FileInfo());
 
         return fileInfo;
+    }
+
+    @Override
+    public PageData getFileListByStatus(String menuId, String status, Integer page, Integer rows) {
+        if (page == null) {
+            page = 0;
+        } else {
+            page = (page - 1);
+        }
+        if (rows == null) {
+            rows = 10;
+        }
+        //        Pageable pageable = new PageRequest(page, rows); //方法过时, 用下面的
+        PageRequest pageable = PageRequest.of(page, rows);
+        org.springframework.data.domain.Page<FileInfo> fileInfoPage = fileInfoDao.findByMenuIdAndStatus(menuId, Integer.parseInt(status), pageable);
+        return new PageData((int) fileInfoPage.getTotalElements(), fileInfoPage.getContent());
+    }
+
+    @Override
+    public PageData getFileListByStatus(String menuId, Integer page, Integer rows) {
+        if (page == null) {
+            page = 0;
+        } else {
+            page = (page - 1);
+        }
+        if (rows == null) {
+            rows = 10;
+        }
+        Integer[] status = {1, 3};
+        //        Pageable pageable = new PageRequest(page, rows); //方法过时, 用下面的
+        PageRequest pageable = PageRequest.of(page, rows);
+        org.springframework.data.domain.Page<FileInfo> fileInfoPage = fileInfoDao.findByMenuIdAndStatusIn(menuId, status, pageable);
+        return new PageData((int) fileInfoPage.getTotalElements(), fileInfoPage.getContent());
+    }
+
+    @Override
+    public FileInfo getFileById(String fileId) {
+        FileInfo fileInfo = fileInfoDao.findById(fileId).orElse(new FileInfo());
+        return fileInfo;
+    }
+
+    /**
+     * 文件解析入库(文件内容入库用以全文检索)
+     *
+     * @param fileId
+     * @return
+     */
+    @Override
+    public GlobalResult fileAnalyzerSave(String fileId) {
+        if (StringUtils.isBlank(fileId)) {
+            return null;
+        }
+        FileInfo fileInfo = fileInfoDao.findById(fileId).orElse(new FileInfo());
+        if (fileInfo.getStatus() == null || fileInfo.getStatus() != 4) {
+            return null;
+        }
+        //将文档内容全部读取出来, 存入文件的content中, 用于全文检索
+        String content = "";
+        String fileNameSuffix = fileInfo.getFileNameSuffix();//后缀
+        if ("docx".equals(fileNameSuffix)
+                || "doc".equals(fileNameSuffix)
+                || "xls".equals(fileNameSuffix)
+                || "xlsx".equals(fileNameSuffix)//xlsx
+                || "ppt".equals(fileNameSuffix)
+                || "pptx".equals(fileNameSuffix)) {
+
+            content = HtmlUtil.getText(fileInfo.getWebPath());
+        } else if ("pdf".equals(fileNameSuffix)) {
+            content = PDFReader.readPdfText(fileInfo.getWebPath(), 1, PDFReader.getPageCount(fileInfo.getWebPath()));
+        }
+        //设置文档内容
+        fileInfo.setContent(content);
+        //保存
+        FileInfo info = fileInfoDao.save(fileInfo);
+        return new GlobalResult(true, 2000, "ok", info);
     }
 
 

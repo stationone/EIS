@@ -65,6 +65,11 @@ public class FileInfo {
      * 文件最后访问时间戳
      */
     private Date lastAccessTime;
+
+    /**
+     * 文件最后更新时间
+     */
+    private Date lastUpdateTime;
     /**
      * 文件大小
      */
@@ -160,6 +165,14 @@ public class FileInfo {
 
     public Integer getStatus() {
         return status;
+    }
+
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 
     public void setStatus(Integer status) {
@@ -457,4 +470,5 @@ public class FileInfo {
     public void setMenuId(String menuId) {
         this.menuId = menuId;
     }
+
 }

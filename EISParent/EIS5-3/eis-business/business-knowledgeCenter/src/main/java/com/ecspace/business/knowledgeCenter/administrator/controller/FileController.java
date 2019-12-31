@@ -16,7 +16,10 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -59,7 +62,7 @@ public class FileController {
      * @return
      */
     @PostMapping(value = "fileForm")
-    public GlobalResult fileForm(String json) throws Exception {
+    public GlobalResult fileForm(String json, String status) throws Exception {
         if (json == null) {
             return new GlobalResult(false, 4000, "非法参数");
         }
@@ -69,29 +72,43 @@ public class FileController {
             return new GlobalResult(false, 4000, "没有文件");
         }
 
-        FileInfo fileInfo = fileService.insertFile(jsonObject);
+        FileInfo fileInfo = fileService.insertFile(jsonObject, status);
 //        fileService.saveFileInfo(jsonObject);
 
         //调用文件服务
 //        FileInfo fileInfo = fileService.saveFileInfo(jsonObject);
-        System.out.println(json);
+//        System.out.println(json);
         return new GlobalResult(true, 2000, "true", fileInfo);
     }
 
+//
+//    /**
+//     * 文件离散
+//     *
+//     * @param fileInfo
+//     * @return
+//     * @throws Exception
+//     */
+//    @PostMapping(value = "fileAnalyzer")
+//    public GlobalResult fileAnalyzer(@RequestBody FileInfo fileInfo) throws Exception {
+//
+//        //调用文件服务
+//        return fileService.fileAnalyzer(fileInfo);
+////        return fileService.file2Html(fileInfo);
+//    }
 
     /**
-     * 文件离散
+     * 文件入库后解析
      *
-     * @param fileInfo
+     * @param fileId
      * @return
      * @throws Exception
      */
     @PostMapping(value = "fileAnalyzer")
-    public GlobalResult fileAnalyzer(@RequestBody FileInfo fileInfo) throws Exception {
+    public GlobalResult fileAnalyzer(String fileId) throws Exception {
 
         //调用文件服务
-        return fileService.fileAnalyzer(fileInfo);
-//        return fileService.file2Html(fileInfo);
+        return fileService.fileAnalyzerSave(fileId);
     }
 
     /**
@@ -119,13 +136,41 @@ public class FileController {
         return fileService.getFileList(menuId, json, page, rows);
     }
 
+    /**
+     * 根据状态列出文件列表
+     *
+     * @param menuId
+     * @param status
+     * @param page
+     * @param rows
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "fileListByStatus")
-    public PageData fileListByStatus(String menuId, Integer page, Integer rows) throws Exception {
-        if (StringUtils.isBlank(menuId)) {
+    public PageData fileListByStatus(String menuId, String status, Integer page, Integer rows) throws Exception {
+        if (StringUtils.isBlank(menuId) || StringUtils.isBlank(status)) {//没有参数传递
             return new PageData();
         }
-        //根据状态查询所有()(已提交 - 未审核)
-        return fileService.getFileList(menuId, page, rows);
+        //根据状态查询所有()(已提交 - 未审核) status == 2
+        return fileService.getFileListByStatus(menuId, status, page, rows);
+    }
+
+    /**
+     * 根据状态列出文件列表
+     *
+     * @param menuId
+     * @param page
+     * @param rows
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "fileListByStatusSubmit")
+    public PageData fileListByStatusSubmit(String menuId, Integer page, Integer rows) throws Exception {
+        if (StringUtils.isBlank(menuId)) {//没有参数传递
+            return new PageData();
+        }
+        //根据状态查询所有()(已提交 - 未审核) status == 2
+        return fileService.getFileListByStatus(menuId, page, rows);
     }
 
 
@@ -174,6 +219,64 @@ public class FileController {
                                        @RequestParam(value = "menuId")
                                                String menuId) throws Exception {
         return fileTempService.fileTempUpload(file, indexName, menuId);
+    }
+
+
+    /**
+     * 下载文件
+     *
+     * @param fileId
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "fileDownload", method = RequestMethod.POST)
+    public GlobalResult handleFileDownload(@RequestParam("fileId") String fileId, HttpServletResponse response) {
+        FileInfo fileInfo = fileService.getFileById(fileId);
+
+        String filePath = fileInfo.getFilePath();
+        String fileName = fileInfo.getFileName();
+
+        BufferedInputStream bis = null;
+        OutputStream os = null;
+        try {
+            String dfileName = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+            String downloadFileName = URLEncoder.encode(fileName, "utf-8");
+//            System.out.println(dfileName + "/" + downloadFileName);
+
+//            File file = new File(filePath + fileName);
+            File file = new File(filePath);//服务端文件
+            response.reset();
+
+            response.setContentType("application/octet-stream");
+            response.setCharacterEncoding("utf-8");
+            response.setContentLength((int) file.length());
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+
+            byte[] buff = new byte[1024];
+            os = response.getOutputStream();
+            bis = new BufferedInputStream(new FileInputStream(file));
+            int i = 0;
+            while ((i = bis.read(buff)) != -1) {
+                os.write(buff, 0, i);
+                os.flush();
+            }
+
+        } catch (Exception e) {
+            return new GlobalResult(false, 5000, e.getMessage());
+        } finally {
+            if (bis != null) {
+                try {
+                    bis.close();
+                } catch (IOException e) {
+//                    e.printStackTrace();
+                    System.out.println(
+                            e.getMessage()
+                    );
+
+                }
+            }
+        }
+        return null;
     }
 
 

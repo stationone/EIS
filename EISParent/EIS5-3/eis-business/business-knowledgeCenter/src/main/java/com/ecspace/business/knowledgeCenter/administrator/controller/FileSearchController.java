@@ -1,6 +1,7 @@
 package com.ecspace.business.knowledgeCenter.administrator.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.ecspace.business.knowledgeCenter.administrator.aop.LogAnno;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileSearchService;
 import org.apache.commons.lang.StringUtils;
@@ -44,6 +45,16 @@ public class FileSearchController {
         }
         //DSL全文检索
         return fileSearchService.getFilePageList(menuId, search, page, rows);
+    }
+    @LogAnno
+    @GetMapping(value = "/fileList")
+    public PageData fileList(String search, Integer page, Integer rows) throws Exception {
+        //没有请求参数时,  展示全部文件列表
+        if (StringUtils.isBlank(search)) {//非空判断
+            return fileSearchService.fileList(page, rows);
+        }
+        //DSL全文检索
+        return fileSearchService.fileList(search, page, rows);
     }
 
 

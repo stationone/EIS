@@ -12,30 +12,31 @@ import java.util.Date;
  */
 @Document(indexName = "search_log", shards = 1, replicas = 0)
 public class SearchLog {
+
     @Id
     private String id;
 
-    private String userId;
+    private String userId;//用户id
 
-    private String userName;
+    private String userName;//用户真实姓名
 
-    private String desc;
+    private Integer level;//日志级别
 
-    private String searchWord;
+    private String method;//操作方式
 
-    private Date operateDate;
+    private String remoteHost;//操作IP地址
 
-    private String content;
+    private String requestUrl; //请求地址
+
+    private String param;//请求参数
+
+    private String result; //请求结果
+
+    private Long spent;//耗费时间, 请求处理时长
+
+    private Date creationTime; //创建时间
 
     public SearchLog() {
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     public String getId() {
@@ -62,27 +63,67 @@ public class SearchLog {
         this.userName = userName;
     }
 
-    public String getDesc() {
-        return desc;
+    public Integer getLevel() {
+        return level;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setLevel(Integer level) {
+        this.level = level;
     }
 
-    public String getSearchWord() {
-        return searchWord;
+    public String getMethod() {
+        return method;
     }
 
-    public void setSearchWord(String searchWord) {
-        this.searchWord = searchWord;
+    public void setMethod(String method) {
+        this.method = method;
     }
 
-    public Date getOperateDate() {
-        return operateDate;
+    public String getRemoteHost() {
+        return remoteHost;
     }
 
-    public void setOperateDate(Date operateDate) {
-        this.operateDate = operateDate;
+    public void setRemoteHost(String remoteHost) {
+        this.remoteHost = remoteHost;
+    }
+
+    public String getRequestUrl() {
+        return requestUrl;
+    }
+
+    public void setRequestUrl(String requestUrl) {
+        this.requestUrl = requestUrl;
+    }
+
+    public String getParam() {
+        return param;
+    }
+
+    public void setParam(String param) {
+        this.param = param;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
+    }
+
+    public Long getSpent() {
+        return spent;
+    }
+
+    public void setSpent(Long spent) {
+        this.spent = spent;
+    }
+
+    public Date getCreationTime() {
+        return creationTime;
+    }
+
+    public void setCreationTime(Date creationTime) {
+        this.creationTime = creationTime;
     }
 }

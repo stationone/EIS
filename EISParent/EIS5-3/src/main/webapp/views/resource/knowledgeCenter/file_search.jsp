@@ -35,19 +35,7 @@
          * 入口函数
          */
         $(function () {
-            /**
-             * 获取树目录
-             */
-            $('#' + treeId).tree({
-                url: 'menu/listTree',
-                method: "get",
-                checkbox: false,
-                multiple: false,
-                onClick: function (node) {
-                    //点击事件 获取dataList
-                    loadDataList(node.id)
-                }
-            });
+            // searchFile();
         });
 
         /**
@@ -60,7 +48,7 @@
             var searchJson = JSON.stringify({search: search});
             console.log(searchJson);
             $.ajax({
-                url: 'fileSearch/filePageList',
+                url: 'fileSearch/fileList',
                 method: 'GET',
                 contentType: 'application/json',
                 data: 'search=' + search,
@@ -142,9 +130,11 @@
                 //关键词
                 var keyword = data[i].keyword == null ? '' : data[i].keyword;
 
-                var pageNO =  data[i].pageNO  == null ? '' :  data[i].pageNO ;
+                var pageNO = data[i].pageNO == null ? '' : data[i].pageNO;
 
                 var fileId = '\'' + data[i].fileId + '\'';
+
+                var wordCount = data[i].wordCount == null ? '无' : data[i].wordCount;
                 //文档路径
                 var pdfFilePath = data[i].pdfFilePath == null ? 'javaScript:void(0)' : data[i].pdfFilePath;
                 $('#dataList').append(' <li value="' + i + '">\n' +
@@ -153,7 +143,7 @@
                     '                    <a onclick="file_show(' + fileId + ', ' + pageNO + ')" href="javaScript:void(0)"\n' +
                     '                       title="' + filename + '" style="font-size: 15px">\n' +
                     '                        ' + filename + '\n' +
-                    '                    </a> (词频: '+data[i].wordCount+')\n' +
+                    '                    </a> (词频: ' + wordCount + ')\n' +
                     '                </p>\n' +
                     '                <p style="color: grey;font-size: 5px;" class="fr">关键词:\n' +
                     '                    <span class="score">' + keyword + '</span>\n' +
@@ -163,7 +153,7 @@
                     '                <p style="font-size: 10px">' + content + '......</p>\n' +
                     '                <div style="color: grey;font-size: 5px;">\n' +
                     '                    ' + dateFormat + '\n' +
-                    '                    <i> &nbsp;&nbsp;&nbsp; </i>   ' + pageNO + '|' + data[i].pageTotal + '页<i>&nbsp;&nbsp;&nbsp;</i>' + data[i].downloadCount + '次下载<i>&nbsp;&nbsp;&nbsp; </i>\n' +
+                    '                    <i> &nbsp;&nbsp;&nbsp; </i><i>&nbsp;&nbsp;&nbsp;</i>' + data[i].downloadCount + '次下载<i>&nbsp;&nbsp;&nbsp; </i>\n' +
                     '                    作者：<span href="#">\n' +
                     '                    ' + author + '\n' +
                     '                </span>\n' +
@@ -407,7 +397,6 @@
                         message_Show(result.message);
                         //关闭窗口, 刷新列表
                         file_dialog_close();
-                        // $('#' + treeId).tree('reload');
 
                         //调用文件解析接口, 后台自动解析
                         fileSpread(result.data);
@@ -424,7 +413,6 @@
         function file_dialog_close() {
             $('#file_dialog').dialog('close');
         }
-
         /**
          * 文件离散接口
          *
@@ -432,7 +420,6 @@
          */
         function fileSpread(fileInfo) {
             console.log(fileInfo);
-
             $.ajax({
                 url: 'file/fileAnalyzer',
                 type: 'POST',
@@ -460,11 +447,6 @@
         <div class="datagrid-title-div"><span>文件列表</span></div>
         <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
              onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
-        <img src="images/px-icon/newFolder.png" class="easyui-tooltip div-toolbar-img-next"
-             onclick="upload_dialog_open()" title="上传文件">
-        <img src="images/px-icon/deleteFolder.png" class="easyui-tooltip div-toolbar-img-next"
-             onclick="deleteFile()" title="删除文件">
-
         <%-- 搜索框 --%>
         <a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"
            style="float: right;margin-top: 8px;margin-right: 20px;width:80px" onclick="searchFile()">查询文档</a>
@@ -473,17 +455,9 @@
     </div>
     <div style="width: 90%;">
         <div id="dataParent">
-            <ul id="dataList">
-                <%--正文内容--%>
-                <iframe src="../knowledgeCenterFileManger/webDoc/ES说明V4.html" width="100%" height="90%"
-                        frameborder="0">
-                    您的浏览器不支持iframe，请升级
-                </iframe>
-            </ul>
+            <ul id="dataList"></ul>
         </div>
     </div>
-
-
 </div>
 
 <%-- 弹出对话框 --%>
@@ -506,37 +480,6 @@
     <div id="folder_dialog_button" class="pxzn-dialog-buttons">
         <input type="button" onclick="folder_dialog_ok()" value="保存" class="pxzn-button">
         <input type="button" onclick="folder_dialog_close()" value="取消" style="margin-left:40px;"
-               class="pxzn-button">
-    </div>
-</div>
-
-<%--新增文件--%>
-<div id="file_dialog" class="easyui-dialog"
-     data-options="closed:true, modal:true,border:'thin', buttons:'#file_dialog_button'">
-    <form id="file_dialog_upload" method="post" enctype="multipart/form-data">
-
-        <table cellspacing="10" class="pxzn-dialog-font" style="margin:20px 50px;">
-            <input id="menuId" name="menuId" type="hidden">
-            <tr>
-                <td class="pe-label"><span class="sp_waning"></span>简介(关键词)：</td>
-                <td class="pe-content" colspan="6">
-                    <input id="keyword" class="easyui-textbox" name="keyword" style="width:100%;height:60px"
-                           data-options="multiline:true,prompt:'随便写点儿介绍关键词什么的用于被检索...'">
-                </td>
-            </tr>
-            <tr>
-                <td class="pe-label">文 件 上 传：</td>
-                <td class="pe-content" colspan="6">
-                    <input id="file" name="file" class="easyui-file" type="file"
-                           style="width:100%">
-                </td>
-            </tr>
-        </table>
-
-    </form>
-    <div id="file_dialog_button" class="pxzn-dialog-buttons">
-        <input type="button" onclick="file_dialog_ok()" value="保存" class="pxzn-button">
-        <input type="button" onclick="file_dialog_close()" value="取消" style="margin-left:40px;"
                class="pxzn-button">
     </div>
 </div>
