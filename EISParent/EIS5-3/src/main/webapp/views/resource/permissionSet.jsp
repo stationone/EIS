@@ -120,7 +120,7 @@
                         userTNO:userTNO
                     },
                     success:function(data){
-                        if(data.code == messagerCode.success ){
+                        if(data.status == messagerCode.success ){
                            message_Show('修改成功');
                         }else{
 
@@ -229,8 +229,8 @@
                     users:JSON.stringify(result)
                 },
                 success:function(data){
-                    var code = data.code;
-                    if(code == messagerCode.success){
+                    var status = data.status;
+                    if(status == messagerCode.success){
                         $('#'+datagridId1).datagrid('reload');
                         message_Show('保存成功');
                     }else{
@@ -281,8 +281,8 @@
                     if(data == null){
                         return;
                     }
-                    var code = data.code;
-                    if(code == messagerCode.success){
+                    var status = data.status;
+                    if(status == messagerCode.success){
                         $('#'+datagridId1).datagrid('reload');
                         message_Show("删除成功");
                     }else{

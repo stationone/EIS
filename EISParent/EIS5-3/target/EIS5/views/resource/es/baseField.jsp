@@ -116,7 +116,7 @@
                     {field: 'description', title: '备注', width: 180, align: 'center'}
                 ]],
                 rownumbers: true,
-                title: '基础字段',
+                // title: '基础字段',
                 singleSelect: true,
                 collapsible: true,
                 nowrap: true,

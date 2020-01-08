@@ -37,10 +37,6 @@ public class FileInfo {
      */
     private String hashCode;
     /**
-     * 文件本身
-     */
-    private File file;
-    /**
      * 文件名
      */
     private String fileName;
@@ -83,8 +79,9 @@ public class FileInfo {
      */
     @Field(index = true, store = true, type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private String keyword;
-
-    private String content;//文档内容(一小段)
+    //正文
+    @Field(index = true, store = true, type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
+    private String content;//
     /**
      * 文件所处目录id
      */
@@ -381,14 +378,6 @@ public class FileInfo {
 
     public void setHashCode(String hashCode) {
         this.hashCode = hashCode;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
     }
 
     public String getPageIds() {

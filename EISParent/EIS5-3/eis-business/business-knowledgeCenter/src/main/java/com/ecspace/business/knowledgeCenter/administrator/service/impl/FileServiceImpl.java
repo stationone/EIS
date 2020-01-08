@@ -114,7 +114,7 @@ public class FileServiceImpl implements FileService {
 
         //将fileInfo保存至es
         fileInfo.setPageList(null);
-        fileInfo.setFile(null);
+//        fileInfo.setFile(null);
         StringBuilder sb = new StringBuilder();
         pageList.forEach(page -> {
             String pageId = page.gettNO().toString();
@@ -271,6 +271,12 @@ public class FileServiceImpl implements FileService {
                 .get();
 
         return fileInfoDao.findById(id).orElse(new FileInfo());
+    }
+
+    @Override
+    public FileInfo saveFileInfo(FileInfo fileInfo) throws Exception {
+        FileInfo info = fileInfoDao.save(fileInfo);
+        return info;
     }
 
     //类型选择框

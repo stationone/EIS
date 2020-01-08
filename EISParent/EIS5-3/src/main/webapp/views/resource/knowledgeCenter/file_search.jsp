@@ -447,14 +447,19 @@
         <div class="datagrid-title-div"><span>文件列表</span></div>
         <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
              onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
-        <%-- 搜索框 --%>
-        <a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"
-           style="float: right;margin-top: 8px;margin-right: 20px;width:80px" onclick="searchFile()">查询文档</a>
-        <input id="search" class="div-toolbar-span" style="float: right;margin-top: 8px;width:200px;height:25px"/>
+        <%--&lt;%&ndash; 搜索框 &ndash;%&gt;--%>
+        <%--<a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"--%>
+           <%--style="float: right;margin-top: 8px;margin-right: 20px;width:80px" onclick="searchFile()">查询文档</a>--%>
+        <%--<input id="search" class="div-toolbar-span" style="float: right;margin-top: 8px;width:200px;height:25px"/>--%>
 
     </div>
     <div style="width: 90%;">
         <div id="dataParent">
+            <%-- 搜索框 --%>
+            <input id="search" class="div-toolbar-span" style="margin-top: 10px;width:200px;height:25px"/>
+            <a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"
+            style="width:80px" onclick="searchFile()">查询文档</a>
+
             <ul id="dataList"></ul>
         </div>
     </div>

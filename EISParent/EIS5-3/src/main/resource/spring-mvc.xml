@@ -26,6 +26,8 @@
     <context:component-scan base-package="com.ecspace.business.knowledgeCenter.administrator.controller"/>
     <context:component-scan base-package="com.ecspace.business.knowledgeCenter.administrator.aop"/>
 
+
+
     <!-- 启动注解支持 -->
     <mvc:annotation-driven />
 
@@ -108,5 +110,6 @@
             </bean>
         </mvc:message-converters>
     </mvc:annotation-driven>-->
-    <aop:aspectj-autoproxy />
+
+    <aop:aspectj-autoproxy  proxy-target-class="true"/>
 </beans>

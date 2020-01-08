@@ -8,7 +8,7 @@ package com.ecspace.business.knowledgeCenter.administrator.pojo.entity;
  */
 public class GlobalResult {
     private boolean success;//操作状态
-    private int code;//操作代码
+    private int status;//操作代码
     private String message;//提示信息
     private Object data;
 
@@ -17,7 +17,7 @@ public class GlobalResult {
 
     public GlobalResult(boolean success, int code, String message) {
         this.success = success;
-        this.code = code;
+        this.status = code;
         this.message = message;
     }
 
@@ -27,7 +27,7 @@ public class GlobalResult {
 
     public GlobalResult(boolean success, int code, String message, Object data) {
         this.success = success;
-        this.code = code;
+        this.status = code;
         this.message = message;
         this.data = data;
     }
@@ -44,12 +44,12 @@ public class GlobalResult {
         this.success = success;
     }
 
-    public int getCode() {
-        return code;
+    public int getStatus() {
+        return status;
     }
 
-    public void setCode(int code) {
-        this.code = code;
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     public String getMessage() {

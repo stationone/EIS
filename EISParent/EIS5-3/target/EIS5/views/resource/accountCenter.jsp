@@ -111,7 +111,7 @@
                 success:function(data){
 
                     result = JSON.parse(data);
-                    if(result.code === messagerCode.success){
+                    if(result.status === messagerCode.success){
                         if(tNO !== ''){
                             //编辑
                             var node = $('#'+treeId).tree('getSelected');
@@ -134,7 +134,7 @@
                         }
 
                         department_dialog_close();
-                    }else if(result.code == '2003'){
+                    }else if(result.status == '2003'){
                         $.messager.alert("系统提示","名称不可为空");
                     }else{
                         $.messager.alert("系统提示","新建失败");
@@ -173,8 +173,8 @@
                                 pDepartmentTNO:nodeps.id
                             },
                             success:function(data){
-                                var code = data.code;
-                                if(code == messagerCode.success){
+                                var status = data.status;
+                                if(status == messagerCode.success){
                                     message_Show("删除成功");
                                     $('#'+treeId).tree('remove',node.target);
                                 }else{
@@ -286,7 +286,7 @@
                 success:function(data){
                     var data = eval('(' + data + ')');
                     var tNO = $('#create_tNO').val();
-                    if(data.code === messagerCode.success){
+                    if(data.status === messagerCode.success){
                         user_dialog_close();
                         if(tNO === ''){
                             message_Show('创建成功');
@@ -294,7 +294,7 @@
                             message_Show('更新成功');
                         }
                         $('#'+datagridId1).datagrid('reload');
-                    }else if (data.code === messagerCode.nameRepetition) {
+                    }else if (data.status === messagerCode.nameRepetition) {
                         message_Show('登录名称重复');
                     }else{
                         if(tNO === '') {
@@ -339,7 +339,7 @@
                     tNO:JSON.stringify(json)
                 },
                 success:function(data){
-                    if(data.code === messagerCode.success){
+                    if(data.status === messagerCode.success){
                         message_Show('删除成功');
                         $('#'+datagridId1).datagrid('reload');
                     }else{

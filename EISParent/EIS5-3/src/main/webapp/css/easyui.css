@@ -1735,14 +1735,23 @@
   margin-left: -1px;
 }
 .tabs-scroller-left {
-  background: #E0ECFF url('../../images/tabs_icons.png') no-repeat 1px center;
+  background: #E0ECFF url('../images/tabs_icons.png') no-repeat 1px center;
 }
 .tabs-scroller-right {
-  background: #E0ECFF url('../../images/tabs_icons.png') no-repeat -15px center;
+  background: #E0ECFF url('../images/tabs_icons.png') no-repeat -15px center;
 }
 .tabs li a.tabs-close {
-  background: url('../../images/tabs_icons.png') no-repeat -34px center;
+  background: url('../images/tabs_icons.png') no-repeat -34px center;
 }
+/*.tabs-scroller-left {*/
+  /*background: #E0ECFF url('../../images/tabs_icons.png') no-repeat 1px center;*/
+/*}*/
+/*.tabs-scroller-right {*/
+  /*background: #E0ECFF url('../../images/tabs_icons.png') no-repeat -15px center;*/
+/*}*/
+/*.tabs li a.tabs-close {*/
+  /*background: url('../../images/tabs_icons.png') no-repeat -34px center;*/
+/*}*/
 .tabs li a.tabs-inner:hover {
   background: #eaf2ff;
   color: #000000;

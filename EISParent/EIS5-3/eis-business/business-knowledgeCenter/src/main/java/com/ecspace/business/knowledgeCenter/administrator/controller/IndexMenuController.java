@@ -1,5 +1,6 @@
 package com.ecspace.business.knowledgeCenter.administrator.controller;
 
+import com.ecspace.business.knowledgeCenter.administrator.aop.LogAnno;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.IndexMenu;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.Menu;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
@@ -36,6 +37,7 @@ public class IndexMenuController {
     /**
      * 创建
      */
+    @LogAnno(operateType = "文档库管理/添加或修改")
     @PostMapping("/create")
     public GlobalResult create(IndexMenu indexMenu) throws ParseException {
         return indexMenuService.save(indexMenu);
@@ -44,6 +46,8 @@ public class IndexMenuController {
     /**
      * 删除
      */
+    @LogAnno(operateType = "文档库管理/删除")
+
     @PostMapping("/delete")
     public GlobalResult delete(String indexName){
         return indexMenuService.delete(indexName);

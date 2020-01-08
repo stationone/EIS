@@ -1,5 +1,6 @@
 package com.ecspace.business.knowledgeCenter.administrator.controller;
 
+import com.ecspace.business.knowledgeCenter.administrator.aop.LogAnno;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
@@ -18,6 +19,7 @@ public class FileTempController {
     @Autowired
     FileTempService fileTempService;
 
+    @LogAnno(operateType = "文档管理/添加")
     @PostMapping(value = "fileTemp")
     public GlobalResult fileTemp(@RequestParam("file") MultipartFile file) throws Exception {
         //非空判断
@@ -41,6 +43,7 @@ public class FileTempController {
         return fileTempService.file2Html(fileInfo);
     }
 
+    @LogAnno(operateType = "文档管理/删除")
     @PostMapping(value = "deleteFile")
     public GlobalResult deleteFile(String id) throws Exception {
         if (id == null || "".equals(id)) {

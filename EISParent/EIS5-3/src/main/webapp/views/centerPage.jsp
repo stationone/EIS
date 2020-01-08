@@ -331,10 +331,10 @@
      * id : 上传文件的id号（在浏览器随机生成的编号）
      * name : 这是上传文件的名称，带后缀
      * message : 上传完成后的数据库提示信息
-     * code : 1、代表上传完成；2、代表上传失败；3、代表上传成功，正在进行版本控制；4、未上传; 5、代表版本控制结束；
+     * status : 1、代表上传完成；2、代表上传失败；3、代表上传成功，正在进行版本控制；4、未上传; 5、代表版本控制结束；
      * size : 这是文件的大小
      *
-     * [{"id":"najs","name":"上传文件的名称","message":"上传完成","code":"1","size":"5000"}]
+     * [{"id":"najs","name":"上传文件的名称","message":"上传完成","status":"1","size":"5000"}]
      *
      * 目前存在问题，当用户点击提交文件后，不得刷新浏览器，否则会导致请求丢失，发生异常；
      */
@@ -365,7 +365,7 @@
         var uploadfileJson = {};
         uploadfileJson.id = randomIds;
         uploadfileJson.name = files.name;
-        uploadfileJson.code = 4;
+        uploadfileJson.status = 4;
         uploadfileJson.message = "开始上传";
         uploadfileJson.size = files.size;
 
@@ -715,7 +715,7 @@
             for (var j = 0; j < commitFiles.length; j++) {
                 for(var g = 0 ; g < allUpload.length; g++){
                     if(commitFiles[j].id === allUpload[g].id){
-                        allUpload[g].code = 3;
+                        allUpload[g].status = 3;
                         allUpload[g].message = '开始同步版本库';
                         break;
                     }
@@ -738,9 +738,9 @@
 
                         var resultList = data.result;
                         var message = "";
-                        if(data.code === '1000'){
+                        if(data.status === '1000'){
                             message = "版本控制成功";
-                        }else if(data.code === '2000') {
+                        }else if(data.status === '2000') {
                             message = "版本控制失败";
                         }
 
@@ -759,7 +759,7 @@
                         for(var i = 0;i<resultList.length;i++){
                             for(var g = 0 ; g < allUpload.length; g++){
                                 if(resultList[i] === allUpload[g].id){
-                                    allUpload[g].code = 5;
+                                    allUpload[g].status = 5;
                                     allUpload[g].message = message;
                                     break;
                                 }

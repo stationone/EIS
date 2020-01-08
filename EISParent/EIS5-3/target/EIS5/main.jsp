@@ -186,31 +186,31 @@
         function skipPage(data){
          var ref = data.getAttribute("ref");
             var title = '';
-            var code = '';
+            var status = '';
            if("resourceCenterAdmin" === ref){
                //文档资源中心管理员
                title = '文档资源中心';
-               code = 's';
+               status = 's';
            }else if("resourceCenterUser" === ref){
                //文档资源中心用户
                title = '文档资源中心';
-               code = '1';
+               status = '1';
            }else if("accountCenter" === ref){
                //资源账户中心
-               code = '2';
+               status = '2';
                title = '资源账户中心';
            }else if("search" === ref){
                //搜索
-               code = '3';
+               status = '3';
                title = '搜索';
            }else if("knowledgeCenter" === ref){
                //搜索
-               code = '4';
+               status = '4';
                title = '知识中心';
            }
 
             $("#iframe_home")[0].contentWindow.setWestTitle(title);
-            $("#iframe_home")[0].contentWindow.setWestContent(code);
+            $("#iframe_home")[0].contentWindow.setWestContent(status);
             $("#iframe_home")[0].contentWindow.layoutWestExpand();
 
             var skip_ul = null;

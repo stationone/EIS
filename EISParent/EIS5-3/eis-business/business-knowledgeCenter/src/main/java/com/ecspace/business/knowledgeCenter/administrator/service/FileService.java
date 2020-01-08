@@ -76,6 +76,13 @@ public interface FileService {
     FileInfo saveFileInfo(JSONObject jsonObject) throws Exception;
 
     /**
+     * 存储文件信息
+     * @param fileInfo
+     * @return
+     */
+    FileInfo saveFileInfo(FileInfo fileInfo) throws Exception;
+
+    /**
      * 类型数据
      * @param indexName
      * @return

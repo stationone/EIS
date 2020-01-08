@@ -25,7 +25,7 @@
     <script>
         /**
          * 绘制上传进度界面
-         * [{id:'f_21212156212',name:'文件名称1',code:'2'}]
+         * [{id:'f_21212156212',name:'文件名称1',status:'2'}]
          *
          */
         function setUploadProgressPage(dataArray){
@@ -37,10 +37,10 @@
             for(var i = 0;i<dataArray.length;i++){
                 var pro = '<div id="pg_'+dataArray[i].id+'" class="easyui-progressbar" data-options="value:0" style="width:100%;height:15px;"></div>';
                 var message = "正在上传";
-                if(dataArray[i].code == 1){
+                if(dataArray[i].status == 1){
                     message = "上传完成";
                     pro = '<div id="pg_'+dataArray[i].id+'" class="easyui-progressbar" data-options="value:100" style="width:100%;height:15px;"></div>';
-                }else if(dataArray[i].code ==  3){
+                }else if(dataArray[i].status ==  3){
                     message = "正在同步版本库";
                     pro = '<div id="pg_'+dataArray[i].id+'" class="easyui-progressbar" data-options="value:100" style="width:100%;height:15px;"></div>';
                 }
@@ -76,10 +76,10 @@
             // for(var i = 0;i<dataArray.length;i++){
             //     var pro = '<progress max="100" value="0" style="width:100%;" id="pg_'+dataArray[i].id+'">';
             //     var message = "正在上传";
-            //     if(dataArray[i].code == 1){
+            //     if(dataArray[i].status == 1){
             //         message = "上传完成";
             //         pro = '<progress max="100" value="100" style="width:100%;" id="pg_'+dataArray[i].id+'">';
-            //     }else if(dataArray[i].code ==  3){
+            //     }else if(dataArray[i].status ==  3){
             //         message = "正在同步版本库";
             //         pro = '<progress max="100" value="100" style="width:100%;" id="pg_'+dataArray[i].id+'">';
             //     }

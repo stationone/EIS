@@ -1,11 +1,14 @@
 package com.ecspace.business.knowledgeCenter.administrator.aop;
 
+import com.ecspace.business.knowledgeCenter.administrator.pojo.Log;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.SearchLog;
+import com.ecspace.business.knowledgeCenter.administrator.service.LogService;
 import com.ecspace.business.knowledgeCenter.administrator.service.SearchLogService;
+import com.ecspace.business.knowledgeCenter.administrator.util.IPUtil;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
 import org.apache.commons.lang3.ArrayUtils;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
+import org.apache.log4j.Logger;
+import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +23,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -33,12 +37,13 @@ import javax.servlet.http.HttpServletRequest;
 @Aspect
 public class LogAopAspectj {
     @Autowired
-    private SearchLogService searchLogService;//日志service
+    private LogService logService;//日志service
 
     @Autowired
     private HttpServletRequest httpServletRequest;
 
-    @Around("@annotation(com.ecspace.business.knowledgeCenter.administrator.aop.LogAnno)")
+
+    @Around("controllerAspect()")
     public Object aroundAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Exception {
 
         // 1.方法执行前的处理，相当于前置通知
@@ -48,31 +53,50 @@ public class LogAopAspectj {
         Method method = methodSignature.getMethod();
         Parameter[] parameters = method.getParameters();//参数名数组
         Object[] args = proceedingJoinPoint.getArgs();//参数值数组
+
         //获取参数名对应数组下标
-        int paramIndex = ArrayUtils.indexOf(parameters,"search");
-        if (paramIndex != -1) {
-            //参数值与参数名下标一致
-        }
+//        int paramIndex = -1;
+//        if (parameters != null) {
+//            for (Parameter parameter : parameters) {
+//                RequestParam annotation = parameter.getAnnotation(RequestParam.class);
+//                if (annotation != null) {
+//                    System.out.println(annotation.name());
+//                    System.out.println(annotation.value());
+//
+//                    System.out.println(parameter.getName());
+//                }
+//            }
+//            paramIndex = ArrayUtils.indexOf(parameters, "arg0");
+//        }
+        String arg = null;//参数值
+//        if (paramIndex != -1) {
+//            //参数值与参数名下标一致
+//            arg = (String) args[paramIndex];//获取参数值
+//        }
         for (Parameter parameter : parameters) {
             String name = parameter.getName();
             System.out.println(name);//参数名
         }
+        for (Object o : args) {
+            System.out.println(o);//参数值
+        }
+        if ("fileList".equals(method.getName()))
+            //执行的是全文检索 , 获取检索词
+            arg = args[0].toString();
+
         // 获取方法上面的注解
         LogAnno logAnno = method.getAnnotation(LogAnno.class);
         // 获取操作描述的属性值
-//        String operateType = logAnno.operateType();//(全文检索)
+        String operateType = logAnno.operateType();//(全文检索)
         // 创建一个日志对象(准备记录日志)
-        SearchLog searchLog = new SearchLog();
-        searchLog.setId(TNOGenerator.generateId());//日志id
-        searchLog.setLevel(1);//日志级别
-        searchLog.setMethod(method.getName());//设置方法名
 
-        searchLog.setParam("");//方法参数名
-        searchLog.setRemoteHost(getIpAddress(httpServletRequest));//获取ip地址
-        searchLog.setRequestUrl(httpServletRequest.getRequestURL().toString());//请求路径
-        searchLog.setSpent(null);
-        searchLog.setUserId("系统管理员");//用户名和用户真实姓名
-        searchLog.setUserName("蜡笔小新");
+        Log log = new Log();
+        log.setId(TNOGenerator.generateId());
+        log.setIp(IPUtil.getIpAddress(httpServletRequest));
+        log.setOperationDate(new Date());
+        log.setOperationType(operateType);
+        log.setOperator("系统管理员");
+        log.setSearch(arg);
 
 
         Object result = null;
@@ -80,45 +104,38 @@ public class LogAopAspectj {
             //让代理方法执行
             result = proceedingJoinPoint.proceed();
             // 2.相当于后置通知(方法成功执行之后走这里)
-            searchLog.setResult("执行成功");
+            log.setOperationResult("执行成功");
         } catch (Exception e) {
             // 3.相当于异常通知部分
-            searchLog.setResult("执行失败");// 设置操作结果
+            log.setOperationResult("执行失败");// 设置操作结果
 
         } catch (Throwable throwable) {
             throwable.printStackTrace();
-            searchLog.setResult(throwable.getMessage());
+            log.setOperationResult(throwable.getMessage());
+
         } finally {
             // 4.相当于最终通知
-            searchLog.setCreationTime(new Date());//创建时间
-
-            searchLogService.insert(searchLog);//入库
+            logService.save(log);//入库
+            return result;
         }
-        return result;
     }
 
-    /**
-     * 获取IP地址的方法
-     * @param request   传一个request对象下来
-     * @return
-     */
-    public static String getIpAddress(HttpServletRequest request) {
-        String ip = request.getHeader("x-forwarded-for");
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_CLIENT_IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        return ip;
+
+    //Controller层切点
+    //第一个*代表所有的返回值类型
+    //第二个*代表所有的类
+    //第三个*代表类所有方法
+    //最后一个..代表所有的参数。
+    @Pointcut("execution (* com.ecspace.business.knowledgeCenter.administrator.controller.*.save*(..))||" +
+            "execution (* com.ecspace.business.knowledgeCenter.administrator.controller.*.delete*(..))||" +
+            "execution (* com.ecspace.business.knowledgeCenter.administrator.controller.*.*load(..))||" +
+            "execution (* com.ecspace.business.knowledgeCenter.administrator.controller.*.fileForm(..))||" +
+            "execution (* com.ecspace.business.knowledgeCenter.administrator.controller.*.fileTemp(..))||" +
+            "execution (* com.ecspace.business.knowledgeCenter.administrator.controller.*.create*(..))||" +
+            "execution (* com.ecspace.business.knowledgeCenter.administrator.controller.*.insert*(..))||" +
+            "execution (* com.ecspace.business.knowledgeCenter.administrator.controller.*.update*(..))||" +
+
+            "execution (* com.ecspace.business.knowledgeCenter.administrator.controller.FileSearchController.fileList(..))")
+    public void controllerAspect() {
     }
 }

@@ -149,8 +149,8 @@
                 },
                 success: function (result) {
                     result = eval('(' + result + ')');
-                    var code = result.code;
-                    if (code == messagerCode.success) {
+                    var status = result.status;
+                    if (status == messagerCode.success) {
                         var node = $('#'+treeId).tree('getSelected');
                         var c_catalogName = $('#c_catalogName').textbox('getValue');
                         var c_catalogPath = $('#c_catalogPath').val();
@@ -172,7 +172,7 @@
                         message_Show('新建成功');
                         floder_dlalog_close();
 
-                    } else if (code == messagerCode.nameRepetition) {
+                    } else if (status == messagerCode.nameRepetition) {
                         $.messager.alert('系统提示', '名称重复');
                         $('#c_catalogName').textbox().next('span').find('input').focus();
                         $('#saveFolder-button').linkbutton('enable');
@@ -281,10 +281,10 @@
                         return;
                     }
                     // $(".messager-body").window('close');
-                    if (data.code === messagerCode.success) {
+                    if (data.status === messagerCode.success) {
                         $.messager.alert('系统提示', '检出成功');
                         $('#'+treeId).tree('reload');
-                    } else if (data.code === messagerCode.nameRepetition) {
+                    } else if (data.status === messagerCode.nameRepetition) {
                         $.messager.alert('系统提示', '检出名称重复');
                     } else {
                         $.messager.alert('系统提示', '检出失败');
@@ -359,14 +359,14 @@
                         dataType: 'JSON',
                         data: {tNO: tNO},
                         success: function (data) {
-                            var code = data.code;
-                            if (code === "1000") {
+                            var status = data.status;
+                            if (status === "1000") {
                                 $('#'+treeId).tree('remove', node.target);
                                 $('#'+datagridId1).datagrid('load');
                                message_Show("删除成功")
-                            } else if (code === '2003') {
+                            } else if (status === '2003') {
                                 $.messager.alert('系统提示', '参数不合法');
-                            } else if (code === '2005') {
+                            } else if (status === '2005') {
                                 //数据不存在
                                 $.messager.alert('系统提示', '删除数据不存在，请刷新后尝试');
                             } else {

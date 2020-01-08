@@ -1,5 +1,6 @@
 package com.ecspace.business.knowledgeCenter.administrator.controller;
 
+import com.ecspace.business.knowledgeCenter.administrator.aop.LogAnno;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.Menu;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
@@ -51,6 +52,8 @@ public class MenuController {
     /**
      * 目录表单操作
      */
+    @LogAnno(operateType = "文档管理/目录添加或修改")
+
     @PostMapping("/submit")
     public GlobalResult create(Menu menu){
         if (menu == null || "".equals(menu.getText())) {
@@ -70,6 +73,8 @@ public class MenuController {
     /**
      * 目录表单操作
      */
+    @LogAnno(operateType = "文档管理/目录删除")
+
     @PostMapping("/delete")
     public GlobalResult delete(String id){
         if (id == null) {

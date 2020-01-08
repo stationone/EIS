@@ -19,247 +19,115 @@
     <script type="text/javascript" src="ui/jquery.serializejson.min.js"></script>
     <script src="js/px-tool/px-util.js"></script>
     <script src="js/pxzn.easyui.util.js"></script>
+    <script type="text/javascript" src = "/js/app.js"></script>
+    <%--js/userManage.js--%>
+
     <script>
-        /**
-         * 入口函数
-         */
-        $(function () {
-            var h = 300;
-            var w = 350;
-            if (typeof(height) != "undefined") {
-                h = height;
-            }
 
-            if (typeof(width) != "undefined") {
-                w = width;
-            }
 
-            //初始化保存窗口
-            $('#saveIndexDlg').dialog({
-                title: '创建索引库',//窗口标题
-                width: w,//窗口宽度
-                // height: 100,//窗口高度
-                closed: true,//窗口是是否为关闭状态, true：表示关闭
-                modal: true//模式窗口
-            });
-
-            $('#saveDocumentDlg').dialog({
-                title: '新增',//窗口标题
-                width: w,//窗口宽度
-                //height: 100,//窗口高度
-                closed: true,//窗口是是否为关闭状态, true：表示关闭
-                modal: true//模式窗口
-            });
-            $('#updateDocumentDlg').dialog({
-                title: '更新',//窗口标题
-                width: w,//窗口宽度
-                //height: 100,//窗口高度
-                closed: true,//窗口是是否为关闭状态, true：表示关闭
-                modal: true//模式窗口
-            });
-            $('#saveFiledDlg').dialog({
-                title: '新增',//窗口标题
-                width: w,//窗口宽度
-                //height: 100,//窗口高度
-                closed: true,//窗口是是否为关闭状态, true：表示关闭
-                modal: true//模式窗口
-            });
-
-            /**
-             * createMapping的表单提交
-             * 2019年10月15日
-             */
-            $('#btnSaveFiled').bind('click', function () {
-                //提取下拉框选项
-                //提交表单
-                $('#saveFiled').form('submit', {
-                    url: 'fileBase/save',
-                    type: 'post',
-                    onSubmit: function () {
-                        // do some checked
-                        //做表单字段验证，当所有字段都有效的时候返回true。该方法使用validatebox(验证框)插件。
-                        var isValid = $('#saveFiled').form('validate');
-                        if (isValid == false) {
-                            return;
-                        }
-                        // return false to prevent submit;
-                    },
-                    success: function (data) {
-                        var data = eval('(' + data + ')');
-                        $.messager.alert("提示", data.message, 'info', function () {
-                            //成功的话，我们要关闭窗口
-                            $('#saveFiledDlg').dialog('close');
-                            //刷新表格数据
-                            $("#mygrid").datagrid('reload');
-                        });
-                    }
-                });
-            });
-            //加载数据
-            loadGrid();
-        });
-
-        //加载表数据
-        function loadGrid() {
-            /**
-             * 获取基础字段的数据, 展示数据网格
-             */
-            $('#mygrid').datagrid({
-                url: "fileBase/fileBaseList", // 获取基础字段表
-                type: "GET",
-                dataType: 'json',
-                contentType: "application/json",
-                columns: [[
-                    {field: 'filename', title: '名称', width: 180, align: 'center'},
-                    {field: 'type', title: '类型', width: 180, align: 'center'},
-                    {field: 'scope', title: '取值范围', width: 180, align: 'center'},
-                    {field: 'desc', title: '备注', width: 180, align: 'center'}
-                ]],
-                rownumbers: true,
-                title: '文档基础属性',
-                singleSelect: true,
-                collapsible: true,
-                nowrap: true,
-                striped: true,
-                loading: true,
-
-                loadMsg: "正在努力加载数据,表格渲染中...",
-                success: function (data) {
-                    //清空数据表格, 再进行填充
-                    clearDataGrid();
-
-                    $("#mygrid").datagrid('loadData', data);
-                },
-                error: function () {
-                    clearDataGrid();
+        //时间戳转日期格式
+        function formatDate(time) {
+            var format = 'yyyy-MM-dd HH:mm:ss';
+            var t = new Date(time);
+            var tf = function (i) {
+                return (i < 10 ? '0' : '') + i
+            };
+            return format.replace(/yyyy|MM|dd|HH|mm|ss/g, function (a) {
+                switch (a) {
+                    case 'yyyy':
+                        return tf(t.getFullYear());
+                        break;
+                    case 'MM':
+                        return tf(t.getMonth() + 1);
+                        break;
+                    case 'mm':
+                        return tf(t.getMinutes());
+                        break;
+                    case 'dd':
+                        return tf(t.getDate());
+                        break;
+                    case 'HH':
+                        return tf(t.getHours());
+                        break;
+                    case 'ss':
+                        return tf(t.getSeconds());
+                        break;
                 }
-            });
-        }
-
-        /*清除数据表格中的数据*/
-        function clearDataGrid() {
-            //获取当前页的记录数
-            var item = $("#mygrid").datagrid('getRows');
-            for (var i = item.length - 1; i >= 0; i--) {
-                var index = $("#mygrid").datagrid('getRowIndex', item[i]);
-                $("#mygrid").datagrid('deleteRow', index);
-            }
-        }
-
-        /**
-         * 清空添加字段的表单项
-         */
-        function addField() {
-            // var treeNode = $('#tt').tree('getSelected');
-            // if (treeNode == null)
-            //     $.messager.alert('提示消息', '请先选择索引！');
-            // else {
-            $('#saveFiled').form('clear');
-            //加载数据
-            // $('#saveFiled').form('load', {indexName: treeNode.text});
-            $('#saveFiledDlg').dialog('open');
-            // }
-        }
-
-        /**
-         * 编辑
-         */
-        function updateField() {
-            var gridNode = $('#mygrid').datagrid('getSelected');
-            console.log(gridNode);
-            if (gridNode == null) {
-                $.messager.alert('提示消息', '请先选择一行数据！');
-            } else {
-                $('#saveFiled').form('clear');
-                //加载数据
-                $('#saveFiled').form('load', gridNode);
-                // $('#updateDocument').form('clear');
-                $('#saveFiledDlg').dialog('open');
-            }
-        }
-        /**
-         * 删除
-         */
-        function deleteField() {
-            var gridNode = $('#mygrid').datagrid('getSelected');
-            if (gridNode == null) {
-                $.messager.alert('提示消息', '请先选择一行数据！');
-            } else {
-                $.messager.confirm("确认", "确认要删除吗？", function (yes) {
-                    if (yes) {
-                        $.ajax({
-                            url: 'fileBase/deleteField?id=' + gridNode.id,
-                            dataType: 'json',
-                            type: 'post',
-                            success: function (data) {
-                                //var data = eval('(' + data + ')');
-                                $.messager.alert("提示", data.message, 'info', function () {
-                                    //刷新表格数据
-                                    // loadGrid();
-                                    $('#mygrid').datagrid('reload');
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        }
+            })
+        };
     </script>
 </head>
-<body id="resource_admin_layout" class="easyui-layout">
-
-<div data-options="region:'center'">
+<body class="easyui-layout">
+<div  class="easyui-panel" title="检索日志" data-options="fit:true">
     <div id="toolbar">
-        <div class="datagrid-title-div" id="indexName"><span>基础字段</span></div>
-        <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
-             onclick="$('#mygrid').datagrid('reload')" title="刷新">
-        <img src="images/px-icon/newFolder.png" class="easyui-tooltip div-toolbar-img-next"
-             onclick="addField()" title="新增字段">
-        <img src="images/px-icon/bianji.png" class="easyui-tooltip div-toolbar-img-next"
-             onclick="updateField()" title="编辑字段">
-        <%--<img src="images/px-icon/newFolder.png" class="easyui-tooltip div-toolbar-img-next"--%>
-        <%--onclick="addDocument()" title="新增数据">--%>
-        <img src="images/px-icon/shanchu.png" class="easyui-tooltip div-toolbar-img-next"
-             onclick="deleteField()" title="删除字段">
+        <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true"
+           onclick="UserManage.openUserDialog('ADD')">新增
+        </a>
+        <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true"
+           onclick="UserManage.openUserDialog('EDIT')">编辑
+        </a>
+        <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true"
+           onclick="UserManage.delUser()">删除
+        </a>
+        <span style="float: right">
+            <input id="userNameParam" class="easyui-searchbox" data-options="prompt:'请输入',searcher:UserManage.doSearch" style="width: auto;padding-top: 5px"/>
+        </span>
     </div>
-    <table id="mygrid" style="height: 450px"></table>
+    <table id="userTable" class="easyui-datagrid"
+           toolbar="#toolbar" pagination="true"  fit="true" striped="true"
+           rownumbers="true" fitColumns="true" singleSelect="false" >
+        <thead>
+        <tr>
+            <th field="id" checkbox="true" align="center"></th>
+            <th field="userName" width="50">用户姓名</th>
+            <th field="userAccount" width="50">用户账号</th>
+            <th field="sex" width="50" data-options="formatter:function(data){
+                return data==1?'男':'女';
+            }">性别</th>
+            <th field="mobile" width="50">手机号</th>
+            <th field="createTime" data-options="formatter:function(data){
+                return formatDate(data);
+            }" width="50">创建时间</th>
+        </tr>
+        </thead>
+    </table>
 
+    <div id="userDialog" class="easyui-dialog"  style="width:400px;height:300px;padding:10px"
+         data-options="closed:true,iconCls: 'icon-save'">
+        <form id="userForm" method="post">
+            <div style="display:none">
+                <input class="easyui-textbox" name="id" />
+            </div>
+            <div style="margin-bottom:10px">
+                <input class="easyui-textbox" name="userName" style="width:340px"
+                       data-options="missingMessage:'请输入',validType:'chinese',labelWidth:100,label:'用户名称:',required:true">
+            </div>
+            <div style="margin-bottom:10px">
+                <input class="easyui-textbox" name="userAccount" style="width:340px"
+                       data-options="missingMessage:'请输入',validType:'username',labelWidth:100,label:'用户账号:',required:true">
+            </div>
+            <div style="margin-bottom:10px">
+                <select class="easyui-combobox" name="sex" style="width:340px;"
+                        data-options="missingMessage:'请输入',labelWidth:100,label:'性别:',required:true">
+                    <option value="1">男</option>
+                    <option value="0">女</option>
+                </select>
+            </div>
+            <div style="margin-bottom:10px">
+                <input class="easyui-textbox"  name="mobile" style="width:340px;"
+                       data-options="missingMessage:'请输入',labelWidth:100,validType:'mobile',label:'手机号:',required:true" >
+            </div>
+        </form>
+        <div style="text-align:center;padding:5px 0">
+            <a href="javascript:void(0)" class="easyui-linkbutton"
+               onclick="UserManage.submitForm()" style="width:80px">提交
+            </a>
+            <a href="javascript:void(0)" class="easyui-linkbutton"
+               onclick="javascript:$('#userDialog').dialog('close')" style="width:80px">取消
+            </a>
+        </div>
+    </div>
 </div>
-</div>
-<div id="saveFiledDlg">
-    <form id="saveFiled" method="post">
-        <table>
-            <tr>
-                <td>id</td>
-                <td><input name="id" class="easyui-validatebox"
-                           data-options="" type="hidden"></td>
-            </tr>
-            <tr>
-                <td>字段名称</td>
-                <td><input name="filename" class="easyui-validatebox"
-                           data-options="required:false,missingMessage:'字段名称不能为空!'"></td>
-            </tr>
-            <tr>
-                <td>字段类型</td>
-                <td><input name="type" class="easyui-validatebox"
-                           data-options="required:false,missingMessage:'字段类型不能为空!'"></td>
-            </tr>
-
-            <tr>
-                <td>取值范围</td>
-                <td><input name="scope" class="easyui-validatebox"
-                           data-options="required:false,missingMessage:''"></td>
-            </tr>
-
-            <tr>
-                <td>备注</td>
-                <td><input name="desc" class="easyui-validatebox"
-                           data-options="required:false,missingMessage:''"></td>
-            </tr>
-        </table>
-        <button id="btnSaveFiled" type="button">保存</button>
-    </form>
-</div>
-
 </body>
+
 </html>

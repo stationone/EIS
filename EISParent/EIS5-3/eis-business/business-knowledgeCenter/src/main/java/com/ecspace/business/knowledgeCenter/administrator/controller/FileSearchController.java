@@ -1,18 +1,21 @@
 package com.ecspace.business.knowledgeCenter.administrator.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.ecspace.business.knowledgeCenter.administrator.aop.LogAnno;
+import com.ecspace.business.knowledgeCenter.administrator.pojo.SearchLog;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileSearchService;
+import com.ecspace.business.knowledgeCenter.administrator.service.SearchLogService;
+import com.ecspace.business.knowledgeCenter.administrator.util.IPUtil;
+import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 /**
  * DSL文档检索
@@ -27,8 +30,14 @@ public class FileSearchController {
     @Autowired
     private FileSearchService fileSearchService;
 
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+
+    @Autowired
+    private SearchLogService searchLogService;
+
     /**
-     * 获取page内容
+     * 获取page内容 0
      *
      * @param search
      * @return pageData
@@ -46,16 +55,23 @@ public class FileSearchController {
         //DSL全文检索
         return fileSearchService.getFilePageList(menuId, search, page, rows);
     }
-    @LogAnno
+
+    @LogAnno(operateType = "全文检索")
     @GetMapping(value = "/fileList")
-    public PageData fileList(String search, Integer page, Integer rows) throws Exception {
-        //没有请求参数时,  展示全部文件列表
-        if (StringUtils.isBlank(search)) {//非空判断
-            return fileSearchService.fileList(page, rows);
+    public PageData fileList(@RequestParam(value = "search") String search, Integer page, Integer rows) throws Exception {
+        PageData pageData = null;
+        try {
+            //没有请求参数时,  展示全部文件列表
+            if (StringUtils.isBlank(search)) {//非空判断
+                pageData = fileSearchService.fileList(page, rows);
+            } else {
+                //DSL全文检索
+                pageData = fileSearchService.fileList(search, page, rows);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return pageData;
         }
-        //DSL全文检索
-        return fileSearchService.fileList(search, page, rows);
     }
-
-
 }

@@ -32,7 +32,7 @@ public class SearchLog {
 
     private String result; //请求结果
 
-    private Long spent;//耗费时间, 请求处理时长
+    private Long spent;//耗费时间, 请求处理时长 (单位毫秒)
 
     private Date creationTime; //创建时间
 

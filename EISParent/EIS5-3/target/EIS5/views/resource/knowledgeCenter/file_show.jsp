@@ -48,7 +48,153 @@
             // select_indexName();
 
             file_type();
-        });
+
+            $("#reviewInfoList").datagrid({
+                url: 'review/reviewInfoList?fileId=' + resu.fileId,
+                method: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                columns: [[
+                    // {field: 'rejectCount', title: '审批次数', width: 80, align: 'center'},
+                    {field: 'reviewer', title: '审批人', width: 100, align: 'center'},
+                    {
+                        field: 'status', title: '审核结果', width: 100, align: 'center',
+                        formatter: function (value) {
+                            if (value === '3') {
+                                return '<span style="color:red;">驳回</span>'
+                            } else {
+                                return '<span style="color:green;">入库</span>'
+                            }
+
+                        }
+                    },
+                    {field: 'reviewIdea', title: '审批意见', width: 200, align: 'left'},
+
+                ]],
+
+                rownumbers: true,
+                singleSelect: true,
+                readonly: true,
+                collapsible: true,
+                nowrap: true,
+                // striped: true,
+                loading: true,
+                fit: true,//自适应高度
+                emptyMsg: "没有获取到数据",
+                loadMsg: "正在努力加载数据,表格渲染中...",
+                pagination: true,
+                pageNumber: 1,
+                pageSize: 10,
+                onLoadSuccess: function (data) {
+                    //固定表格
+                    $('#reviewInfoList').datagrid('fixRowHeight');
+                },
+                onLoadError: function () {
+                    // clearDataGrid();
+                }
+            })
+
+
+            //初始化审核窗口
+            $('#reviewDlg').dialog({
+                title: '审核',//窗口标题
+                width: 500,
+                height: 300,
+                // height: 100,//窗口高度
+                closed: true,//窗口是是否为关闭状态, true：表示关闭
+                // modal: true//模式窗口
+            });
+            //按钮绑定
+            $('#agree').bind('click', function () {
+
+                $.messager.confirm('继续操作', '确定执行<span style="color: green;">入库</span>操作吗?', function (r) {
+                    if (r) {
+
+                        //表单数据设置(fileId, status)
+                        $('#review_form').form('load', {
+                            status: '4',
+                        });
+
+                        //做表单字段验证，当所有字段都有效的时候返回true。该方法使用validatebox(验证框)插件。
+                        var isValid = $('#review_form').form('validate');
+                        // alert(isValid);
+                        if (isValid == false) {
+                            return;
+                        }
+                        //提交表单
+                        $('#review_form').form('submit', {
+                            url: 'review/save',
+                            type: 'post',
+                            success: function (data) {
+                                var data = eval('(' + data + ')');
+                                $.messager.alert("提示", data.message, 'info', function () {
+                                    //成功的话，我们要关闭窗口
+                                    $('#reviewDlg').dialog('close');
+                                    //刷新
+                                    // $("#mygrid").datagrid('reload');
+                                    location.reload();
+                                    //入库离散检索
+                                    //审核入库, 解析
+                                    var fileInfo = data.data;
+                                    fileSpread(fileInfo.fileId);
+                                });
+                            }
+                        });
+                    }
+
+                })
+            });
+
+            $('#disagree').bind('click', function () {
+                $.messager.confirm('继续操作', '确定执行<span style="color: red;">驳回</span>操作吗?', function (r) {
+                    if (r) {
+
+                        //表单数据设置(fileId, status)
+                        $('#review_form').form('load', {
+                            status: '3',
+                        });
+                        //做表单字段验证，当所有字段都有效的时候返回true。该方法使用validatebox(验证框)插件。
+                        var isValid = $('#review_form').form('validate');
+                        // alert(isValid);
+                        if (isValid == false) {
+                            return;
+                        }
+                        //提交表单
+                        $('#review_form').form('submit', {
+                            url: 'review/save',
+                            type: 'post',
+                            success: function (data) {
+                                var data = eval('(' + data + ')');
+                                $.messager.alert("提示", data.message, 'info', function () {
+                                    //成功的话，我们要关闭窗口
+                                    $('#reviewDlg').dialog('close');
+                                    //刷新
+                                    // $("#mygrid").datagrid('reload');
+                                    location.reload();
+                                });
+                            }
+                        });
+                    }
+                })
+            });
+
+
+        })
+        ;
+
+        function review_button() {
+            //窗口打开前加载表单数据
+            //获取该文档的id值
+            var data = ($('#file_dialog_upload').serializeJSON());
+            var fileId = data.fileId;
+            // alert(fileId);
+
+            //表单数据设置(fileId, status)
+            $('#review_form').form('load', {
+                fileId: fileId,
+            });
+            $('#reviewDlg').dialog('open');
+        }
 
         /**
          * 文件预览
@@ -148,23 +294,23 @@
                     switch (result.status) {
                         case 1:
                             $('#submit').show();//提交
-                            $('#saveIndex').hide();//入库
+                            $('#review_button').hide();//入库
                             $('#check').hide();//驳回
                             break;
                         case 2:
                             $('#submit').hide();//提交
-                            $('#saveIndex').show();//入库
+                            $('#review_button').show();//入库
                             $('#check').show();//驳回
                             break;
                         case 3:
                             $('#submit').show();//提交
-                            $('#saveIndex').hide();//入库
+                            $('#review_button').hide();//入库
                             $('#check').hide();//驳回
                             //让驳回高亮
                             break;
                         case 4:
                             $('#submit').hide();//提交
-                            $('#saveIndex').hide();//入库
+                            $('#review_button').show();//入库
                             $('#check').hide();//驳回
                             break;
                     }
@@ -229,6 +375,7 @@
                         //868.80  920.80 3539.30   960 4499.30    6217 0028 3000 7124 573
 
                     });
+
                 }
             });
 
@@ -269,21 +416,27 @@
                     data: {json: str},
                     success: function (result) {
                         console.log(result);
+                        if (result) {
+
+                        }
                         message_Show(result.message);
                         if (result.success == false) {
                             return;
                         }
                         file_upload_flag = true;
                         //跳转到文件列表页面
-                        window.location.href = "./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp";
+                        // window.location.href = "./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp";
+
+                        //刷新当前页面
+                        location.reload();
 
                         //如果文档入库,调取接口解析文件
                         console.log(result.data);
                         var data = result.data;
                         console.log(data.fileId);
                         if (data.status === 4) {
-                            //审核入库, 解析
-                            fileSpread(data.fileId);
+                            // //审核入库, 解析
+                            // fileSpread(data.fileId);
                         }
 
                     }
@@ -451,16 +604,34 @@
             <div class="datagrid-title-div" style="width: 100%;">
                 <span style="width: 70%">文件详情</span>
                 <span style="float: right; margin-right: 10px;">
-                    <a href="javascript:history.go(-1)">
-                    <img src="images/px-icon/zuojiantou.png" style="padding:0 10px"
-                         class="easyui-tooltip div-toolbar-img-first" title="返回">
+                    <%--<a href="javascript:history.go(-1)">--%>
+                    <%--<img src="images/px-icon/zuojiantou.png" style="padding:0 10px;width: 5px;height: 5px;"--%>
+                         <%--class="easyui-tooltip div-toolbar-img-first" title="返回">--%>
+                <%--</a>--%>
+                <%--<a href="javascript:location.reload()">--%>
+                    <%--<img src="images/px-icon/shuaxin.png" style="padding:0 10px;margin-left: 5px;"--%>
+                         <%--class="easyui-tooltip div-toolbar-img-first" title="刷新">--%>
+                <%--</a>--%>
+                <%--<a href="javascript:history.go(-2);">返回前两页</a>--%>
+                                                <%--// window.location.href = "./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp";--%>
+<%--./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp--%>
+                <a href="./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp">
+                    <img src="images/px-icon/zuojiantou.png"
+                         style="padding:0 10px;margin-left: 5px;width: 25px;height: 25px;"
+                         class="easyui-tooltip div-toolbar-img-first"
+                         title="返回文档管理页">
                 </a>
+                <%--<a href="javascript:self.location=document.referrer;">--%>
+                    <%--<img src="images/px-icon/zuojiantou.png"--%>
+                         <%--style="padding:0 10px;margin-left: 5px;width: 25px;height: 25px;"--%>
+                         <%--class="easyui-tooltip div-toolbar-img-first"--%>
+                         <%--title="返回上一页并刷新">--%>
+                <%--</a>--%>
                 <a href="javascript:location.reload()">
-                    <img src="images/px-icon/shuaxin.png" style="padding:0 10px;margin-left: 5px;"
+                    <img src="images/px-icon/shuaxin.png"
+                         style="padding:0 10px;margin-left: 5px;width: 25px;height: 25px;"
                          class="easyui-tooltip div-toolbar-img-first" title="刷新">
                 </a>
-                <%--<a href="javascript:history.go(-2);">返回前两页</a>--%>
-                <%--<a href="javascript:self.location=document.referrer;">返回上一页并刷新</a>--%>
                 </span>
             </div>
         </div>
@@ -654,33 +825,26 @@
                                    width='100%'>
                             </table>
                         </div>
-                        <%--<div title="审批记录" data-options="closable:false" style="padding:10px">--%>
+                        <div title="审批记录" data-options="closable:false" style="padding:10px">
+                            <div id="reviewInfoList">
 
-                        <%--<table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='100%'>--%>
-                        <%--<tr>--%>
-                        <%--<td class="pe-label" style="text-align-last:justify;padding-right: 25px;width: 30%;">--%>
-                        <%--<span>--%>
-                        <%--审批人--%>
-                        <%--</span>--%>
-                        <%--</td>--%>
-                        <%--<td class="pe-content" colspan="6">--%>
-                        <%--<input id="" class="easyui-textbox" readonly style="width:70%;padding-left: 5px;"--%>
-                        <%--name="opinion" value="同意" />--%>
-                        <%--</td>--%>
-                        <%--</tr>--%>
-                        <%--</table>--%>
-                        <%--</div>--%>
+                            </div>
+                        </div>
                     </div>
                 </form>
                 <div id="file_dialog_button" class="pxzn-dialog-buttons">
                     <input id="save" type="button" onclick="file_dialog_ok()" value="保存" class="pxzn-button">
                     <input id="submit" type="button" onclick="file_dialog_ok(2)" value="提交" style="margin-left:10px;"
                            class="pxzn-button">
-                    <input id="check" type="button" onclick="file_dialog_ok(3)" value="驳回" style="margin-left:10px;"
+                    <%--<input id="check" type="button" onclick="file_dialog_ok(3)" value="驳回" style="margin-left:10px;"--%>
+                    <%--class="pxzn-button">--%>
+                    <%--<input id="saveIndex" type="button" onclick="file_dialog_ok(4)" value="入库" style="margin-left:10px;"--%>
+                    <%--class="pxzn-button">--%>
+                    <input id="download" type="button" onclick="downloadFileByForm()" value="下载"
+                           style="margin-left:10px;"
                            class="pxzn-button">
-                    <input id="saveIndex" type="button" onclick="file_dialog_ok(4)" value="入库" style="margin-left:10px;"
-                           class="pxzn-button">
-                    <input id="download" type="button" onclick="downloadFileByForm()" value="下载" style="margin-left:10px;"
+                    <input id="review_button" type="button" onclick="review_button()" value="审核"
+                           style="margin-left:10px;"
                            class="pxzn-button">
                 </div>
             </div>
@@ -688,23 +852,30 @@
     </div>
 </div>
 
-<div id="downloadDlg" class="easyui-dialog" style="width:400px"
+<div id="reviewDlg" class="easyui-dialog" style="width:400px"
      data-options="modal:true,closed:true,buttons:'#download-btns'">
-    <form id="downloadForm" method="post" novalidate style="margin:0;padding:20px 50px">
+    <form id="review_form" method="post" novalidate style="margin:0;padding:20px 50px">
         <div style="margin-bottom:10px;font-size:14px;"></div>
         <div style="margin-bottom:5px;">
-            <span id="text"></span>
-            <input id="d_svnURL" name="svnURL" type="hidden">
-            <input id="d_svnVersion" name="svnVersion" type="hidden">
+            <input name="fileId" type="hidden">
+            <input name="status" type="hidden">
         </div>
+        <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='100%'>
+            <tr>
+                <td class="pe-content" colspan="6" aria-colspan="2">
+                    <input id="reviewIdea" label="审批意见:" labelPosition="top" class="easyui-textbox"
+                           style="width:90%;height:120px" multiline="true" required
+                           name="reviewIdea"/>
+                </td>
+            </tr>
+        </table>
     </form>
     <div id="download-btns" style="text-align: center; margin-right:10px; margin-bottom: 5px;">
-        <a href="javascript:downloadFiles()" class="easyui-linkbutton c6" iconCls="icon-ok" style="width:90px">下载</a>
-        <a href="javascript:closeDownloadDlg()" class="easyui-linkbutton" iconCls="icon-cancel"
-           style="width:90px">取消</a>
+        <a id="agree" href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok"
+           style="width:90px;color: green;">入库</a>
+        <a id="disagree" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel"
+           style="width:90px;margin-left: 60px;color: red;">驳回</a>
     </div>
-
-
 </div>
 </body>
 </html>

@@ -1,5 +1,6 @@
 package com.ecspace.business.knowledgeCenter.administrator.controller;
 
+import com.ecspace.business.knowledgeCenter.administrator.aop.LogAnno;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileType;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
@@ -33,6 +34,7 @@ public class FileTypeController {
     }
 
     //类型内容
+    @LogAnno(operateType = "类型定义/添加")
     @PostMapping("/insert")
     public GlobalResult insert(FileType fileType){
         return fileTypeService.insertField(fileType);
@@ -42,6 +44,8 @@ public class FileTypeController {
     /**
      * 目录表单操作
      */
+    @LogAnno(operateType = "类型定义/添加或修改")
+
     @PostMapping("/submit")
     public GlobalResult create(FileType fileType){
         if (fileType == null || "".equals(fileType.getText())) {
@@ -61,6 +65,8 @@ public class FileTypeController {
     /**
      * 删除
      */
+    @LogAnno(operateType = "类型定义/删除")
+
     @PostMapping("/delete")
     public GlobalResult delete(String id){
         if (id == null) {

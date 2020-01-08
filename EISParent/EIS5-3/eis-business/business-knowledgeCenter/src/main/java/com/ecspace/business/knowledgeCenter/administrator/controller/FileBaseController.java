@@ -1,5 +1,6 @@
 package com.ecspace.business.knowledgeCenter.administrator.controller;
 
+import com.ecspace.business.knowledgeCenter.administrator.aop.LogAnno;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileBase;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
@@ -32,6 +33,8 @@ public class FileBaseController {
      * 保存基础字段
      * @return baseField
      */
+    @LogAnno(operateType = "文档基础属性/添加或修改")
+
     @PostMapping("/save")
     public GlobalResult save(FileBase fileBase){
         if (fileBase == null) {
@@ -45,6 +48,8 @@ public class FileBaseController {
      * 保存基础字段
      * @return id
      */
+    @LogAnno(operateType = "文档基础属性/删除")
+
     @PostMapping("/deleteField")
     public GlobalResult deleteField(String id){
 

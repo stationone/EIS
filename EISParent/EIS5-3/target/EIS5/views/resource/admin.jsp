@@ -121,8 +121,8 @@
                         return;
                     }
 
-                    var code = result.code;
-                    if (code == messagerCode.success) {
+                    var status = result.status;
+                    if (status == messagerCode.success) {
                         var node = $('#'+treeId).tree('find', 0);//默认给版本仓库节点下增加版本库
                         $('#'+treeId).tree('append', {
                             parent: node.target,
@@ -141,11 +141,11 @@
                         });
 
 
-                    } else if (code == '2004') {
+                    } else if (status == '2004') {
                         $.messager.alert('系统提示', '名称重复');
                         $('#c_catalogName').textbox().next('span').find('input').focus();
                         $('#saveFolder-button').linkbutton('enable');
-                    } else if (code == "2003") {
+                    } else if (status == "2003") {
                         $.messager.alert('系统提示', '名称禁止为空');
                     }
                     else {
@@ -196,7 +196,7 @@
                             catalogNO: node.id,
                             repositoryName: repository.text
                         }, function (result) {
-                            if (result.code == messagerCode.success) {
+                            if (result.status == messagerCode.success) {
                                 $("#"+treeId).tree('remove', node.target);
                                 // if (rows.length > 0) {
                                 //     $('#filelist').datagrid('reload');
@@ -247,7 +247,7 @@
                             resList: JSON.stringify(deleteList)
                         },
                         function (result) {
-                            if (result.code == "1000") {
+                            if (result.status == "1000") {
                                 $("#"+datagridId1).datagrid("reload");
                                 $.messager.show({
                                     title: '系统提示',

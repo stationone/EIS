@@ -487,7 +487,7 @@
                         if(result == null){
                             return;
                         }
-                        if (result.code == "1000") {
+                        if (result.status == "1000") {
                             $("#filelist").datagrid("reload");
                             $.messager.show({
                                 title: '系统提示',
@@ -753,11 +753,11 @@
                 }
 
                 $(".messager-body").window('close');
-                if (data.code == messagerCode.success) {
+                if (data.status == messagerCode.success) {
 
                     $.messager.alert('系统提示', '检出成功');
                     $('#resTree').tree('reload');
-                } else if (data.code == '2004') {
+                } else if (data.status == '2004') {
                     $.messager.alert('系统提示', '检出名称重复');
                 } else {
                     $.messager.alert('系统提示', '检出失败');
@@ -836,14 +836,14 @@
                         if(data == null){
                             return;
                         }
-                        var code = data.code;
-                        if (code == "1000") {
+                        var status = data.status;
+                        if (status == "1000") {
                             $('#resTree').tree('remove', node.target);
                             $('#filelist').datagrid('load');
                             $.messager.alert('系统提示', '删除成功');
-                        } else if (code == '2003') {
+                        } else if (status == '2003') {
                             $.messager.alert('系统提示', '参数不合法');
-                        } else if (code == '2005') {
+                        } else if (status == '2005') {
                             //数据不存在
                             $.messager.alert('系统提示', '删除数据不存在，请刷新后尝试');
                         } else {
@@ -892,8 +892,8 @@
                     return;
                 }
 
-                var code = result.code;
-                if (code == messagerCode.success) {
+                var status = result.status;
+                if (status == messagerCode.success) {
                     var node = $('#resTree').tree('find', 0);//默认给版本仓库节点下增加版本库
                     $('#resTree').tree('append', {
                         parent: node.target,
@@ -912,11 +912,11 @@
                     });
 
 
-                } else if (code == '2004') {
+                } else if (status == '2004') {
                     $.messager.alert('系统提示', '名称重复');
                     $('#c_catalogName').textbox().next('span').find('input').focus();
                     $('#saveFolder-button').linkbutton('enable');
-                } else if (code == "2003") {
+                } else if (status == "2003") {
                     $.messager.alert('系统提示', '名称禁止为空');
                 }
                 else {
@@ -1023,8 +1023,8 @@
                 if(result == null){
                     return;
                 }
-                var code = result.code;
-                if (code == messagerCode.success) {
+                var status = result.status;
+                if (status == messagerCode.success) {
                     var node = $('#resTree').tree('getSelected');
                     var c_catalogName = $('#c_catalogName').textbox('getValue');
                     var c_catalogPath = $('#c_catalogPath').val();
@@ -1049,7 +1049,7 @@
                     });
                     closeFolderDlg();
 
-                } else if (code == '2004') {
+                } else if (status == '2004') {
                     $.messager.alert('系统提示', '名称重复');
                     $('#c_catalogName').textbox().next('span').find('input').focus();
                     $('#saveFolder-button').linkbutton('enable');
@@ -1102,7 +1102,7 @@
                         if(result == null){
                             return;
                         }
-                        if (result.code) {
+                        if (result.status) {
                             $("#resTree").tree('remove', node.target);
                             if (rows.length > 0) {
                                 $('#filelist').datagrid('reload');
@@ -1359,7 +1359,7 @@
                 if(result == null){
                     return;
                 }
-                if (result.code == messagerCode.success) {
+                if (result.status == messagerCode.success) {
                     $("#filelist").datagrid("reload");
                     closeFileDlg();
                     $.messager.show({
@@ -1500,7 +1500,7 @@
 
                 }
 
-                var datas = data.code;
+                var datas = data.status;
                 if (datas == '1000') {
                         $.messager.show({
                             title: '系统提示',

@@ -45,4 +45,12 @@ public class FileType {
         this.text = text;
     }
 
+    @Override
+    public String toString() {
+        return "FileType{" +
+                "id='" + id + '\'' +
+                ", text='" + text + '\'' +
+                ", typeName='" + typeName + '\'' +
+                '}';
+    }
 }

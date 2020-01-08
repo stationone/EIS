@@ -99,8 +99,8 @@
                     resUserList:JSON.stringify(result)
                 },
                 success:function(data){
-                    var code = data.code;
-                    if(code == messagerCode.success){
+                    var status = data.status;
+                    if(status == messagerCode.success){
                         resourceAcc_dialog_close();
                         $('#'+datagridId1).datagrid('reload');
                         message_Show('保存成功');

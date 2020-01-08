@@ -2,6 +2,7 @@ package com.ecspace.business.knowledgeCenter.administrator.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.ecspace.business.knowledgeCenter.administrator.aop.LogAnno;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileBase;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResult;
@@ -43,6 +44,7 @@ public class FileController {
      * @param file
      * @return
      */
+    @LogAnno(operateType = "文档管理/文档添加")
     @PostMapping(value = "fileUpload")
     public GlobalResult handleFileUpload(@RequestParam("file") MultipartFile file) throws Exception {
         //非空判断
@@ -61,6 +63,7 @@ public class FileController {
      * @param json
      * @return
      */
+    @LogAnno(operateType = "文档管理/属性编辑")
     @PostMapping(value = "fileForm")
     public GlobalResult fileForm(String json, String status) throws Exception {
         if (json == null) {
@@ -210,7 +213,9 @@ public class FileController {
 //                                       @RequestParam(value = "indexName")
 //                                                    String indexName,
 //                                       @RequestParam(value = "menuId")
-//                                                    String menuId) throws Exception {
+//
+//                                                String menuId) throws Exception {
+    @LogAnno(operateType = "文档管理/文档添加")
     @RequestMapping(value = "/fileTempUpload", method = RequestMethod.POST)
     public GlobalResult fileTempUpload(@RequestParam(value = "file")
                                                MultipartFile file,
@@ -229,6 +234,7 @@ public class FileController {
      * @param response
      * @return
      */
+    @LogAnno(operateType = "文档管理/下载")
     @RequestMapping(value = "fileDownload", method = RequestMethod.POST)
     public GlobalResult handleFileDownload(@RequestParam("fileId") String fileId, HttpServletResponse response) {
         FileInfo fileInfo = fileService.getFileById(fileId);
@@ -250,7 +256,7 @@ public class FileController {
             response.setContentType("application/octet-stream");
             response.setCharacterEncoding("utf-8");
             response.setContentLength((int) file.length());
-            response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+            response.setHeader("Content-Disposition", "attachment;filename=" + downloadFileName);
 
             byte[] buff = new byte[1024];
             os = response.getOutputStream();
@@ -260,7 +266,10 @@ public class FileController {
                 os.write(buff, 0, i);
                 os.flush();
             }
-
+            //下载完成后, 文档信息中心下载次数+1
+            Integer downloadCount = fileInfo.getDownloadCount();
+            fileInfo.setDownloadCount(downloadCount + 1);
+            FileInfo info = fileService.saveFileInfo(fileInfo);
         } catch (Exception e) {
             return new GlobalResult(false, 5000, e.getMessage());
         } finally {

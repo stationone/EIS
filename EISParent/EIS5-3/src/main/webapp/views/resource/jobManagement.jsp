@@ -115,7 +115,7 @@
     <table class="easyui-datagrid" data-options="fitColumns:true,pagination:true,fit:true,toolbar:'#permissionSet_dg_toolbar'">
         <thead>
             <tr>
-                <th data-options="field:'code',width:20">编号</th>
+                <th data-options="field:'status',width:20">编号</th>
                 <th data-options="field:'name',width:50">作业名称</th>
                 <th data-options="field:'inputUser',width:50">发布人</th>
                 <th data-options="field:'inputDate',width:50">发布时间</th>
