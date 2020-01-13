@@ -20,6 +20,7 @@
     <title>知识中心</title>
     <link rel="stylesheet" type="text/css" href="css/easyui.css">
     <link rel="stylesheet" type="text/css" href="css/px-style.css">
+    <link rel="stylesheet" type="text/css" href="ui/themes/icon.css">
     <script src="js/jquery.min.js"></script>
     <script src="js/jquery.easyui.min.1.5.2.js"></script>
     <script src="js/pxzn.util.js"></script>

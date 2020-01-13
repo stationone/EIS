@@ -35,13 +35,76 @@
          * 入口函数
          */
         $(function () {
-            // searchFile();
+            var resu = param_sub();
+            // alert(resu);
+            //设置value
+            $("#search").attr("value", resu.search);
+            //调用搜索接口
+            // searchFile(1, 10);
+            loadTree();
         });
 
         /**
-         * 绑定搜索按钮
+         *加载索引列表的树形菜单,
+         *  加载完成后, 选中第一条数据
+         *  将索引库名称显示在顶部
          */
-        function searchFile() {
+        function loadTree() {
+            $('#tt').tree({
+                url: 'indexMenu/listIndexMenu',
+                method: 'POST',
+
+                onClick: function (node) {
+                    // alert(node.text)
+
+                    // //将索引名称显示在顶部
+                    // document.getElementById("indexName").innerHTML = "";
+                    // $('#indexName').append('<span>' + node.text + '</span>')
+                    //
+                    // //获取上树
+                    // getTree();
+                },
+                //加载完tree型菜单后, 选中第一条数据
+                onLoadSuccess: function (node, data) {
+                    //什么都不干
+
+                    // if (data.length > 0) {
+                    //     //找到第一个元素
+                    //     var n = $('#tt').tree('find', data[0].id);
+                    //     //调用选中事件
+                    //     $('#tt').tree('select', n.target);
+                    //
+                    //     getTree();
+                    //
+                    //     //将索引库名称显示在顶部
+                    //     document.getElementById("indexName").innerHTML = "";
+                    //     $('#indexName').append('<span>' + data[0].text + '</span>')
+                    // }
+                }
+            });
+        }
+
+        /**
+         * 网页跳转携带参数处理
+         */
+        function param_sub() {
+            var url = location.search; //获取url中"?"符后的字串, 包含?
+            console.log(url);
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = str.split("&");
+                for (var i = 0; i < strs.length; i++) {
+                    theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                }
+            }
+            return theRequest;
+        }
+
+        /**
+         * 搜索
+         */
+        function searchFile(page, rows) {
             //获取input中的值
             var search = document.getElementById('search').value;
             // $('#mygrid').datagrid('reload', {json: JSON.stringify({search:search})});
@@ -51,27 +114,34 @@
                 url: 'fileSearch/fileList',
                 method: 'GET',
                 contentType: 'application/json',
-                data: 'search=' + search,
+                data: 'search=' + search + "&page=" + page + "&size=" + rows,
                 dataType: 'json',
                 success: function (result) {
                     dataShow(result);
+
+                    //分页栏
+                    $('#pagination').pagination({
+                        total: result.total,
+                        pageSize: [10, 20, 30, 40, 50],
+                        /*
+                            list：页面尺寸列表。
+                            sep：页面按钮分割。
+                            first：第一个按钮。
+                            prev：前一个按钮。
+                            next：后一个按钮。
+                            last：最后一个按钮。
+                            refresh：刷新按钮。
+                            manual：允许输入域页码的手动页码输入框。
+                            links：页码链接。
+                         */
+                        // layout:['sep','first','prev','links','next','last','manual','list','refresh'],//
+                        onSelectPage: function (page, size) {
+                            searchFile(page, size);
+                            // $('#content').panel('refresh', 'show_content.php?page='+pageNumber);
+                        }
+                    });
                 }
             });
-        }
-
-        /**
-         * 获取数据
-         */
-        function loadDataList(menuId) {
-            $.ajax({
-                url: 'file/fileList?menuId=' + menuId,
-                method: 'GET',
-                contentType: 'application/json',
-                success: function (result) {
-                    dataShow(result);
-                }
-            })
-
         }
 
         /**
@@ -84,30 +154,6 @@
             if (result.total === 0) {
 
             }
-            /*
-            uploadUser: null
-            content: "说明：
-            ↵这里搭建的是一个简单的集群，没有做集群节点角色的区分，所以 3个节点默认
-            ↵的角色有主节点、<tag style="color: red;">数据</tag>节点、协调节点
-            ↵选举 ES 主节点的逻辑：
-            ↵选举的大概逻辑，它会根据分片的<tag style="color: red;">数据</tag>的前后新鲜程度来作为选举的一个重要逻（日志、<tag style="color: red;">数据</tag>、时间都会作为集群 master 全局的重要指标）
-            ↵因为考虑到数据一致性问题，当然是用最新的<tag style="color: red;">数据</tag>节点作为 master，然后进行
-            ↵新<tag style="color: red;">数据</tag>的复制和刷新其他 node。"
-            creationTime: 1574424767753
-            directoryNodeIds: "29,30,"
-            downloadCount: 0
-            fileId: "1911222012753723197"
-            fileName: "测试6.docx"
-            keyword: ""
-            knowledge: null
-            nodeList: null
-            pageNO: 12
-            pageTotal: 13
-            path: "E:/knowledgeCenterPdfFile/254613f9925a078a587cbf1cf24b56d8/254613f9925a078a587cbf1cf24b56d8_12.pdf"
-            pdfPage: "E:\knowledgeCenterPdfFile\254613f9925a078a587cbf1cf24b56d8\254613f9925a078a587cbf1cf24b56d8_12.pdf"
-            tNO: 1911222014472415000
-           */
-
             //清除
             $('#dataList').remove();
             //创建
@@ -116,7 +162,9 @@
                 '    </ul>');
             //遍历
             var data = result.rows;
-
+            if (data.length === 0) {
+                return
+            }
             for (var i = 0; i < result.total; i++) {
                 var time = data[i].creationTime;
                 //格式化日期
@@ -208,286 +256,83 @@
                 }
             })
         };
-
-
-        /**
-         * 打开文件上传窗口
-         */
-        //打开
-        function upload_dialog_open() {
-            var node = $('#' + treeId).tree('getSelected');
-            if (node == null) {
-                message_Show('请选择要上传的目录');
-                return;
-            }
-            $('#file_dialog_form').form('clear');
-            $('#file_dialog_form').form('load', {
-                menuId: node.id
-
-            });
-            console.log(node.id);
-            $('#file_dialog').dialog('open').dialog('center').dialog('setTitle', '文件上传');
-        }
-
-
-        /**
-         * 新建目录
-         */
-        //打开
-        function newFolder() {
-            // $('#saveFolder-button').linkbutton('enable');
-            var node = $('#' + treeId).tree('getSelected');
-            if (node == null) {
-                message_Show('请选择父级目录');
-                return;
-            }
-            $('#folder_dialog_form').form('clear');
-            $('#folder_dialog_form').form('load', {
-                pid: node.id
-            });
-            $('#folder_dialog').dialog('open').dialog('center').dialog('setTitle', '新建文件夹');
-        }
-
-        /**
-         * 编辑目录
-         */
-        //打开
-        function editFolder() {
-            // $('#saveFolder-button').linkbutton('enable');
-            var node = $('#' + treeId).tree('getSelected');
-            if (node == null) {
-                message_Show('请选择有效的目录');
-                return;
-            }
-
-            //如果选择的是根节点,
-            if (('000000000000000000') === (node.pid)) {
-                message_Show('当前节点禁止编辑, 请重新选择');
-                return;
-            }
-            $('#folder_dialog_form').form('clear');
-            $('#folder_dialog_form').form('load', {
-                id: node.id,
-                pid: node.pid,
-                text: node.text,
-                url: node.url,
-                status: node.status,
-                state: node.state
-            });
-            $('#folder_dialog').dialog('open').dialog('center').dialog('setTitle', '编辑文件夹');
-        }
-
-        /**
-         * 删除选中的目录及其目录下的所有数据
-         */
-        function deleteFolder() {
-            var node = $('#' + treeId).tree('getSelected');
-            if (node == null) {
-                message_Show('请选择有效的目录');
-                return;
-            }
-            //如果选择的是根节点,
-            if (('000000000000000000') === (node.pid)) {
-                message_Show('当前节点禁止删除, 请重新选择');
-                return;
-            }
-
-            $.messager.confirm('系统提示', '此操作会删除该目录下所有数据, 请确认是否删除 <span style="color: red">' + node.text + '</span> ?', function (r) {
-                if (r) {
-                    $.ajax({
-                        type: 'POST',
-                        url: 'menu/delete',
-                        dataType: 'JSON',
-                        data: {id: node.id},
-                        success: function (data) {
-                            message_Show(data.message);
-                            $('#' + treeId).tree('reload');
-                        },
-                        error: function () {
-                            serverError();
-                        }
-                    })
-                }
-            });
-
-        }
-
-        /**
-         * 获取树节点
-         * 根节点id
-         */
-        function getParent(node) {
-            var rootNode = $('#' + treeId).tree('getParent', node.target);
-            if (rootNode == null) {
-                return node;
-            }
-            return getParent(rootNode);
-        }
-
-        /**
-         * 提交目录表单
-         */
-        var isClick = true;//手动延迟
-
-        function folder_dialog_ok() {
-            if (isClick) {
-                isClick = false;
-                //提交表单事件
-                // console.log($(this).attr("data-val"));
-                $("#folder_dialog_form").form("submit", {
-                    url: "menu/submit",
-                    onSubmit: function () {
-                        // if ($(this).form("validate")) {
-                        //     $('#saveFolder-button').linkbutton('disable');
-                        // }
-                        return $(this).form("validate");
-                    },
-                    success: function (result) {
-                        // console.log(result);
-                        var data = JSON.parse(result);
-                        // alert(data.message);
-                        message_Show(data.message);
-                        // console.log(data);
-                        folder_dialog_close();
-                        $('#' + treeId).tree('reload');
-                    },
-                    error: function () {
-                        $.messager.alert("系统提示", "异常，请重新的登录后尝试!");
-                    }
-                });
-
-                //定时器
-                setTimeout(function () {
-                    isClick = true;
-                }, 1000);//一秒内不能重复点击
-            }
-        }
-
-
-        //取消
-        function folder_dialog_close() {
-            $('#folder_dialog').dialog('close');
-        }
-
-        //文件上传界面保存按钮
-        function file_dialog_ok() {
-            if (isClick) {
-                isClick = false;
-
-                //组装数据
-                var formData = new FormData();
-                var node = $('#' + treeId).tree('getSelected');
-                var menuId = node.id;
-                formData.append('file', $('#file')[0].files[0]);
-                formData.append('menuId', menuId);
-                formData.append('keyword', $('#keyword').val());
-
-                // console.log(formData);
-
-                //提交表单
-                $.ajax({
-                    url: 'file/fileUpload',
-                    processData: false, //因为data值是FormData对象，不需要对数据做处理。
-                    contentType: false,
-                    cache: false,
-                    type: 'POST',
-                    data: formData,
-                    success: function (result) {
-                        console.log(result);
-                        message_Show(result.message);
-                        //关闭窗口, 刷新列表
-                        file_dialog_close();
-
-                        //调用文件解析接口, 后台自动解析
-                        fileSpread(result.data);
-                    }
-                });
-                //定时器
-                setTimeout(function () {
-                    isClick = true;
-                }, 1000);//一秒内不能重复点击
-            }
-        }
-
-        //取消
-        function file_dialog_close() {
-            $('#file_dialog').dialog('close');
-        }
-        /**
-         * 文件离散接口
-         *
-         * @param fileInfo
-         */
-        function fileSpread(fileInfo) {
-            console.log(fileInfo);
-            $.ajax({
-                url: 'file/fileAnalyzer',
-                type: 'POST',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(fileInfo),
-                // async: false,
-                contentType: "application/json",
-                success: function (result) {
-                    //成功后右下角窗口提醒
-                    message_Show(result.message)
-                },
-                error: function () {
-                    alert('文件离散失败')
-                }
-            })
-        }
-
     </script>
 </head>
 <body id="permissionSet_layout" class="easyui-layout">
-
-<div data-options="region:'center'">
-    <div id="permissionSet_dg_toolbar">
-        <div class="datagrid-title-div"><span>文件列表</span></div>
-        <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
-             onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
-        <%--&lt;%&ndash; 搜索框 &ndash;%&gt;--%>
-        <%--<a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"--%>
-           <%--style="float: right;margin-top: 8px;margin-right: 20px;width:80px" onclick="searchFile()">查询文档</a>--%>
-        <%--<input id="search" class="div-toolbar-span" style="float: right;margin-top: 8px;width:200px;height:25px"/>--%>
-
-    </div>
-    <div style="width: 90%;">
-        <div id="dataParent">
-            <%-- 搜索框 --%>
-            <input id="search" class="div-toolbar-span" style="margin-top: 10px;width:200px;height:25px"/>
-            <a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"
-            style="width:80px" onclick="searchFile()">查询文档</a>
-
-            <ul id="dataList"></ul>
+<div data-options="region:'west'" class="layout-west">
+    <%--<div class="layout-title-div">--%>
+    <%--ES索引--%>
+    <%--<img src="images/px-icon/hide-left-black.png" onclick="layoutHide('resource_admin_layout','west')"--%>
+    <%--class="layout-title-img">--%>
+    <%--</div>--%>
+    <%--操作栏--%>
+    <div style="margin:5px 0;border-bottom:1px ">
+        <div id="toolbar1">
+            <img src="images/px-icon/shuaxin.png" style="padding:0 10px"
+                 class="easyui-tooltip div-toolbar-img-first"
+                 onclick="$('#tt').tree('reload');" title="刷新">
         </div>
     </div>
-</div>
 
-<%-- 弹出对话框 --%>
-<%--目录表单--%>
-<div id="folder_dialog" class="easyui-dialog"
-     data-options="closed:true, modal:true,border:'thin', buttons:'#folder_dialog_button'">
-    <form id="folder_dialog_form" method="post" novalidate>
-        <table cellspacing="10" class="pxzn-dialog-font" style="margin:20px 50px;">
-            <input name="pid" type="hidden">
-            <input name="id" type="hidden">
-            <tr>
-                <td><span class="pxzn-span-two">名称</span></td>
-                <td>
-                    <input id="text" name="text" class="easyui-textbox pxzn-dialog-text"
-                           data-options="required:true,validType:['space','keyword','fileOrCata','length[1,200]']">
-                </td>
-            </tr>
-        </table>
-    </form>
-    <div id="folder_dialog_button" class="pxzn-dialog-buttons">
-        <input type="button" onclick="folder_dialog_ok()" value="保存" class="pxzn-button">
-        <input type="button" onclick="folder_dialog_close()" value="取消" style="margin-left:40px;"
-               class="pxzn-button">
+    <div id="nav">
+        <ul id="tt"></ul>
     </div>
+    <%--树目录--%>
+    <%--<jsp:include page="/px-tool/px-tree.jsp">
+        <jsp:param value="<%=treeId%>" name="div-id"/>
+    </jsp:include>--%>
+
 </div>
 
+<div data-options="region:'center'">
+
+    <%--<div style="margin-top: 10px;"></div>--%>
+    <div style="width: 90%;">
+        <div id="permissionSet_dg_toolbar">
+            <%--<div class="datagrid-title-div"><span>文件列表</span></div>--%>
+            <%--<div style="float: left;">--%>
+                <%--<img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"--%>
+                     <%--onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">--%>
+            <%--</div>--%>
+
+            <%--<div style="float: right;">--%>
+                <%--&lt;%&ndash; 搜索框 &ndash;%&gt;--%>
+                <%--<input id="search" class="div-toolbar-span"--%>
+                       <%--style="margin-right: 5px;margin-top: 2px; width:300px;height:30px"/>--%>
+                <%--<a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"--%>
+                   <%--style="width:80px;height: 29px;" onclick="searchFile(1,10)">搜索</a>--%>
+            <%--</div>--%>
+
+                <table style="width: 100%;">
+                    <tr>
+                        <td>
+                            <div style="float: left;">
+                                <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
+                                     onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
+                            </div>
+                        </td>
+                        <td style="text-align: right;margin-right: 0px;">
+                            <div style="float: right;">
+                                <%-- 搜索框 --%>
+                                <input id="search" class="div-toolbar-span"
+                                       style="margin-right: 5px;margin-top: 2px; width:300px;height:30px"/>
+                                <a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"
+                                   style="width:80px;height: 29px;" onclick="searchFile(1,10)">搜索</a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+        </div>
+
+        <%--//正文--%>
+        <div id="dataParent">
+            <ul id="dataList"></ul>
+        </div>
+        <div style="margin:20px 0;"></div>
+        <%--分页栏--%>
+        <div id="pagination"></div>
+    </div>
+
+</div>
 </body>
 </html>

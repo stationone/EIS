@@ -5,6 +5,7 @@ import com.ecspace.business.knowledgeCenter.administrator.pojo.FileInfo;
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileSearchService;
 import com.ecspace.business.knowledgeCenter.administrator.service.FileService;
+import com.ecspace.business.knowledgeCenter.administrator.util.ESUtil;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -143,30 +144,7 @@ public class FileSearchServiceImpl implements FileSearchService {
 
             //取出高亮内容, 并替换源文档内容
             Map<String, HighlightField> highlightFields = searchHit.getHighlightFields();
-            if (highlightFields != null) {
-//                int size = highlightFields.keySet().size();
-                //遍历高亮字段数组
-                for (String field : highlightFields.keySet()) {
-//                    System.out.println(field);//field代表的是index中的field
-                    //对每个高亮字段进行处理
-                    HighlightField nameField = highlightFields.get(field);
-                    if (nameField != null) {
-                        Text[] fragments = nameField.getFragments();
-
-//                        System.out.println(fragments);
-
-                        StringBuffer stringBuffer = new StringBuffer();
-                        for (Text str : fragments) {
-//                            System.out.println(str);
-                            stringBuffer.append(str.string());
-                        }
-//                    name = stringBuffer.toString();
-                        //替换原文档内容为高亮内容
-                        String highLightDoc = stringBuffer.toString();
-                        sourceAsMap.put(field, highLightDoc);
-                    }
-                }
-            }
+            ESUtil.replaceSourceWithHighlight(sourceAsMap, highlightFields);
             list.add(sourceAsMap);
         }
 
@@ -289,30 +267,7 @@ public class FileSearchServiceImpl implements FileSearchService {
 
             //取出高亮内容, 并替换源文档内容
             Map<String, HighlightField> highlightFields = searchHit.getHighlightFields();
-            if (highlightFields != null) {
-//                int size = highlightFields.keySet().size();
-                //遍历高亮字段数组
-                for (String field : highlightFields.keySet()) {
-//                    System.out.println(field);//field代表的是index中的field
-                    //对每个高亮字段进行处理
-                    HighlightField nameField = highlightFields.get(field);
-                    if (nameField != null) {
-                        Text[] fragments = nameField.getFragments();
-
-//                        System.out.println(fragments);
-
-                        StringBuffer stringBuffer = new StringBuffer();
-                        for (Text str : fragments) {
-//                            System.out.println(str);
-                            stringBuffer.append(str.string());
-                        }
-//                    name = stringBuffer.toString();
-                        //替换原文档内容为高亮内容
-                        String highLightDoc = stringBuffer.toString();
-                        sourceAsMap.put(field, highLightDoc);
-                    }
-                }
-            }
+            ESUtil.replaceSourceWithHighlight(sourceAsMap,highlightFields);
             list.add(sourceAsMap);
         }
 

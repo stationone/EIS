@@ -388,7 +388,7 @@
 <body id="resource_admin_layout" class="easyui-layout">
 <div data-options="region:'west'" class="layout-west">
     <div class="layout-title-div">
-        ES索引
+        文档库
         <img src="images/px-icon/hide-left-black.png" onclick="layoutHide('resource_admin_layout','west')"
              class="layout-title-img">
     </div>

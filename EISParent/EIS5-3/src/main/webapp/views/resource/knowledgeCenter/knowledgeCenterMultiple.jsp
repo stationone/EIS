@@ -1070,7 +1070,7 @@
                      class="layout-title-img">
             </div>
             <div style="margin:5px 0;border-bottom:1px ">
-                <div id="toolbar1">
+                <div id="toolbar">
                     <img src="images/px-icon/shuaxin.png" style="padding:0 10px"
                          class="easyui-tooltip div-toolbar-img-first"
                          onclick="$('#'+treeId).tree('reload')" title="刷新">
@@ -1096,12 +1096,6 @@
                     <img src="images/px-icon/shuaxin.png" style="padding:0 10px"
                          class="easyui-tooltip div-toolbar-img-first"
                          onclick="$('#tt').tree('reload');" title="刷新">
-                    <%--<img src="images/px-icon/newFolder.png" style="padding: 0px 10px;"--%>
-                    <%--class="easyui-tooltip div-toolbar-img-next"--%>
-                    <%--onclick="addIndex()" title="新建索引">--%>
-                    <%--<img src="images/px-icon/shanchu.png" style="padding: 0px 10px;"--%>
-                    <%--class="easyui-tooltip div-toolbar-img-next"--%>
-                    <%--onclick="deleteIndex()" title="删除索引">--%>
                 </div>
             </div>
 

@@ -6,6 +6,7 @@ com\ecspace\business\knowledgeCenter\administrator\service\MenuService.class
 com\ecspace\business\knowledgeCenter\administrator\FileAnalysis\Test.class
 com\ecspace\business\knowledgeCenter\administrator\service\FileTypeService.class
 com\ecspace\business\knowledgeCenter\administrator\service\impl\ReviewInfoServiceImpl.class
+com\ecspace\business\knowledgeCenter\administrator\util\ESUtil.class
 com\ecspace\business\knowledgeCenter\administrator\controller\FileTypeController.class
 com\ecspace\business\knowledgeCenter\administrator\service\FileSearchService.class
 com\ecspace\business\knowledgeCenter\user\controller\TextController.class
@@ -61,6 +62,7 @@ com\ecspace\business\knowledgeCenter\administrator\controller\ReviewInfoControll
 com\ecspace\business\knowledgeCenter\administrator\pojo\UserInfo.class
 com\ecspace\business\knowledgeCenter\administrator\pojo\FileTypeField.class
 com\ecspace\business\knowledgeCenter\administrator\service\impl\FileTypeServiceImpl.class
+com\ecspace\business\knowledgeCenter\administrator\controller\LogInfoController.class
 com\ecspace\business\knowledgeCenter\administrator\util\TNOGenerator.class
 com\ecspace\business\knowledgeCenter\administrator\dao\FileTempDao.class
 com\ecspace\business\knowledgeCenter\administrator\service\FileService.class

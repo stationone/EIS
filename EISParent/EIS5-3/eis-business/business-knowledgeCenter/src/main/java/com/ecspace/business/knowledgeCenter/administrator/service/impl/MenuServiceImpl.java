@@ -39,13 +39,13 @@ public class MenuServiceImpl implements MenuService {
         List<Menu> list = menuDao.findByPidAndIndexName(pid, indexName);
 
         for (Menu menu : list) {
-//            int i = menuDao.countMenuByPid(menu.getId());
-//            if (i > 0) {
+            int i = menuDao.countMenuByPid(menu.getId());
+            if (i > 0) {
                 //该菜单有子节点
-//                menu.setState("closed");
-                menu.setChildren(menuDao.findByPid(menu.getId()));
-                menu.setState("open");
-//            }
+                menu.setState("closed");
+//                menu.setChildren(menuDao.findByPid(menu.getId()));
+//                menu.setState("open");
+            }
         }
         return list;
     }

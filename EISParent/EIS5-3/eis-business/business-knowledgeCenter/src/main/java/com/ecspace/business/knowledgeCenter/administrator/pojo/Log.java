@@ -2,6 +2,8 @@ package com.ecspace.business.knowledgeCenter.administrator.pojo;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.Date;
 /**
@@ -13,9 +15,10 @@ import java.util.Date;
 public class Log {
     @Id
     private String id;
-
+    @Field(index = true, store = true, type = FieldType.Keyword)
     private String operator;//操作人
 
+    @Field(index = true, store = true, type = FieldType.Keyword)
     private String operationType;//操作类型
 
     private Date operationDate;//操作时间
