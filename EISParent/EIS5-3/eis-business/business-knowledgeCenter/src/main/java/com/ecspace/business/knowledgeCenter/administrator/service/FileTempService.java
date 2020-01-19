@@ -41,4 +41,11 @@ public interface FileTempService {
      * @return
      */
     GlobalResult deleteFile(String id);
+
+    /**
+     * 文档转pdf
+     * @param fileInfo
+     * @return
+     */
+    GlobalResult file2Pdf(FileInfo fileInfo) throws IOException;
 }

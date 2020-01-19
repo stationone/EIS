@@ -288,7 +288,7 @@
                 return;
             }
             //如果选择的是根节点,
-            if (('000000000000000000') === (node.pid)) {
+            if (('000000000000000000') === (node._parentId)) {
                 message_Show('当前节点禁止删除, 请重新选择');
                 return;
             }
@@ -427,7 +427,7 @@
      data-options="closed:true, modal:true,border:'thin', buttons:'#folder_dialog_button'">
     <form id="folder_dialog_form" method="post" novalidate>
         <table cellspacing="10" class="pxzn-dialog-font" style="margin:20px 50px;">
-            <input name="pid" type="hidden">
+            <input name="_parentId" type="hidden">
             <input name="id" type="hidden">
             <input name="indexName" type="hidden">
             <tr>

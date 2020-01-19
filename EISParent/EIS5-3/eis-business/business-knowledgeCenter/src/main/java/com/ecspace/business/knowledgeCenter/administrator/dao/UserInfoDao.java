@@ -1,14 +1,14 @@
 package com.ecspace.business.knowledgeCenter.administrator.dao;
 
-import com.ecspace.business.knowledgeCenter.administrator.pojo.SearchLog;
+import com.ecspace.business.knowledgeCenter.administrator.pojo.UserInfo;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
 /**
  * @author zhangch
- * @date 2019/12/12 0012 上午 11:18
+ * @date 2020/1/17 0017 下午 15:22
  */
 @Repository
-public interface SearchLogDao extends ElasticsearchRepository<SearchLog, String> {
+public interface UserInfoDao extends ElasticsearchRepository<UserInfo,String> {
 
 }

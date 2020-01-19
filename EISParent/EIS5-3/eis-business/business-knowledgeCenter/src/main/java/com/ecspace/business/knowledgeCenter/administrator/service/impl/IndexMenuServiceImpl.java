@@ -43,8 +43,6 @@ public class IndexMenuServiceImpl implements IndexMenuService {
         if (indexMenu == null) {
             return null;
         }
-
-
         if (indexMenu.getIndexName() == null || "".equals(indexMenu.getIndexName())) {
             return null;
         }
@@ -84,7 +82,7 @@ public class IndexMenuServiceImpl implements IndexMenuService {
         //添加document
         IndexMenu im = indexMenuDao.save(indexMenu);
 //        indexMenuDao.save(indexMenu);
-        if (im != null) {
+        if (im.getIndexId() != null) {
             return new GlobalResult(true, 2000, "ok",im);
         }
         return new GlobalResult(false, 4000, "false");
@@ -100,7 +98,6 @@ public class IndexMenuServiceImpl implements IndexMenuService {
         //删除文件目录
 
         //删除文件
-
 
         return new GlobalResult(true, 2000, "ok");
     }

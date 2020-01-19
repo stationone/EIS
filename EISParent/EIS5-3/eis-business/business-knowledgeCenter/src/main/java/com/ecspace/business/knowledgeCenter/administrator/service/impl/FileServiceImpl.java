@@ -397,7 +397,9 @@ public class FileServiceImpl implements FileService {
                 || "ppt".equals(fileNameSuffix)
                 || "pptx".equals(fileNameSuffix)) {
 
-            content = HtmlUtil.getText(fileInfo.getWebPath());
+//            content = HtmlUtil.getText(fileInfo.getWebPath());
+            content = PDFReader.readPdfText(fileInfo.getWebPath(), 1, PDFReader.getPageCount(fileInfo.getWebPath()));
+
         } else if ("pdf".equals(fileNameSuffix)) {
             content = PDFReader.readPdfText(fileInfo.getWebPath(), 1, PDFReader.getPageCount(fileInfo.getWebPath()));
         }
@@ -497,7 +499,7 @@ public class FileServiceImpl implements FileService {
                     //构建页面对象
                     Page page = new Page();
                     //每个页面设置id
-                    page.settNO(Long.parseLong(TNOGenerator.generateId()));
+                    page.settNO((TNOGenerator.generateId()));
                     //页面在源文件中的页码
                     page.setPageNO(i + 1);
                     //内容, 用于被检索 , 直接检索, 存储分词
@@ -554,7 +556,7 @@ public class FileServiceImpl implements FileService {
                 int pageCount = ExcelUtil.getSheets(localPath);
                 for (int i = 0; i < pageCount; i++) {
                     Page page = new Page();
-                    page.settNO(Long.parseLong(TNOGenerator.generateId()));
+                    page.settNO((TNOGenerator.generateId()));
                     page.setPageNO(i + 1);
                     //子HTML文件路径（"E:\html\aaa.files\sheet001.html"）
                     String num = HtmlUtil.formatSheetHtmlNum(i + 1);

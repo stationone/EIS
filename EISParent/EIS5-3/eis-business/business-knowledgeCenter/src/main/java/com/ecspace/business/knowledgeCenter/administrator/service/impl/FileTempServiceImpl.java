@@ -1,6 +1,8 @@
 package com.ecspace.business.knowledgeCenter.administrator.service.impl;
 
 import com.ecspace.business.knowledgeCenter.administrator.FileAnalysis.Office2Html;
+import com.ecspace.business.knowledgeCenter.administrator.FileAnalysis.Office2Pdf;
+import com.ecspace.business.knowledgeCenter.administrator.FileAnalysis.OfficeToPDF;
 import com.ecspace.business.knowledgeCenter.administrator.FileAnalysis.PDFReader;
 import com.ecspace.business.knowledgeCenter.administrator.dao.FileInfoDao;
 import com.ecspace.business.knowledgeCenter.administrator.dao.FileTypeDao;
@@ -61,8 +63,8 @@ public class FileTempServiceImpl implements FileTempService {
         String path = fileInfo.getFilePath();
         String fileName = fileInfo.getFileName();
         //html路径
-        String webPath = fileWebPath + preName + ".html";
-        String src = FileHashCode.getSrc(webPath);
+        String webPath = fileWebPath + fileInfo.getId() + ".html";
+        String src = FileHashCode.getSrc(webPath);//虚拟映射路径
         //定义转换标签
         boolean flag = false;
         //转为html
@@ -85,8 +87,67 @@ public class FileTempServiceImpl implements FileTempService {
                 //存储至服务器ppt中
 //                path = "E:/knowledgeCenterFileManger/ppt/" + filename;
                 break;
-            default:
-                List<String> list = PDFReader.pdf2Image(path, fileTempPath);//list中是每页的图片路径
+            case "pdf":
+                List<String> list = PDFReader.pdf2Image(path, fileWebPath);//list中是每页的图片路径
+                webPath = fileWebPath + fileName;
+                src = FileHashCode.getSrc(webPath);
+//                FileUtils.copyInputStreamToFile(new File(path).getInputStream(), new File(webPath));
+                //文件转存
+                FileUtils.copyFile(new File(path), new File(webPath));
+                flag = true;
+                //存储至服务器other中
+//                path = "E:/knowledgeCenterFileManger/other/" + filename;
+                break;
+        }
+        FileInfo info = null;
+        if (flag) {
+            fileInfo.setWebPath(webPath);
+            fileInfo.setSrc(src);
+//            fileInfo.setIndexName("");
+            fileInfo.setStatus(1);//解析完成未审批
+
+            info = fileInfoDao.save(fileInfo);
+        }
+        return new GlobalResult(flag, 0000, String.valueOf(flag), info);
+    }
+
+    @Override
+    public GlobalResult file2Pdf(FileInfo fileInfo) throws IOException {
+        String preName = fileInfo.getFileNamePrefix();
+        String fileNameSuffix = fileInfo.getFileNameSuffix();
+        String path = fileInfo.getFilePath();
+        String fileName = fileInfo.getFileName();
+        //html路径
+//        String webPath = fileWebPath + fileInfo.getId() + ".html";
+        //pdf路径
+        String webPath = fileWebPath + fileInfo.getId() + ".pdf";
+
+        String src = FileHashCode.getSrc(webPath);//虚拟映射路径
+        //定义转换标签
+        boolean flag = false;
+        //转为pdf
+        switch (fileNameSuffix) {
+            case "doc":
+            case "docx":
+                flag = Office2Pdf.word2pdf(path, webPath);
+//                存储至服务器word中
+//                path = "E:/knowledgeCenterFileManger/word/" + filename;
+                break;
+            case "xls":
+            case "xlsx":
+            case "xlsm":
+                flag = Office2Pdf.excel2Pdf(path, webPath);
+                //存储至服务器excel中
+//                path = "E:/knowledgeCenterFileManger/excel/" + filename;
+                break;
+            case "ppt":
+            case "pptx": flag = OfficeToPDF.ppt2PDF(path, webPath);
+                //存储至服务器ppt中
+//                path = "E:/knowledgeCenterFileManger/ppt/" + filename;
+                break;
+            case "pdf":
+                //pdf转为图片png
+//                List<String> list = PDFReader.pdf2Image(path, fileWebPath);//list中是每页的图片路径
                 webPath = fileWebPath + fileName;
                 src = FileHashCode.getSrc(webPath);
 //                FileUtils.copyInputStreamToFile(new File(path).getInputStream(), new File(webPath));
@@ -197,8 +258,12 @@ public class FileTempServiceImpl implements FileTempService {
             FileInfo fileInfo = fileInfoDao.findById(id).orElse(new FileInfo());
             String filePath = fileInfo.getFilePath();
             String webPath = fileInfo.getWebPath();
-            deleteFilePath = new File(filePath).delete();
-            deleteWebPath = new File(webPath).delete();
+            if (filePath != null) {
+                deleteFilePath = new File(filePath).delete();
+            }
+            if (webPath != null) {
+                deleteWebPath = new File(webPath).delete();
+            }
             //删除数据库存储
             fileInfoDao.deleteById(id);
         } catch (Exception e) {

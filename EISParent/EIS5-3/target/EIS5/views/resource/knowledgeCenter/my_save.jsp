@@ -53,7 +53,7 @@
                 //把表单数据转换成json对象
                 // var data = JSON.stringify($('#saveIndex').serializeJSON());
                 $('#saveIndex').form('submit', {
-                    url: 'indexMenu/create',
+                    url: 'userHouse/create',
                     type: 'post',
                     onSubmit: function () {
                         // do some checked
@@ -84,10 +84,10 @@
             if (node == null) {
                 return;
             }
-            var indexName = node.text;
+            var userName = node.text;
 
             $('#' + treeId).tree({
-                url: 'menu/listTree?indexName=' + indexName,
+                url: 'userInfo/listTree?userName=' + userName,
                 method: "get",
                 checkbox: false,
                 multiple: false,
@@ -95,10 +95,6 @@
                 onClick: function (node) {
                     //点击事件 获取dataList
                     loadDataList(node.id);
-
-                    //将目录名称显示在顶部
-                    document.getElementById("index").innerHTML = "";
-                    $('#index').append('<span>/' + node.text + '</span>')
                 },
                 onLoadSuccess: function (node, data) {
                     //什么都不干
@@ -533,13 +529,15 @@
                 message_Show('请选择index库');
                 return;
             }
+            alert(node == null);
             if (node == null) {
                 node = {id: 'root'}
             }
             $('#folder_dialog_form').form('clear');
             $('#folder_dialog_form').form('load', {
+                // _parentId: node.id,
                 pid: node.id,
-                indexName: node2.text
+                userName: node2.text
 
             });
             $('#folder_dialog').dialog('open').dialog('center').dialog('setTitle', '新建文件夹');
@@ -559,7 +557,7 @@
             }
 
             //如果选择的是根节点,
-            if (('000000000000000000') === (node.pid)) {
+            if (('000000000000000000') === (node._parentId)) {
                 message_Show('当前节点禁止编辑, 请重新选择');
                 return;
             }
@@ -567,12 +565,13 @@
             $('#folder_dialog_form').form('clear');
             $('#folder_dialog_form').form('load', {
                 id: node.id,
-                pid: node.pid,
+                _parentId: node._parentId,
+                pid:node._parentId,
                 text: node.text,
                 url: node.url,
                 status: node.status,
                 state: node.state,
-                indexName: node2.text
+                userName: node2.text
             });
             $('#folder_dialog').dialog('open').dialog('center').dialog('setTitle', '编辑文件夹');
         }
@@ -587,7 +586,7 @@
                 return;
             }
             //如果选择的是根节点,
-            if (('000000000000000000') === (node.pid)) {
+            if (('000000000000000000') === (node._parentId)) {
                 message_Show('当前节点禁止删除, 请重新选择');
                 return;
             }
@@ -621,15 +620,16 @@
             if (menu_submit_flag) {
                 menu_submit_flag = false;
                 $("#folder_dialog_form").form("submit", {
-                    url: "menu/submit",
+                    url: "userInfo/submit",
                     onSubmit: function () {
                         return $(this).form("validate");
                     },
                     success: function (result) {
+                        alert(result);
                         // console.log(result);
-                        var data = JSON.parse(result);
+                        // var data = JSON.parse(result);
                         // alert(data.message);
-                        message_Show(data.message);
+                        // message_Show(data.message);
                         // console.log(data);
                         folder_dialog_close();
                         $('#' + treeId).tree('reload');
@@ -743,14 +743,14 @@
         function loadTree() {
 
             $('#tt').tree({
-                url: 'indexMenu/listIndexMenu',
-                method: 'POST',
+                url: 'json/user.json',
+                method: 'get',
                 onClick: function (node) {
                     // alert(node.text)
 
-                    //将索引名称显示在顶部
-                    document.getElementById("indexName").innerHTML = "";
-                    $('#indexName').append('<span>' + node.text + '</span>')
+                    // //将索引名称显示在顶部
+                    // document.getElementById("indexName").innerHTML = "";
+                    // $('#indexName').append('<span>' + node.text + '</span>')
 
                     //获取上树
                     getTree();
@@ -764,12 +764,7 @@
                         var n = $('#tt').tree('find', data[0].id);
                         //调用选中事件
                         $('#tt').tree('select', n.target);
-
                         getTree();
-
-                        //将索引库名称显示在顶部
-                        document.getElementById("indexName").innerHTML = "";
-                        $('#indexName').append('<span>' + data[0].text + '</span>')
                     }
                 }
             });
@@ -1064,11 +1059,11 @@
 <div data-options="region:'west'" class="layout-west">
     <div class="easyui-layout" style="width: 250px; height: 100%;">
         <div data-options="region:'north'" style="height: 50%;">
-            <div class="layout-title-div">
-                资源目录
-                <img src="images/px-icon/hide-left-black.png" onclick="layoutHide('permissionSet_layout','west')"
-                     class="layout-title-img">
-            </div>
+            <%--<div class="layout-title-div">--%>
+                <%--资源目录--%>
+                <%--<img src="images/px-icon/hide-left-black.png" onclick="layoutHide('permissionSet_layout','west')"--%>
+                     <%--class="layout-title-img">--%>
+            <%--</div>--%>
             <div style="margin:5px 0;border-bottom:1px ">
                 <div id="toolbar">
                     <img src="images/px-icon/shuaxin.png" style="padding:0 10px"
@@ -1154,13 +1149,14 @@
 </div>
 <%-- 弹出对话框 --%>
 <%--目录表单--%>
-<div id="folder_dialog" class="easyui-dialog"
+<div id="folder_dialog" class="easyui-dialog" style="width: 500px;"
      data-options="closed:true, modal:true,border:'thin', buttons:'#folder_dialog_button'">
     <form id="folder_dialog_form" method="post" novalidate>
         <table cellspacing="10" class="pxzn-dialog-font" style="margin:20px 50px;">
-            <input name="pid" type="hidden">
+            <input name="_parentId" type="hidden">
             <input name="id" type="hidden">
-            <input name="indexName" type="hidden">
+            <input name="pid" type="hidden">
+            <input name="userName" type="hidden">
             <tr>
                 <td><span class="pxzn-span-two">名称</span></td>
                 <td>

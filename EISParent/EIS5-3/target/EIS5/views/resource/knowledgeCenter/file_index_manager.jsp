@@ -20,10 +20,14 @@
     <script src="js/px-tool/px-util.js"></script>
     <script src="js/pxzn.easyui.util.js"></script>
     <script>
+        var treeId = "<%=treeId%>";
+        var datagridId1 = "<%=datagridId1%>";
         /**
          * 入口函数
          */
         $(function () {
+
+
             var h = 300;
             var w = 350;
             if (typeof(height) != "undefined") {
@@ -344,47 +348,39 @@
 
 </div>
 </div>
-<div id="saveFiledDlg" style="width:400px" data-options="buttons:'#btnSaveFiled'">
+<div id="saveFiledDlg" style="width:400px" data-options="buttons:'#save_index'">
     <form id="saveFiled" method="post">
         <input id="indexId" name="indexId" type="hidden">
         <input id="id" name="id" type="hidden">
         <input name="creationTime" hidden>
-
-        <table cellspacing="10" class="pxzn-dialog-font" style="margin: auto;" width='100%'>
-            <%--<tr>--%>
-            <%--<td><input name="id" type="hidden"></td>--%>
-            <%--</tr>--%>
+        <table class="pxzn-dialog-font" style="margin: auto;" width='100%'>
             <tr>
-                <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                <td>
                     <span>
                         库名称:
                     </span>
                 </td>
-                <td class="pe-content" colspan="6">
-                    <input name="indexName" class="easyui-textbox"
-                           style="width:70%;">
+                <td>
+                    <input name="indexName" class="easyui-textbox">
                 </td>
             </tr>
             <tr>
-                <td class="pe-label" style="text-align-last:justify;padding-right: 25px">
+                <td>
                     <span>
                         文档类型:
                     </span>
                 </td>
-                <td class="pe-content" colspan="6">
+                <td >
                     <input id="fileType" class="easyui-combobox" editable="false"
-                           style="width:90%;"
                            name="fileType"/>
                 </td>
             </tr>
 
-            <%--<input id="indexName" class="easyui-combobox" editable="false"--%>
-            <%--style="width:90%;" readonly--%>
-            <%--name="indexName"/>--%>
-
         </table>
-        <button id="btnSaveFiled" type="button">保存</button>
     </form>
+    <div id="save_index" class="pxzn-dialog-buttons">
+        <input id="btnSaveFiled" type="button" value="保存" class="pxzn-button">
+    </div>
 </div>
 
 </body>

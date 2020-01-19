@@ -16,102 +16,60 @@
     <link rel="stylesheet" type="text/css" href="css/px-style.css">
     <link rel="stylesheet" type="text/css" href="ui/themes/icon.css">
     <script src="js/jquery.min.js"></script>
-    <script src="js/jquery.easyui.min.1.5.2.js"></script>
+    <%--<script src="js/jquery.easyui.min.1.5.2.js"></script>--%>
+    <script src="ui/jquery.easyui.min.js"></script>
+
     <script src="js/pxzn.util.js"></script>
     <script src="js/px-tool/px-util.js"></script>
     <script src="js/pxzn.easyui.util.js"></script>
     <script src="js/easyui-language/easyui-lang-zh_CN.js"></script>
     <script type="text/javascript" src="ui/jquery.serializejson.min.js"></script>
+    <script type="text/javascript" src="js/search_history.js"></script>
     <script>
         /**
          * 入口函数
          */
         $(function () {
-
+            //跳转刷新监听
+            // window.onbeforeunload = onbeforeunload_handler;
+            // window.onunload = onunload_handler;
+            // function onbeforeunload_handler() {
+            //     var warning = "";
+            //     return warning;
+            // }
+            //
+            // function onunload_handler() {
+            //     var warning = "";
+            // }
+            //时间控件 按钮
+            var buttons = $.extend([], $.fn.datebox.defaults.buttons);
+            buttons.splice(1, 0, {
+                text: '清空',
+                handler: function(target){
+                    $('#date').datebox('clear');
+                }
+            });
+            $('#date').datebox({
+                buttons: buttons
+            });
+            //加载树
             loadTree(treeData());
             // //加载数据
-            // loadGrid();
-        });
+            loadGrid();
+            user_sort(1);
 
-        function treeData() {
-            //当前月
-            var year = currentYear();
-            var month = currentMonth();
-            // 定义年数组
-            var text = [];
-            //当前年依次减一获取数组
-            for (var i = 0; i < 10; i++) {
-                month--;
-                if (month < 1) {
-                    month = 12;
-                    year--;
-                }
-                if (month < 10) {
-                    month = '0' + month;
-                }
-                text.push(year + '/' + month);
+            //加载完表格后隐藏其一
+            var dateOrUser = $("#dateOrUser").combobox('getValue');
+            if (dateOrUser == 0) {
+                //切换表格, 用户分类
+                $('#sort_grid').css('display', 'none');
+                $('#my_grid').css('display', 'block');
+            } else if (dateOrUser == 1) {
+                //切换表格, 用户分类
+                $('#my_grid').css('display', 'none');
+                $('#sort_grid').css('display', 'block');
             }
-            //组装tree.json
-            var tree = [
-                {
-                    id: 1,
-                    text: "今天"
-                },
-                {
-                    id: 2,
-                    text: "昨天"
-                }, {
-                    id: 3,
-                    text: "过去一周"
-                }, {
-                    id: 4,
-                    text: "过去一月"
-                }, {
-                    id: 5,
-                    text: "更早",
-                    state: "closed",
-                    "children": [
-                        {
-                            // id: 1,
-                            text: text[0]
-                        }, {
-                            // id: 1,
-                            text: text[1]
-                        }, {
-                            // id: 1,
-                            text: text[2]
-                        }, {
-                            // id: 1,
-                            text: text[3]
-                        }, {
-                            // id: 1,
-                            text: text[4]
-                        }, {
-                            // id: 1,
-                            text: text[5]
-                        }, {
-                            // id: 1,
-                            text: text[6]
-                        }, {
-                            // id: 1,
-                            text: text[7]
-                        }, {
-                            // id: 1,
-                            text: text[8]
-                        }, {
-                            // id: 1,
-                            text: text[9]
-                        }
-                        , {
-                            // id: 1,
-                            text: '加载全部'
-                        }
-                    ]
-                },
-
-            ];
-            return tree;
-        }
+        });
 
         function loadTree(data) {
             $('#tt').tree({
@@ -120,7 +78,6 @@
                 data: data,
 
                 onClick: function (node) {
-                    // alert(node.text)
 
                     // //将索引名称显示在顶部
                     // document.getElementById("indexName").innerHTML = "";
@@ -128,7 +85,13 @@
                     //
                     // //获取上树
                     // getTree();
-                    loadGrid();
+                    // var dateOrUser = $("#dateOrUser").combobox('getValue');
+                    // if (dateOrUser == 0) {
+                    //     loadGrid();
+                    // } else {
+                    //     user_sort(1);
+                    // }
+                    sort_search();
                 },
                 //加载完tree型菜单后, 选中第一条数据
                 onLoadSuccess: function (node, data) {
@@ -139,8 +102,6 @@
                         var n = $('#tt').tree('find', data[0].id);
                         //调用选中事件
                         $('#tt').tree('select', n.target);
-
-                        loadGrid();
                         //
                         //     getTree();
                         //
@@ -152,213 +113,59 @@
             });
         }
 
-
-        function CurrentTime() {
-            var now = new Date();
-            var year = now.getFullYear();       //年
-            var month = now.getMonth() + 1;     //月
-            var day = now.getDate();            //日
-            var hh = now.getHours();            //时
-            var mm = now.getMinutes();          //分
-            var ss = now.getSeconds();           //秒
-            var clock = year + "-";
-            if (month < 10)
-                clock += "0";
-            clock += month + "-";
-            if (day < 10)
-                clock += "0";
-            clock += day + " ";
-            if (hh < 10)
-                clock += "0";
-            clock += hh + ":";
-            if (mm < 10) clock += '0';
-            clock += mm + ":";
-            if (ss < 10) clock += '0';
-            clock += ss;
-            return (clock);
-        }
-
-        function currentMonth() {
-            var now = new Date();
-            // var year = now.getFullYear();       //年
-            var month = now.getMonth() + 1;     //月
-            // var clock = year + "-";
-            // var clock = '';
-            // if (month < 10)
-            //     clock += "0";
-            // // clock += month + "-";
-            // clock += month;
-            return (month);
-        }
-
-        function currentYear() {
-            var now = new Date();
-            var year = now.getFullYear();       //年
-            // var month = now.getMonth() + 1;     //月
-            // var clock = year + "-";
-            // var clock = '';
-            // if (month < 10)
-            //     clock += "0";
-            // // clock += month + "-";
-            // clock += month;
-            return (year);
-        }
-
-        function getDay(day) {
-
-            var today = new Date();
-
-            var targetday_milliseconds = today.getTime() + 1000 * 60 * 60 * 24 * day;
-
-            today.setTime(targetday_milliseconds); //注意，这行是关键代码
-
-            var tYear = today.getFullYear();
-
-            var tMonth = today.getMonth();
-
-            var tDate = today.getDate();
-
-            tMonth = doHandleMonth(tMonth + 1);
-
-            tDate = doHandleMonth(tDate);
-
-            return tYear + "-" + tMonth + "-" + tDate;
-
-        }
-
-        function doHandleMonth(month) {
-
-            var m = month;
-
-            if (month.toString().length == 1) {
-
-                m = "0" + month;
-
-            }
-
-            return m;
-
-        }
-
-
         //加载表数据
         function loadGrid() {
-
-            var data = time_deal();
-            var startTime = data.startTime;
-            var endTime = data.endTime;
 
             /**
              * 展示数据网格
              */
-            $('#mygrid').datagrid({
+            $('#mygrid').treegrid({
                 // url: "logInfo/listLogInfo?search=" + search + "&status=" + status + "&startTime=" + startTime + "&endTime=" + endTime, //日志列表
-                url: "logInfo/listLogInfo?status=1&startTime=" + startTime + "&endTime=" + endTime, //日志列表
+                url: "logInfo/listSearchLog?status=1", //日志列表
                 type: "POST",
                 // data: data,
                 dataType: 'json',
                 contentType: "application/json",
                 columns: [[
-                    {
-                        field: 'operationDate', title: '操作时间', width: 180, align: 'center', sortable: true,//可排序
-                        formatter: function (value, fmt) {
-                            //固定日期格式
-                            fmt = 'yyyy-MM-dd hh:mm:ss';
-                            var date = new Date(value);
-                            var o = {
-                                "M+": date.getMonth() + 1,     //月份
-                                "d+": date.getDate(),     //日
-                                "h+": date.getHours(),     //小时
-                                "m+": date.getMinutes(),     //分
-                                "s+": date.getSeconds(),     //秒
-                                "q+": Math.floor((date.getMonth() + 3) / 3), //季度
-                                "S": date.getMilliseconds()    //毫秒
-                            };
-                            if (/(y+)/.test(fmt))
-                                fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
-                            for (var k in o)
-                                if (new RegExp("(" + k + ")").test(fmt))
-                                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
-                            return fmt;
-                        }
-                    },
-                    {field: 'operator', title: '操作人员', width: 180, align: 'center'},
-                    {field: 'operationType', title: '操作类型', width: 180, align: 'center'},
-                    {field: 'operationResult', title: '操作结果', width: 180, align: 'center'},
-                    {field: 'ip', title: '操作人IP地址', width: 180, align: 'center'},
+                    {field: 'text', title: '日期', width: 100},
+                    {field: 'operator', title: '操作人员', width: 100},
+                    {field: 'search', title: '检索词', width: 100},
+                    {field: 'operationResult', title: '操作结果', width: 100},
                     // {field: 'indexName', title: '索引库名称', width: 180, align: 'center'}
-                    {field: 'search', title: '参数', width: 180, align: 'center'},
+                    {field: 'ip', title: 'IP地址', width: 100}
                 ]],
-                rownumbers: true,
+                // rownumbers: true,
                 // title: '文档基础属性',
-                singleSelect: true,
-                collapsible: true,
-                nowrap: true,
-                striped: true,
+                // singleSelect: true,
+                // collapsible: true,
+                // nowrap: true,
+                // striped: true,
                 loading: true,
-                pagination: true,
-                idField: 'id',
-                treeField: 'operationDate',
+                // pagination: true,
+                // pageList: [50,100,200],
+                // idField: 'id',
+                // treeField: 'text',
 
                 loadMsg: "正在努力加载数据,表格渲染中...",
                 onLoadSuccess: function (data) {
-                    // alert("加载完成");
                     //固定表格
-                    $('#mygrid').datagrid('fixRowHeight');
+                    // $('#mygrid').treegrid('fixRowHeight');
                 },
             });
-        }
-
-        function time_deal() {
-            //获取目录text
-            var node = $('#tt').tree('getSelected');
-            if (!node) {
-                return {startTime: null, endTime: null};
-            }
-            var text = node.text;//今天 昨天 过去一周 过去一月 2019/12
-            var startTime = '';
-            var endTime = '';
-            //处理text
-            if (text.indexOf('/') === -1) {
-                switch (text) {
-                    case '今天':
-                        startTime = getDay(-0) + ' 00:00:00';
-                        endTime = CurrentTime();
-                        break;
-                    case '昨天':
-                        startTime = getDay(-1) + ' 00:00:00';
-                        endTime = getDay(-0) + ' 00:00:00';
-                        break;
-                    case '过去一周':
-                        startTime = getDay(-7) + ' 00:00:00';
-                        endTime = CurrentTime();
-                        break;
-                    case '过去一月':
-                        startTime = getDay(-30) + ' 00:00:00';
-                        endTime = CurrentTime();
-                        break;
-                }
-            } else {
-                //2020/01
-                text = text.replace('/', '-');
-                startTime = text + '-01 00:00:00';
-                endTime = text + '-30 00:00:00';
-            }
-            return {startTime: startTime, endTime: endTime};
         }
 
         /**
          * 删除
          */
         function deleteField() {
-            var gridNode = $('#mygrid').datagrid('getSelected');
+            var gridNode = $('#mygrid').treegrid('getSelected');
             if (gridNode == null) {
                 $.messager.alert('提示消息', '请先选择一行数据！');
             } else {
                 $.messager.confirm("确认", "确认要删除吗？", function (yes) {
                     if (yes) {
                         $.ajax({
-                            url: 'indexMenu/delete?indexName=' + gridNode.indexName,
+                            url: 'logInfo/delete?id=' + gridNode.id,
                             dataType: 'json',
                             type: 'post',
                             success: function (data) {
@@ -366,7 +173,7 @@
                                 $.messager.alert("提示", data.message, 'info', function () {
                                     //刷新表格数据
                                     // loadGrid();
-                                    $('#mygrid').datagrid('reload');
+                                    $('#mygrid').treegrid('reload');
                                 });
                             }
                         });
@@ -378,25 +185,91 @@
         /**
          * 搜索
          */
-        function search_log() {
+        function search_log(gridId) {
+            var dateOrUser = $("#dateOrUser").combobox('getValue');
             //获取search
             var search = $("#operator").val();
             //获取status
             // var status = $("#status").combobox('getValue');
             //获取startTime
-            // var startTime = $("#startTime").datetimebox('getValue');
+            var date = $("#date").datebox('getValue');
             //获取endTime
             // var endTime = $("#endTime").datetimebox('getValue');
+            var result = time_deal();
+            var startTime = result.startTime;
+            var endTime = result.endTime;
 
             var data = {
                 search: search,
-                // status: status,
-                // startTime: startTime,
-                // endTime: endTime
+                date: date,
+                dateOrUser: dateOrUser,
+                startTime:startTime,
+                endTime:endTime,
             };
-            // alert(JSON.stringify(data));
-            $('#mygrid').datagrid('load', data);
+            $('#' + gridId).treegrid('load', data);
             // loadGrid(search, status, startTime, endTime);
+        }
+
+        function sort_search() {
+            //获取状态码
+            var dateOrUser = $("#dateOrUser").combobox('getValue');
+            var gridId = '';
+            if (dateOrUser == 0) {
+                //切换表格, 用户分类
+                $('#sort_grid').css('display', 'none');
+                $('#my_grid').css('display', 'block');
+                gridId = 'mygrid';
+
+            } else if (dateOrUser == 1) {
+                //切换表格, 用户分类
+                $('#my_grid').css('display', 'none');
+                $('#sort_grid').css('display', 'block');
+                gridId = 'sortgrid';
+            }
+            //执行search_log方法
+            search_log(gridId);
+        }
+
+        //加载表数据
+        function user_sort(dateOrUser) {
+            var startTime = '';
+            var endTime = '';
+            /**
+             * 展示数据网格
+             */
+            $('#sortgrid').treegrid({
+                // url: "logInfo/listLogInfo?search=" + search + "&status=" + status + "&startTime=" + startTime + "&endTime=" + endTime, //日志列表
+                url: "logInfo/listSearchLog?status=1&dateOrUser=" + dateOrUser, //日志列表
+                type: "POST",
+                // data: data,
+                dataType: 'json',
+                contentType: "application/json",
+                columns: [[
+                    {field: 'text', title: '操作人员', width: 100},
+                    {field: 'timeStr', title: '日期', width: 100},
+                    {field: 'search', title: '检索词', width: 100},
+                    {field: 'operationResult', title: '操作结果', width: 100},
+                    // {field: 'indexName', title: '索引库名称', width: 180, align: 'center'}
+                    {field: 'ip', title: 'IP地址', width: 100}
+                ]],
+                // rownumbers: true,
+                // title: '文档基础属性',
+                // singleSelect: true,
+                // collapsible: true,
+                // nowrap: true,
+                // striped: true,
+                loading: true,
+                // pagination: true,
+                // pageList: [50,100,200],
+                // idField: 'id',
+                // treeField: 'text',
+
+                loadMsg: "正在努力加载数据,表格渲染中...",
+                onLoadSuccess: function (data) {
+                    //固定表格
+                    // $('#mygrid').treegrid('fixRowHeight');
+                },
+            });
         }
 
 
@@ -429,20 +302,35 @@
 </div>
 
 <div data-options="region:'center'">
-    <table id="toolbar" style="padding:10px 5px;width: 100%;background-color: blue;margin: auto;">
+    <table style="padding:10px 5px;width: 100%;margin: auto;">
         <tr>
-            <td style="width: 60%;">
+            <td style="width: 15%;">
                 <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
                      onclick="$('#mygrid').datagrid('reload')" title="刷新">
                 <img src="images/px-icon/shanchu.png" class="easyui-tooltip div-toolbar-img-next"
                      onclick="deleteField()" title="删除字段">
             </td>
-            <td style="width: 60%;">
+            <td style="width: 25%">
+                <span>日期:</span>
+                <input id="date" class="easyui-datebox" editable="false" name="date" data-options="onChange:sort_search">
+            </td>
+            <td style="width: 25%;">
 
-                <span>操作人员:</span>
-                <input id="operator" class="easyui-textbox" name="operator"/>
-                <a href="javaScript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="search_log()">Search</a>
+                <span>用户:</span>
+                <input id="operator" class="easyui-textbox" name="operator" data-options="onChange:sort_search"/>
 
+            </td>
+            <td style="width: 25%;">
+                <span>分类():</span>
+                <select id="dateOrUser" class="easyui-combobox" name="dateOrUser" editable="false"
+                        data-options="onChange:sort_search" style="width: 50%;">
+                    <option value="0" selected>时间</option>
+                    <option value="1" >用户</option>
+                </select>
+            </td>
+
+            <td style="width: 10%">
+                <a href="javaScript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="sort_search()">search</a>
             </td>
         </tr>
 
@@ -472,43 +360,52 @@
 
     <%--</div>--%>
 
-
-    <div id="tb" style="padding:3px">
-        <%--<span>操作人员:</span>--%>
-        <%--<input id="operator" class="easyui-textbox" name="operator" editable="false"/>--%>
-        <%--<span>查询类型:</span>--%>
-        <%--<select id="status" class="easyui-combobox" name="status" editable="false" data-options="onChange:search_log">--%>
-        <%--<option value="0" selected>全部</option>--%>
-        <%--<option value="1">检索日志</option>--%>
-        <%--<option value="2">操作日志</option>--%>
-        <%--</select>--%>
-        <%--<span>起始时间:</span>--%>
-        <%--<input id="startTime" class="easyui-datetimebox" editable="false" name="startTime" data-options="onChange:search_log">--%>
-        <%--<span>结束时间:</span>--%>
-        <%--<input id="endTime" class="easyui-datetimebox" editable="false" name="endTime" data-options="onChange:search_log">--%>
-        <%--<a href="javaScript:void(0)" class="easyui-linkbutton" onclick="search_log()">查询</a>--%>
-    </div>
     <%--<div id="mygrid" style="height: 450px"></div>--%>
     <%--<table id="mygrid" class="easyui-datagrid" style="height:450px"--%>
     <%--data-options="toolbar:'#toolbar',footer:'#footer'">--%>
-    <table id="mygrid" class="easyui-datagrid" style="height:450px"
-           data-options="
+    <div id="my_grid">
+
+        <table id="mygrid" style="height:450px"
+               data-options="
+           iconCls: 'icon-ok',
+           rownumbers: true,
                 toolbar:'#toolbar',
                 <%--footer:'#footer',--%>
                 animate: true,
                 collapsible: true,
                 fitColumns: true,
+                idField: 'id',
+				treeField: 'text',
+                <%--lines: true,--%>
+                pagination: true,
+                pageList: [100,200,300],
+                singleSelect: true,
             ">
-        <thead>
-            <tr>
-                <th data-options="field:'name',width:180">Task Name</th>
-                <th data-options="field:'persons',width:60,align:'right'">Persons</th>
-                <th data-options="field:'begin',width:80">Begin Date</th>
-                <th data-options="field:'end',width:80">End Date</th>
-                <th data-options="field:'progress',width:120">Progress</th>
-            </tr>
-        </thead>
-    </table>
+        </table>
+
+
+    </div>
+    <div id="sort_grid">
+        <table id="sortgrid" style="height:450px"
+               data-options="
+                iconCls: 'icon-ok',
+                rownumbers: true,
+                toolbar:'#toolbar',
+                <%--footer:'#footer',--%>
+                animate: true,
+                collapsible: true,
+                fitColumns: true,
+                idField: 'id',
+				treeField: 'text',
+                <%--lines: true,--%>
+                pagination: true,
+                pageList: [100,200,300],
+                singleSelect: true,
+
+            ">
+        </table>
+    </div>
+
     <%--<div id="toolbar" style="padding:2px 5px;">--%>
     <%--<span>起始时间:</span>--%>
     <%--<input id="startTime" class="easyui-datetimebox" editable="false" name="startTime" data-options="onChange:search_log">--%>
@@ -527,11 +424,11 @@
 
     <%--</div>--%>
     <%--<div id="footer" style="padding:2px 5px;">--%>
-        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true"></a>--%>
-        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true"></a>--%>
-        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true"></a>--%>
-        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-cut" plain="true"></a>--%>
-        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true"></a>--%>
+    <%--<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true"></a>--%>
+    <%--<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true"></a>--%>
+    <%--<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true"></a>--%>
+    <%--<a href="#" class="easyui-linkbutton" iconCls="icon-cut" plain="true"></a>--%>
+    <%--<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true"></a>--%>
     <%--</div>--%>
 
 </div>

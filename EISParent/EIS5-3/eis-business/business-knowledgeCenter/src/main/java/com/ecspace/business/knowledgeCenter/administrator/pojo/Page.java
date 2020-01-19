@@ -24,11 +24,11 @@ PUT http://localhost:9200/file/file/_mapping
 @Document(indexName = "page",type = "page", shards = 1, replicas = 0)
 public class Page {
     @Id
-    @Field(index = true, store = true,type = FieldType.Long)
-    private Long tNO;//pageID
+    @Field(index = true, store = true,type = FieldType.Keyword)
+    private String tNO;//pageID
     @Field(index = true, store = true,type = FieldType.Integer)
     private Integer pageNO;//page页码
-//    @Field( index = true, store = true, type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
+    @Field( index = true, store = true, type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private String content;//page内容
     private java.io.File pdfPage;//文件对象,
     private FileInfo knowledge;//page所属的file
@@ -78,11 +78,11 @@ public class Page {
         this.fileId = fileId;
     }
 
-    public void settNO(Long tNO) {
+    public void settNO(String tNO) {
         this.tNO = tNO;
     }
 
-    public Long gettNO() {
+    public String gettNO() {
         return tNO;
     }
 

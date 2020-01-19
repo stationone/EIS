@@ -13,7 +13,7 @@ import java.util.List;
  */
 
 @Repository
-public interface PageDao extends ElasticsearchRepository<Page, Long> {
+public interface PageDao extends ElasticsearchRepository<Page, String> {
 
     List<Page> findByFileId(String fileId);
     List<Page> findByFileIdOrderByPageNOAsc(String fileId);

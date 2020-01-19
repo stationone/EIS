@@ -53,4 +53,17 @@ public class FileTempController {
         return fileTempService.deleteFile(id);
 
     }
+
+    @PostMapping(value = "file2Pdf")
+    public GlobalResult file2Pdf(@RequestBody FileInfo fileInfo) throws Exception {
+        //非空判断
+        if ("".equals(fileInfo.getId())) {
+            return new GlobalResult(false, 2001, "非法参数");
+        }
+        if ("".equals(fileInfo.getFilePath())) {
+            return new GlobalResult();
+        }
+        //调用文件服务
+        return fileTempService.file2Pdf(fileInfo);
+    }
 }

@@ -24,17 +24,21 @@ import java.util.List;
           离散后的页面集合pageList, 用以检索的关键词keyword, 等等
             文件下载量\访问量\检索量(待添加)
  */
-@Document(indexName = "file",type = "file", shards = 1, replicas = 0)
+@Document(indexName = "file", type = "file", shards = 1, replicas = 0)
 public class FileInfo {
 
     /**
      * 文件id
      */
     @Id
+    @Field(index = true, store = true, type = FieldType.Keyword)
+
     private String id;
     /**
      * 文件哈希扣得值
      */
+    @Field(index = true, store = true, type = FieldType.Keyword)
+
     private String hashCode;
     /**
      * 文件名
@@ -52,7 +56,7 @@ public class FileInfo {
      * 文件名前缀
      */
     @Field(index = true, store = true, type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
-    private String fileNamePrefix ;
+    private String fileNamePrefix;
     /**
      * 文件创建时间戳
      */
@@ -85,10 +89,13 @@ public class FileInfo {
     /**
      * 文件所处目录id
      */
+    @Field(index = true, store = true, type = FieldType.Keyword)
+
     private String menuId;
     /**
      * 上传人员
      */
+    @Field(index = true, store = true, type = FieldType.Keyword)
     private String uploadUser;
     /**
      * 页面列表
@@ -120,9 +127,13 @@ public class FileInfo {
      */
     private Integer downloadCount = 0;
 
+    @Field(index = true, store = true, type = FieldType.Keyword)
+
     private String fileId;
 
     //作者
+    @Field(index = true, store = true, type = FieldType.Keyword)
+
     private String author;
 
     //专业
@@ -135,6 +146,8 @@ public class FileInfo {
     /**
      * 文件所处的索引库对象
      */
+    @Field(index = true, store = true, type = FieldType.Keyword)
+
     private String indexName;
 
     //成员类型

@@ -160,7 +160,7 @@ public class FileSearchServiceImpl implements FileSearchService {
      * @return
      */
     @Override
-    public PageData fileList(Integer page, Integer rows) {
+    public PageData fileList(Integer page, Integer rows , String[] indexNames, String[] menus) {
         if (page == null) {
             page = 0;
         } else {
@@ -171,6 +171,7 @@ public class FileSearchServiceImpl implements FileSearchService {
         }
         Pageable pageable = PageRequest.of(page, rows);
         Page<FileInfo> info = fileInfoDao.findByStatus(4,pageable);//入库文档可被检索
+
         List<FileInfo> content = info.getContent();
         for (FileInfo fileInfo : content) {
             //正文过长截取
@@ -191,7 +192,7 @@ public class FileSearchServiceImpl implements FileSearchService {
      * @return
      */
     @Override
-    public PageData fileList(String search, Integer page, Integer rows) {
+    public PageData fileList(String search, Integer page, Integer rows ,  String[] indexNames, String[] menus) {
         //获取客户端, 构建查询
         Client client = elasticsearchTemplate.getClient();
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch();
@@ -216,6 +217,22 @@ public class FileSearchServiceImpl implements FileSearchService {
                 .minimumShouldMatch("80%");
         //状态码匹配
         boolQueryBuilder.must(QueryBuilders.termQuery("status", 4));//状态为4可被罗列
+
+        //范围缩小
+        if (indexNames.length > 0) {//选库
+            if (menus.length > 0) {//选目录
+                //匹配库和目录
+                boolQueryBuilder.must(QueryBuilders.termsQuery("indexName", indexNames));//匹配库
+                boolQueryBuilder.must(QueryBuilders.termsQuery("menuId", menus));//匹配目录
+            } else {
+                //匹配库
+                boolQueryBuilder.must(QueryBuilders.termsQuery("indexName", indexNames));//匹配库
+            }
+        } else {
+            if (menus.length > 0) {//没选库单选了目录, 目录id唯一, 匹配目录
+                boolQueryBuilder.must(QueryBuilders.termsQuery("menuId", menus));//匹配目录
+            }
+        }
         //字段高亮
         highlightBuilder.field("content");
         searchRequestBuilder.setQuery(boolQueryBuilder);

@@ -20,12 +20,17 @@
     <title>知识中心</title>
     <link rel="stylesheet" type="text/css" href="css/easyui.css">
     <link rel="stylesheet" type="text/css" href="css/px-style.css">
+    <link rel="stylesheet" type="text/css" href="ui/themes/icon.css">
     <script src="js/jquery.min.js"></script>
-    <script src="js/jquery.easyui.min.1.5.2.js"></script>
+    <%--<script src="js/jquery.easyui.min.1.5.2.js"></script>--%>
+    <script src="ui/jquery.easyui.min.js"></script>
+
     <script src="js/pxzn.util.js"></script>
     <script src="js/px-tool/px-util.js"></script>
     <script src="js/pxzn.easyui.util.js"></script>
     <script src="js/easyui-language/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="ui/jquery.serializejson.min.js"></script>
+    <script type="text/javascript" src="js/search_history.js"></script>
 
     <script>
         var treeId = "<%=treeId%>";

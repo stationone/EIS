@@ -6,7 +6,7 @@ import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.GlobalResu
 import com.ecspace.business.knowledgeCenter.administrator.pojo.entity.PageData;
 import com.ecspace.business.knowledgeCenter.administrator.service.LogService;
 import com.ecspace.business.knowledgeCenter.administrator.util.ESUtil;
-import org.apache.commons.lang3.time.DateUtils;
+import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author zhangch
@@ -100,8 +101,7 @@ public class LogServiceImpl implements LogService {
     }
 
     @Override
-    public PageData logList(Integer page, Integer rows, String search, String startTime, String endTime, String sort, String order, String status) throws ParseException {
-
+    public PageData logList(Integer page, Integer rows, String search, String startTime, String endTime, String sort, String order, String status, String searchDate, Integer dateOrUser) throws ParseException {
         Client client = elasticsearchTemplate.getClient();
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch();
         //设置分页参数
@@ -135,8 +135,8 @@ public class LogServiceImpl implements LogService {
             Long date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(endTime).getTime();
             operationDate.to(date);
         }
-        if ((startTime != null && !"".equals(startTime))||endTime != null && !"".equals(startTime))
-        boolQueryBuilder.must(operationDate);
+        if ((startTime != null && !"".equals(startTime)) || endTime != null && !"".equals(startTime))
+            boolQueryBuilder.must(operationDate);
 
         //设置排序
         SortOrder sortOrder = SortOrder.DESC;
@@ -171,7 +171,10 @@ public class LogServiceImpl implements LogService {
                 boolQueryBuilder.mustNot(termQueryBuilder);
                 break;
         }
-
+//        根据检索日期精确查询
+        if (searchDate != null && !"".equals(searchDate)) {//有检索日期
+            boolQueryBuilder.must(QueryBuilders.termQuery("dateStr", searchDate));
+        }
 
         searchRequestBuilder.setQuery(boolQueryBuilder);
         highlightBuilder.field("operator");//要展示高亮的字段
@@ -181,7 +184,9 @@ public class LogServiceImpl implements LogService {
         SearchResponse searchResponse = searchRequestBuilder.get();
         //处理数据
         //处理数据
-        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+//        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        List<Log> list = new ArrayList<Log>();
+        List<Log> logTrees = new ArrayList<Log>();
         //提取数据进行封装处理
         PageData pageData = new PageData();//创建一个新的数据对象
         SearchHits hits = null;
@@ -200,23 +205,123 @@ public class LogServiceImpl implements LogService {
             Map<String, Object> sourceAsMap = searchHit.getSourceAsMap();
             //取出高亮内容, 并替换源文档内容
             Map<String, HighlightField> highlightFields = searchHit.getHighlightFields();
-            //替换
+            //替换yuan为高亮
             ESUtil.replaceSourceWithHighlight(sourceAsMap, highlightFields);
-
+            //将日期详细取出, 分为date和time
             Long operationTime = (Long) sourceAsMap.get("operationDate");
-            new SimpleDateFormat();
             Date date = new Date(operationTime);
-            int year = date.getYear();
-            int month = date.getMonth();
-            int day = date.getDay();
-            Set<String> stringSet = sourceAsMap.keySet();
-            for (String s : stringSet) {
-                
-            }
-            list.add(sourceAsMap);
+            String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(date);
+            String timeStr = new SimpleDateFormat("HH:mm:ss").format(date);
+            sourceAsMap.put("dateStr", dateStr);
+            sourceAsMap.put("timeStr", timeStr);
+
+
+            //将sourceAsMap转为实体
+            Log log = new Log((String) sourceAsMap.get("id"),
+                    (String) sourceAsMap.get("operator"),
+                    (String) sourceAsMap.get("operationType"),
+                    new Date((Long) sourceAsMap.get("operationDate")),
+                    (String) sourceAsMap.get("operationResult"),
+                    (String) sourceAsMap.get("ip"),
+                    (String) sourceAsMap.get("search"),
+                    (String) sourceAsMap.get("dateStr"),
+                    (String) sourceAsMap.get("timeStr"));
+            //list为没分组的数据
+            list.add(log);
         }
-        pageData.setRows(list);
+
+        if ( dateOrUser == null || dateOrUser == 0) {
+            //按时间分类
+            dateSort(list, logTrees);
+        } else {
+            //按用户分类
+            userSort(list, logTrees);
+        }
+
+
+
+        pageData.setRows(logTrees);
         return pageData;
+    }
+
+    /**
+     * 按时间分类
+     * @param list 源数据 dataList
+     * @param logTrees 分类后treeList数据
+     */
+    public void dateSort(List<Log> list, List<Log> logTrees) {
+        Map<String, List<Log>> collect = list.stream().collect(Collectors.groupingBy(Log::getDateStr));
+            /*
+            2019-1-1 : [log1,log2,log3]
+             */
+        Set<String> stringSet = collect.keySet();
+        Set<String> sortSet = new TreeSet<String>((o1, o2) -> o2.compareTo(o1));
+        sortSet.addAll(stringSet);
+        for (String key : sortSet) {
+
+            Log logTree  = new Log();
+            String id = TNOGenerator.generateId();
+
+            logTree.setId(id);
+
+            logTree.setText(key);
+            List<Log> logList = collect.get(key);
+//            logList.forEach(log -> log.set_parentId(id));
+            for (Log log : logList) {
+                log.set_parentId(id);
+                log.setText(log.getTimeStr());
+            }
+//            logTree.setChildren(logList);
+            logTree.setState("open");
+
+            //这个logTree就是一个之前的sourceAsMap对象
+            //将logTree存入list
+            logTrees.add(logTree);
+            logTrees.addAll(logList);
+        }
+//        list.stream().collect();
+//        list.stream().collect(Collectors.groupingBy(Log::getDateStr));
+    }
+
+    /**
+     * 按人员分类
+     * @param list 源数据 dataList
+     * @param logTrees 分类后treeList数据
+     */
+    public void userSort(List<Log> list, List<Log> logTrees) {
+        Map<String, List<Log>> collect = list.stream().collect(Collectors.groupingBy(Log::getOperator));
+            /*
+            2019-1-1 : [log1,log2,log3]
+             */
+        Set<String> stringSet = collect.keySet();
+        Set<String> sortSet = new TreeSet<String>((o1, o2) -> o2.compareTo(o1));
+        sortSet.addAll(stringSet);
+        for (String key : sortSet) {//key --> 系统管理员
+
+            Log logTree  = new Log();
+            String id = TNOGenerator.generateId();
+
+            logTree.setId(id);
+
+            logTree.setText(key);
+            List<Log> logList = collect.get(key);
+//            logList.forEach(log -> log.set_parentId(id));
+            for (Log log : logList) {
+                log.set_parentId(id);
+                log.setText(log.getOperator());
+                log.setTimeStr(log.getDateStr() + " " + log.getTimeStr());
+            }
+//            logTree.setChildren(logList);
+            logTree.setState("open");
+
+            //这个logTree就是一个之前的sourceAsMap对象
+            //将logTree存入list
+            logTrees.add(logTree);
+            logTrees.addAll(logList);
+        }
+//        list.stream().collect();
+//        list.stream().collect(Collectors.groupingBy(Log::getDateStr));
+
     }
 
 }

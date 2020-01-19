@@ -60,7 +60,7 @@ public class Test {
                 //循环遍历PDF文件的每一页，提取并封装信息
                 for(int i = 0; i < pageCount; i++) {
                     Page page = new Page();
-                    page.settNO(Long.parseLong(TNOGenerator.generateId()));
+                    page.settNO(TNOGenerator.generateId());
                     page.setPageNO(i + 1);
                     page.setContent(PDFReader.readPdfText(pdfFilePath, i + 1, i + 1));
                     //截取的PDF文件路径("E:\pdf\splitPdf\1.pdf")
@@ -104,7 +104,7 @@ public class Test {
                 int pageCount = ExcelUtil.getSheets(localPath);
                 for(int i = 0; i < pageCount; i++) {
                     Page page = new Page();
-                    page.settNO(Long.parseLong(TNOGenerator.generateId()));
+                    page.settNO((TNOGenerator.generateId()));
                     page.setPageNO(i + 1);
                     //子HTML文件路径（"E:\html\aaa.files\sheet001.html"）
                     String num = HtmlUtil.formatSheetHtmlNum(i + 1);

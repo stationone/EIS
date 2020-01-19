@@ -31,7 +31,7 @@ import java.util.List;
 public class OfficeWebTest {
 
     @Autowired
-    PageDao pageDao;
+    private PageDao pageDao;
 
     @Autowired
     ElasticsearchTemplate elasticsearchTemplate;
@@ -70,7 +70,7 @@ public class OfficeWebTest {
                 "Elasticsearch数据库\n" +
                 "1、什么是Elasticsearch 1、概念以及特点 1、Elasticsearch和MongoDB/Redis/Memcache一样，是非关系型数据库。是一个接近实时的搜索平台，从索引这个文档到这个文档能够被搜索到只有一个轻");
 //        page.setPdfPage(new File(""));
-        page.settNO(111L);
+        page.settNO("111");
 //        page.setKnowledge(new FileInfo());
 //        page.setNodeList(new ArrayList<>());
 

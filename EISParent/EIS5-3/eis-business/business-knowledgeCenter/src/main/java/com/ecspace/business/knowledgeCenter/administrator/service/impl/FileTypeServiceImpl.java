@@ -42,11 +42,14 @@ public class FileTypeServiceImpl implements FileTypeService {
         fileType.setTypeName(fileType.getText().toLowerCase());
         FileType type = fileTypeDao.save(fileType);
         //创建index
-        boolean index = createIndex(fileType.getTypeName());
-        if (!index) {
-            fileTypeDao.deleteById(fileType.getId());
+//        boolean index = createIndex(fileType.getTypeName());
+//        if (!index) {
+//            fileTypeDao.deleteById(fileType.getId());
+//        }
+        if (type.getId() == null) {
+
         }
-        return new GlobalResult(index, 2000, String.valueOf(index), type);
+        return new GlobalResult(type.getId() != null, 2000, type.getTypeName(), type);
     }
 
     @Override
@@ -69,13 +72,12 @@ public class FileTypeServiceImpl implements FileTypeService {
 
     @Override
     public GlobalResult delete(String id) {
-        FileType fileType = fileTypeDao.findById(id).orElse(new FileType());
+//        FileType fileType = fileTypeDao.findById(id).orElse(new FileType());
 //        fileType.getTypeName()
-        boolean index = elasticsearchTemplate.deleteIndex(fileType.getTypeName());
-
+//        boolean index = elasticsearchTemplate.deleteIndex(fileType.getTypeName());
         fileTypeDao.deleteById(id);
         //删除document前先进行删除索引库
-        return new GlobalResult(index, 2000, String.valueOf(index));
+        return new GlobalResult(true, 2000, "true");
     }
 
     //    public PageData fileTypeDetail(String id) {

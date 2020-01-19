@@ -34,16 +34,20 @@ public interface FileSearchService {
      * 展示全部文档
      * @param page
      * @param rows
+     * @param indexNames
+     * @param menus
      * @return
      */
-    PageData fileList(Integer page, Integer rows);
+    PageData fileList(Integer page, Integer rows, String[] indexNames, String[] menus);
 
     /**
      * DSL全文检索
      * @param search
      * @param page
      * @param rows
+     * @param indexNames
+     * @param menus
      * @return
      */
-    PageData fileList(String search, Integer page, Integer rows);
+    PageData fileList(String search, Integer page, Integer rows, String[] indexNames, String[] menus);
 }

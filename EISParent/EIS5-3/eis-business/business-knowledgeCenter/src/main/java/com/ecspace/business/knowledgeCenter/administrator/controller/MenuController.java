@@ -88,7 +88,7 @@ public class MenuController {
 //        //创建根节点
 //
 //        Menu menu = new Menu();
-//        menu.setPid("000000000000000000");
+//        menu.set_parentId("000000000000000000");
 //        menu.setUrl("E:/knowledgeCenter");
 //        menu.setText("knowledgeCenter");
 //        menu.setId(TNOGenerator.generateId());

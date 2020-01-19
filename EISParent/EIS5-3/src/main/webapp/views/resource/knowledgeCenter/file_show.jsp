@@ -131,12 +131,13 @@
                                 $.messager.alert("提示", data.message, 'info', function () {
                                     //成功的话，我们要关闭窗口
                                     $('#reviewDlg').dialog('close');
+                                    var fileInfo = data.data;
+                                    //审核入库, 解析
+                                    //入库离散检索
                                     //刷新
                                     // $("#mygrid").datagrid('reload');
-                                    location.reload();
-                                    //入库离散检索
-                                    //审核入库, 解析
-                                    var fileInfo = data.data;
+                                    //按钮变动
+                                    extracted(fileInfo);
                                     fileSpread(fileInfo.fileId);
                                 });
                             }
@@ -171,7 +172,8 @@
                                     $('#reviewDlg').dialog('close');
                                     //刷新
                                     // $("#mygrid").datagrid('reload');
-                                    location.reload();
+                                    //按钮变动
+                                    extracted(data.data);
                                 });
                             }
                         });
@@ -276,6 +278,33 @@
             return size + unitArr[index];
         }
 
+        function extracted(result) {
+            //其他按钮按状态显隐
+            switch (result.status) {
+                case 1:
+                    $('#submit').show();//提交
+                    $('#review_button').hide();//入库
+                    $('#check').hide();//驳回
+                    break;
+                case 2:
+                    $('#submit').hide();//提交
+                    $('#review_button').show();//入库
+                    $('#check').show();//驳回
+                    break;
+                case 3:
+                    $('#submit').show();//提交
+                    $('#review_button').hide();//入库
+                    $('#check').hide();//驳回
+                    //让驳回高亮
+                    break;
+                case 4:
+                    $('#submit').hide();//提交
+                    $('#review_button').show();//入库
+                    $('#check').hide();//驳回
+                    break;
+            }
+        }
+
         /**
          * 文档展示
          * @param fileId
@@ -291,30 +320,8 @@
                 data: 'fileId=' + fileId,
                 dataType: 'json',
                 success: function (result) {
-                    //其他按钮按状态显隐
-                    switch (result.status) {
-                        case 1:
-                            $('#submit').show();//提交
-                            $('#review_button').hide();//入库
-                            $('#check').hide();//驳回
-                            break;
-                        case 2:
-                            $('#submit').hide();//提交
-                            $('#review_button').show();//入库
-                            $('#check').show();//驳回
-                            break;
-                        case 3:
-                            $('#submit').show();//提交
-                            $('#review_button').hide();//入库
-                            $('#check').hide();//驳回
-                            //让驳回高亮
-                            break;
-                        case 4:
-                            $('#submit').hide();//提交
-                            $('#review_button').show();//入库
-                            $('#check').hide();//驳回
-                            break;
-                    }
+                    extracted(result);
+
                     if (result.author != null) {
                         var textHtml = '';
                         textHtml += '<tr>';
@@ -391,9 +398,9 @@
             } else if (value === 2) {
                 return '待审核';
             } else if (value === 3) {
-                return '驳回';
+                return '已驳回';
             } else if (value === 4) {
-                return '入库';
+                return '已入库';
             } else {
                 return '上传中';
             }
@@ -429,7 +436,9 @@
                         // window.location.href = "./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp";
 
                         //刷新当前页面
-                        location.reload();
+                        // location.reload();
+                        //按钮变动
+                        extracted(result.data);
 
                         //如果文档入库,调取接口解析文件
                         console.log(result.data);
@@ -616,18 +625,18 @@
                 <%--<a href="javascript:history.go(-2);">返回前两页</a>--%>
                                                 <%--// window.location.href = "./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp";--%>
 <%--./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp--%>
-                <a href="./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp">
-                    <img src="images/px-icon/zuojiantou.png"
-                         style="padding:0 10px;margin-left: 5px;width: 25px;height: 25px;"
-                         class="easyui-tooltip div-toolbar-img-first"
-                         title="返回文档管理页">
-                </a>
-                <%--<a href="javascript:self.location=document.referrer;">--%>
+                <%--<a href="./views/resource/knowledgeCenter/knowledgeCenterMultiple.jsp">--%>
                     <%--<img src="images/px-icon/zuojiantou.png"--%>
                          <%--style="padding:0 10px;margin-left: 5px;width: 25px;height: 25px;"--%>
                          <%--class="easyui-tooltip div-toolbar-img-first"--%>
-                         <%--title="返回上一页并刷新">--%>
+                         <%--title="返回文档管理页">--%>
                 <%--</a>--%>
+                <a href="javascript:history.go(-1)">
+                    <img src="images/px-icon/zuojiantou.png"
+                         style="padding:0 10px;margin-left: 5px;width: 25px;height: 25px;"
+                         class="easyui-tooltip div-toolbar-img-first"
+                         title="返回上一页">
+                </a>
                 <a href="javascript:location.reload()">
                     <img src="images/px-icon/shuaxin.png"
                          style="padding:0 10px;margin-left: 5px;width: 25px;height: 25px;"

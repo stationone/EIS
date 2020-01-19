@@ -19,5 +19,5 @@ public interface LogService {
 
     PageData logList(Integer page, Integer size);
 
-    PageData logList(Integer page, Integer rows, String search, String startTime, String endTime, String sort, String order, String status) throws ParseException;
+    PageData logList(Integer page, Integer rows, String search, String startTime, String endTime, String sort, String order, String status, String date, Integer dateOrUser) throws ParseException;
 }

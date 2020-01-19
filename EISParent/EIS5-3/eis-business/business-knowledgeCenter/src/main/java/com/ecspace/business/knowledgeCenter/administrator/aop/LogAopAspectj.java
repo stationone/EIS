@@ -1,29 +1,22 @@
 package com.ecspace.business.knowledgeCenter.administrator.aop;
 
 import com.ecspace.business.knowledgeCenter.administrator.pojo.Log;
-import com.ecspace.business.knowledgeCenter.administrator.pojo.SearchLog;
 import com.ecspace.business.knowledgeCenter.administrator.service.LogService;
-import com.ecspace.business.knowledgeCenter.administrator.service.SearchLogService;
 import com.ecspace.business.knowledgeCenter.administrator.util.IPUtil;
 import com.ecspace.business.knowledgeCenter.administrator.util.TNOGenerator;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.log4j.Logger;
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -93,10 +86,12 @@ public class LogAopAspectj {
         Log log = new Log();
         log.setId(TNOGenerator.generateId());
         log.setIp(IPUtil.getIpAddress(httpServletRequest));
-        log.setOperationDate(new Date());
+        Date date = new Date();
+        log.setOperationDate(date);
         log.setOperationType(operateType);
-        log.setOperator("系统管理员");
+        log.setOperator("普通用户");
         log.setSearch(arg);
+        log.setDateStr(new SimpleDateFormat("yyyy-MM-dd").format(date));
 
 
         Object result = null;

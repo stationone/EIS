@@ -20,12 +20,17 @@
     <title>知识中心</title>
     <link rel="stylesheet" type="text/css" href="css/easyui.css">
     <link rel="stylesheet" type="text/css" href="css/px-style.css">
+    <link rel="stylesheet" type="text/css" href="ui/themes/icon.css">
     <script src="js/jquery.min.js"></script>
-    <script src="js/jquery.easyui.min.1.5.2.js"></script>
+    <%--<script src="js/jquery.easyui.min.1.5.2.js"></script>--%>
+    <script src="ui/jquery.easyui.min.js"></script>
+
     <script src="js/pxzn.util.js"></script>
     <script src="js/px-tool/px-util.js"></script>
     <script src="js/pxzn.easyui.util.js"></script>
     <script src="js/easyui-language/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="ui/jquery.serializejson.min.js"></script>
+    <script type="text/javascript" src="js/search_history.js"></script>
 
     <script>
         var treeId = "<%=treeId%>";
@@ -36,7 +41,6 @@
          */
         $(function () {
             var resu = param_sub();
-            // alert(resu);
             //设置value
             $("#search").attr("value", resu.search);
             //调用搜索接口
@@ -44,42 +48,84 @@
             loadTree();
         });
 
+        function getTree() {
+            var node = $('#tt').tree('getSelected');
+            if (node == null) {
+                return;
+            }
+            var indexName = node.text;
+
+            $('#' + treeId).tree({
+                url: 'menu/listTree?indexName=' + indexName,
+                method: "get",
+                singleSelect: false,
+                checkbox: true,
+                multiple: false,
+                animate: true,
+                onClick: function (node) {
+                    //点击事件 获取dataList
+                    // loadDataList(node.id);
+
+                    //将目录名称显示在顶部
+                    // document.getElementById("index").innerHTML = "";
+                    // $('#index').append('<span>/' + node.text + '</span>')
+                },
+                onLoadSuccess: function (node, data) {
+                    //什么都不干
+                    if (data.length > 0) {
+                        // //     //找到第一个元素
+                        // var n = $('#' + treeId).tree('find', data[0].id);
+                        // //     //调用选中事件
+                        // $('#' + treeId).tree('select', n.target);
+                        //     loadDataList(n.id);
+                        //     //将索引库名称显示在顶部
+                        //     document.getElementById("indexName").innerHTML = "";
+                        //     $('#indexName').append('<span>' + data[0].text + '</span>')
+                    }
+                }
+
+            });
+        }
+
         /**
          *加载索引列表的树形菜单,
          *  加载完成后, 选中第一条数据
          *  将索引库名称显示在顶部
          */
         function loadTree() {
+
             $('#tt').tree({
                 url: 'indexMenu/listIndexMenu',
                 method: 'POST',
-
+                singleSelect: false,
+                checkbox: true,
+                columns: [[//显示的列
+                    {field: 'ck', width: 50, checkbox: 'true', align: 'center', hidden: true}]],
                 onClick: function (node) {
-                    // alert(node.text)
 
                     // //将索引名称显示在顶部
                     // document.getElementById("indexName").innerHTML = "";
                     // $('#indexName').append('<span>' + node.text + '</span>')
-                    //
-                    // //获取上树
-                    // getTree();
+
+                    //获取上树
+                    getTree();
                 },
                 //加载完tree型菜单后, 选中第一条数据
                 onLoadSuccess: function (node, data) {
                     //什么都不干
 
-                    // if (data.length > 0) {
-                    //     //找到第一个元素
-                    //     var n = $('#tt').tree('find', data[0].id);
-                    //     //调用选中事件
-                    //     $('#tt').tree('select', n.target);
-                    //
-                    //     getTree();
-                    //
-                    //     //将索引库名称显示在顶部
-                    //     document.getElementById("indexName").innerHTML = "";
-                    //     $('#indexName').append('<span>' + data[0].text + '</span>')
-                    // }
+                    if (data.length > 0) {
+                        // //找到第一个元素
+                        // var n = $('#tt').tree('find', data[0].id);
+                        // //调用选中事件
+                        // $('#tt').tree('select', n.target);
+                        //
+                        // getTree();
+                        //
+                        // // //将索引库名称显示在顶部
+                        // // document.getElementById("indexName").innerHTML = "";
+                        // // $('#indexName').append('<span>' + data[0].text + '</span>')
+                    }
                 }
             });
         }
@@ -105,6 +151,9 @@
          * 搜索
          */
         function searchFile(page, rows) {
+            //获取树节点
+            var indexNames = getIndexNameChecked();
+            var menus = getMenuChecked();
             //获取input中的值
             var search = document.getElementById('search').value;
             // $('#mygrid').datagrid('reload', {json: JSON.stringify({search:search})});
@@ -114,7 +163,7 @@
                 url: 'fileSearch/fileList',
                 method: 'GET',
                 contentType: 'application/json',
-                data: 'search=' + search + "&page=" + page + "&size=" + rows,
+                data: 'search=' + search + "&page=" + page + "&size=" + rows + "&indexNames=" + indexNames + "&menus=" + menus,
                 dataType: 'json',
                 success: function (result) {
                     dataShow(result);
@@ -123,21 +172,8 @@
                     $('#pagination').pagination({
                         total: result.total,
                         pageSize: [10, 20, 30, 40, 50],
-                        /*
-                            list：页面尺寸列表。
-                            sep：页面按钮分割。
-                            first：第一个按钮。
-                            prev：前一个按钮。
-                            next：后一个按钮。
-                            last：最后一个按钮。
-                            refresh：刷新按钮。
-                            manual：允许输入域页码的手动页码输入框。
-                            links：页码链接。
-                         */
-                        // layout:['sep','first','prev','links','next','last','manual','list','refresh'],//
                         onSelectPage: function (page, size) {
                             searchFile(page, size);
-                            // $('#content').panel('refresh', 'show_content.php?page='+pageNumber);
                         }
                     });
                 }
@@ -216,15 +252,7 @@
          * 文件预览
          */
         function file_show(fileId, pageNo) {
-            <%--//清除--%>
-            <%--$('#dataList').remove();--%>
-            <%--//创建--%>
-            <%--$('#dataParent').append('<ul id="dataList">\n' +--%>
-            <%--'        &lt;%&ndash;正文内容&ndash;%&gt;\n' +--%>
-            <%--'    </ul>');--%>
-            // $('#dataList').append('我就是文件, 你要预览的就是我');
             window.location.href = "./views/resource/knowledgeCenter/file_show.jsp?fileId=" + fileId + "&pageNo=" + pageNo
-
         }
 
         //时间戳转日期格式
@@ -256,32 +284,116 @@
                 }
             })
         };
+
+
+        /**
+         * 全选/全不选树节点的方法
+         * @param ifcheck boolean 是否选中
+         * @param treeId String 树id
+         */
+        function selectAllNode(ifcheck, treeId) {
+            var _tree = $('#' + treeId),
+                roots = _tree.tree('getRoots');
+            if (ifcheck) {
+                for (var i = 0; i < roots.length; i++) {
+                    _tree.tree('check', roots[i].target);
+                }
+            } else {
+                for (var i = 0; i < roots.length; i++) {
+                    _tree.tree('uncheck', roots[i].target);
+                }
+            }
+        }
+
+        /**
+         * 反选树节点的方法
+         * @param treeId String 树id
+         */
+        function selectInvert(treeId) {
+            var _tree = $('#' + treeId),
+                n_checked = _tree.tree('getChecked'),
+                n_unchecked = _tree.tree('getChecked', 'unchecked');
+            for (var i = 0; i < n_checked.length; i++) {
+                _tree.tree('uncheck', n_checked[i].target);
+            }
+            for (var j = 0; j < n_unchecked.length; j++) {
+                _tree.tree('check', n_unchecked[j].target);
+            }
+
+        }
+
+
+        /**
+         * 获取复选框
+         */
+        function getIndexNameChecked() {
+            var nodes = $('#tt').tree('getChecked');
+
+            var s = '';
+            for (var i = 0; i < nodes.length; i++) {
+                if ('' !== s) s += ',';
+                s += nodes[i].text;
+            }
+            console.log(s);
+            return s;
+        }
+        /**
+         * 获取复选框
+         */
+        function getMenuChecked() {
+            var nodes = $('#pxTool-tree').tree('getChecked');
+
+            var s = '';
+            for (var i = 0; i < nodes.length; i++) {
+                if ('' !== s) s += ',';
+                s += nodes[i].id;
+            }
+            console.log(s);
+            return s;
+        }
     </script>
 </head>
 <body id="permissionSet_layout" class="easyui-layout">
 <div data-options="region:'west'" class="layout-west">
-    <%--<div class="layout-title-div">--%>
-    <%--ES索引--%>
-    <%--<img src="images/px-icon/hide-left-black.png" onclick="layoutHide('resource_admin_layout','west')"--%>
-    <%--class="layout-title-img">--%>
-    <%--</div>--%>
-    <%--操作栏--%>
-    <div style="margin:5px 0;border-bottom:1px ">
-        <div id="toolbar1">
-            <img src="images/px-icon/shuaxin.png" style="padding:0 10px"
-                 class="easyui-tooltip div-toolbar-img-first"
-                 onclick="$('#tt').tree('reload');" title="刷新">
+    <div class="easyui-layout" style="width: 250px; height: 100%;">
+        <div data-options="region:'north'" style="height: 50%;">
+            <div class="layout-title-div">
+                <button onclick="selectAllNode(
+            true,'pxTool-tree'
+        )">全选
+                </button>
+                <button onclick="selectAllNode(
+            false,'pxTool-tree'
+        )">全不选
+                </button>
+
+                <%--<button onclick="getChecked()">获取选中的</button>--%>
+                <button onclick="selectInvert('pxTool-tree')">反选</button>
+            </div>
+            <jsp:include page="/px-tool/px-tree.jsp">
+                <jsp:param value="<%=treeId%>" name="div-id"/>
+            </jsp:include>
+        </div>
+
+        <div data-options="region:'south'" style="height: 50%">
+            <div class="layout-title-div">
+                <button onclick="selectAllNode(
+            true,'tt'
+        )">全选
+                </button>
+                <button onclick="selectAllNode(
+            false,'tt'
+        )">全不选
+                </button>
+
+                <%--<button onclick="getChecked()">获取选中的</button>--%>
+                <button onclick="selectInvert('tt')">反选</button>
+            </div>
+            <div id="nav">
+                <ul id="tt"></ul>
+            </div>
         </div>
     </div>
-
-    <div id="nav">
-        <ul id="tt"></ul>
-    </div>
-    <%--树目录--%>
-    <%--<jsp:include page="/px-tool/px-tree.jsp">
-        <jsp:param value="<%=treeId%>" name="div-id"/>
-    </jsp:include>--%>
-
 </div>
 
 <div data-options="region:'center'">
@@ -291,37 +403,41 @@
         <div id="permissionSet_dg_toolbar">
             <%--<div class="datagrid-title-div"><span>文件列表</span></div>--%>
             <%--<div style="float: left;">--%>
-                <%--<img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"--%>
-                     <%--onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">--%>
+            <%--<img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"--%>
+            <%--onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">--%>
             <%--</div>--%>
 
             <%--<div style="float: right;">--%>
-                <%--&lt;%&ndash; 搜索框 &ndash;%&gt;--%>
-                <%--<input id="search" class="div-toolbar-span"--%>
-                       <%--style="margin-right: 5px;margin-top: 2px; width:300px;height:30px"/>--%>
-                <%--<a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"--%>
-                   <%--style="width:80px;height: 29px;" onclick="searchFile(1,10)">搜索</a>--%>
+            <%--&lt;%&ndash; 搜索框 &ndash;%&gt;--%>
+            <%--<input id="search" class="div-toolbar-span"--%>
+            <%--style="margin-right: 5px;margin-top: 2px; width:300px;height:30px"/>--%>
+            <%--<a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"--%>
+            <%--style="width:80px;height: 29px;" onclick="searchFile(1,10)">搜索</a>--%>
             <%--</div>--%>
 
-                <table style="width: 100%;">
-                    <tr>
-                        <td>
-                            <div style="float: left;">
-                                <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
-                                     onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
-                            </div>
-                        </td>
-                        <td style="text-align: right;margin-right: 0px;">
-                            <div style="float: right;">
-                                <%-- 搜索框 --%>
-                                <input id="search" class="div-toolbar-span"
-                                       style="margin-right: 5px;margin-top: 2px; width:300px;height:30px"/>
-                                <a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"
-                                   style="width:80px;height: 29px;" onclick="searchFile(1,10)">搜索</a>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+            <table style="width: 100%;">
+                <tr>
+                    <td>
+                        <div style="float: left;">
+                            <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
+                                 onclick="$('#'+datagridId1).datagrid('reload');" title="刷新">
+                        </div>
+                    </td>
+                    <td style="text-align: right;margin-right: 0px;">
+                        <div style="float: right;">
+                            <%-- 搜索框 --%>
+                            <input id="search" class="easyui-textbox"
+                                   style="margin-right: 5px;margin-top: 2px; width:300px;height:30px"
+                                   data-options="
+                                           onChange:function(){
+                                              searchFile(1,10)
+                                           }"/>
+                            <a id="btnSearch" href="javascript:void(0)" class="easyui-linkbutton"
+                               onclick="searchFile(1,10)" iconCls="icon-search">search</a>
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
 
         <%--//正文--%>

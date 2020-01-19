@@ -24,7 +24,8 @@
     <link rel="stylesheet" type="text/css" href="css/px-style.css">
     <link rel="stylesheet" type="text/css" href="ui/themes/icon.css">
     <script src="js/jquery.min.js"></script>
-    <script src="js/jquery.easyui.min.1.5.2.js"></script>
+    <%--<script src="js/jquery.easyui.min.1.5.2.js"></script>--%>
+    <script src="ui/jquery.easyui.min.js"></script>
     <script src="js/pxzn.util.js"></script>
     <script src="js/px-tool/px-util.js"></script>
     <script src="js/pxzn.easyui.util.js"></script>
@@ -65,29 +66,30 @@
                 dataType: 'json',
                 contentType: "application/json",
                 columns: [[
-                    {
-                        field: 'operationDate', title: '操作时间', width: 180, align: 'center', sortable: true,//可排序
-                        formatter: function (value, fmt) {
-                            //固定日期格式
-                            fmt = 'yyyy-MM-dd hh:mm:ss';
-                            var date = new Date(value);
-                            var o = {
-                                "M+": date.getMonth() + 1,     //月份
-                                "d+": date.getDate(),     //日
-                                "h+": date.getHours(),     //小时
-                                "m+": date.getMinutes(),     //分
-                                "s+": date.getSeconds(),     //秒
-                                "q+": Math.floor((date.getMonth() + 3) / 3), //季度
-                                "S": date.getMilliseconds()    //毫秒
-                            };
-                            if (/(y+)/.test(fmt))
-                                fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
-                            for (var k in o)
-                                if (new RegExp("(" + k + ")").test(fmt))
-                                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
-                            return fmt;
-                        }
-                    },
+                    // {
+                    //     field: 'operationDate', title: '操作时间', width: 180, align: 'center', sortable: true,//可排序
+                    //     formatter: function (value, fmt) {
+                    //         //固定日期格式
+                    //         fmt = 'yyyy-MM-dd hh:mm:ss';
+                    //         var date = new Date(value);
+                    //         var o = {
+                    //             "M+": date.getMonth() + 1,     //月份
+                    //             "d+": date.getDate(),     //日
+                    //             "h+": date.getHours(),     //小时
+                    //             "m+": date.getMinutes(),     //分
+                    //             "s+": date.getSeconds(),     //秒
+                    //             "q+": Math.floor((date.getMonth() + 3) / 3), //季度
+                    //             "S": date.getMilliseconds()    //毫秒
+                    //         };
+                    //         if (/(y+)/.test(fmt))
+                    //             fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+                    //         for (var k in o)
+                    //             if (new RegExp("(" + k + ")").test(fmt))
+                    //                 fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                    //         return fmt;
+                    //     }
+                    // },
+                    {field: 'text', title: '操作时间', width: 180, align: 'center'},
                     {field: 'operator', title: '操作人员', width: 180, align: 'center'},
                     {field: 'operationType', title: '操作类型', width: 180, align: 'center'},
                     {field: 'operationResult', title: '操作结果', width: 180, align: 'center'},
@@ -173,24 +175,52 @@
 
 <div data-options="region:'center'">
     <div id="toolbar" style="padding:10px 5px;">
-        <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
-             onclick="$('#mygrid').datagrid('reload')" title="刷新">
-        <img src="images/px-icon/shanchu.png" class="easyui-tooltip div-toolbar-img-next"
-             onclick="deleteField()" title="删除字段">
+        <table>
+            <tr>
+                <td>
+                    <img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"
+                         onclick="$('#mygrid').datagrid('reload')" title="刷新">
+                    <img src="images/px-icon/shanchu.png" class="easyui-tooltip div-toolbar-img-next"
+                         onclick="deleteField()" title="删除字段">
+                </td>
+                <td>
+                    <span>起始时间:</span>
+                    <input id="startTime" class="easyui-datetimebox" editable="false" name="startTime" data-options="onChange:search_log">
+                    <span>结束时间:</span>
+                    <input id="endTime" class="easyui-datetimebox" editable="false" name="endTime" data-options="onChange:search_log">
+                    <span>查询类型:</span>
+                    <select id="status" class="easyui-combobox" name="status" editable="false" data-options="onChange:search_log">
+                        <option value="0" selected>全部</option>
+                        <option value="1">检索日志</option>
+                        <option value="2">操作日志</option>
+                    </select>
+                    <span>操作人员:</span>
+                    <input id="operator" class="easyui-textbox" name="operator"/>
+                    <a href="javaScript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="search_log()">Search</a>
 
-        <span>起始时间:</span>
-        <input id="startTime" class="easyui-datetimebox" editable="false" name="startTime" data-options="onChange:search_log">
-        <span>结束时间:</span>
-        <input id="endTime" class="easyui-datetimebox" editable="false" name="endTime" data-options="onChange:search_log">
-        <span>查询类型:</span>
-        <select id="status" class="easyui-combobox" name="status" editable="false" data-options="onChange:search_log">
-            <option value="0" selected>全部</option>
-            <option value="1">检索日志</option>
-            <option value="2">操作日志</option>
-        </select>
-        <span>操作人员:</span>
-        <input id="operator" class="easyui-textbox" name="operator"/>
-        <a href="javaScript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="search_log()">Search</a>
+
+                </td>
+            </tr>
+        </table>
+        <%--<img src="images/px-icon/shuaxin.png" class="easyui-tooltip div-toolbar-img-first"--%>
+             <%--onclick="$('#mygrid').datagrid('reload')" title="刷新">--%>
+        <%--<img src="images/px-icon/shanchu.png" class="easyui-tooltip div-toolbar-img-next"--%>
+             <%--onclick="deleteField()" title="删除字段">--%>
+
+
+        <%--<span>起始时间:</span>--%>
+        <%--<input id="startTime" class="easyui-datetimebox" editable="false" name="startTime" data-options="onChange:search_log">--%>
+        <%--<span>结束时间:</span>--%>
+        <%--<input id="endTime" class="easyui-datetimebox" editable="false" name="endTime" data-options="onChange:search_log">--%>
+        <%--<span>查询类型:</span>--%>
+        <%--<select id="status" class="easyui-combobox" name="status" editable="false" data-options="onChange:search_log">--%>
+            <%--<option value="0" selected>全部</option>--%>
+            <%--<option value="1">检索日志</option>--%>
+            <%--<option value="2">操作日志</option>--%>
+        <%--</select>--%>
+        <%--<span>操作人员:</span>--%>
+        <%--<input id="operator" class="easyui-textbox" name="operator"/>--%>
+        <%--<a href="javaScript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="search_log()">Search</a>--%>
 
     </div>
 
@@ -241,13 +271,13 @@
         <%--<a href="javaScript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="search_log()">Search</a>--%>
 
     <%--</div>--%>
-    <div id="footer" style="padding:2px 5px;">
-        <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true"></a>
-        <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true"></a>
-        <a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true"></a>
-        <a href="#" class="easyui-linkbutton" iconCls="icon-cut" plain="true"></a>
-        <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true"></a>
-    </div>
+    <%--<div id="footer" style="padding:2px 5px;">--%>
+        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true"></a>--%>
+        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true"></a>--%>
+        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-save" plain="true"></a>--%>
+        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-cut" plain="true"></a>--%>
+        <%--<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true"></a>--%>
+    <%--</div>--%>
 
 </div>
 </body>

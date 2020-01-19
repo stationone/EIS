@@ -34,7 +34,6 @@ public class FileBaseController {
      * @return baseField
      */
     @LogAnno(operateType = "文档基础属性/添加或修改")
-
     @PostMapping("/save")
     public GlobalResult save(FileBase fileBase){
         if (fileBase == null) {

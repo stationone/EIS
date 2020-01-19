@@ -3,6 +3,7 @@ package com.ecspace.business.knowledgeCenter.administrator.pojo;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -21,7 +22,21 @@ public class UserInfo {
 
     private Date creationTime;
 
+    private String[] fileIds;
+
+    public static void main(String[] args) {
+        String[] fileIds = {"1", "2", "3", "4"};
+    }
+
     public UserInfo() {
+    }
+
+    public String[] getFileIds() {
+        return fileIds;
+    }
+
+    public void setFileIds(String[] fileIds) {
+        this.fileIds = fileIds;
     }
 
     public String getId() {

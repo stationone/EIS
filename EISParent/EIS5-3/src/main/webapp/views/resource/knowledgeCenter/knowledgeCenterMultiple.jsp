@@ -497,7 +497,8 @@
                                     //刷新列表
                                     $('#mygrid').datagrid('reload');
                                     //后台解析文件
-                                    file2Html(result.data);
+                                    // file2Html(result.data);
+                                    file2Pdf(result.data);
                                 }
                             });
                         }
@@ -538,7 +539,7 @@
             }
             $('#folder_dialog_form').form('clear');
             $('#folder_dialog_form').form('load', {
-                pid: node.id,
+                _parentId: node.id,
                 indexName: node2.text
 
             });
@@ -559,7 +560,7 @@
             }
 
             //如果选择的是根节点,
-            if (('000000000000000000') === (node.pid)) {
+            if (('000000000000000000') === (node._parentId)) {
                 message_Show('当前节点禁止编辑, 请重新选择');
                 return;
             }
@@ -567,7 +568,7 @@
             $('#folder_dialog_form').form('clear');
             $('#folder_dialog_form').form('load', {
                 id: node.id,
-                pid: node.pid,
+                _parentId: node._parentId,
                 text: node.text,
                 url: node.url,
                 status: node.status,
@@ -587,7 +588,7 @@
                 return;
             }
             //如果选择的是根节点,
-            if (('000000000000000000') === (node.pid)) {
+            if (('000000000000000000') === (node._parentId)) {
                 message_Show('当前节点禁止删除, 请重新选择');
                 return;
             }
@@ -682,6 +683,29 @@
         function file2Html(fileInfo) {
             $.ajax({
                 url: 'fileTemp/file2Html',
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: JSON.stringify(fileInfo),
+                success: function (result) {
+                    //刷新列表
+                    $('#mygrid').datagrid('reload');
+                    //成功后右下角窗口提醒
+                    message_Show(result.message);
+                    //修改控件src
+                    if (result.data == null) {
+                        return;
+                    }
+                    console.log('离散完成' + result.data);
+                },
+                error: function () {
+                    alert('文件离散失败, 该文件可能是只读文件, 不可执行其他操作')
+                }
+            })
+        }
+        function file2Pdf(fileInfo) {
+            $.ajax({
+                url: 'fileTemp/file2Pdf',
                 type: 'POST',
                 dataType: 'json',
                 contentType: 'application/json',
@@ -881,9 +905,9 @@
                             } else if (value === 2) {
                                 return '待审核';
                             } else if (value === 3) {
-                                return '驳回';
+                                return '已驳回';
                             } else if (value === 4) {
-                                return '入库';
+                                return '已入库';
                             } else {
                                 return '上传中';
                             }
@@ -1158,7 +1182,7 @@
      data-options="closed:true, modal:true,border:'thin', buttons:'#folder_dialog_button'">
     <form id="folder_dialog_form" method="post" novalidate>
         <table cellspacing="10" class="pxzn-dialog-font" style="margin:20px 50px;">
-            <input name="pid" type="hidden">
+            <input name="_parentId" type="hidden">
             <input name="id" type="hidden">
             <input name="indexName" type="hidden">
             <tr>
